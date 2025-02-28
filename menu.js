@@ -1,0 +1,1 @@
+console.log("Statis Protocol is working);

@@ -10,18 +10,32 @@
         <nav>
             <a href="sp_start.html">Start Game</a>
             <a href="#">Game Stats</a>
-            <a href="#">Exit Game</a>
+            <a onclick="BoxOpen()">Exit Game</a>
             <div class="box">
                 <p>Are you sure you want to exit</p>
                 <label>
                     <input type="radio" name="like">
-                    <span class="Yes">Yes</span>
+                    <span onclick="ExitGame()" class="Yes">Yes</span`>
                 </label>
                 <label>
                     <input type="radio" name="like">
-                    <span class="No">No</span>
+                    <span onclick="BoxClose()" class="No">No</span>
                 </label>
             </div>
         </nav>
+
+        <script>
+            function ExitGame() {
+               window.close();
+            }
+
+            function BoxClose() {
+                document.querySelector(".box").style.display = "none";
+            }
+
+            function BoxOpen(){
+                document.querySelector(".box").style.display = "block";
+            }
+        </script>
     </body>
 </html>

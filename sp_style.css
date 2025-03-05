@@ -21,6 +21,22 @@ span{ /* This is the color of the 'Stasis' part */
     color: #34bb03;
 }
 
+nav{
+    text-decoration: none;
+    text-transform: capitalize;
+    color: #ffffff;
+    font-size: 35px;
+    font-weight: 600;
+    padding: 0 10px;
+    margin: 0 30px;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    margin-bottom: 30px;
+}
+
 nav a{ /* This is the style of the links */
     text-decoration: none;
     text-transform: capitalize;
@@ -56,20 +72,19 @@ nav a:hover::before{ /* This makes the line appear */
     width: 100%;
 }
 
-.save-slot {
-    border: 2px solid #00FF00;
-    padding: 10px;
-    margin: 10px;
-    display: inline-block;
-    width: 200px;
-}
+
 
 .save-slot input {
     background-color: black;
     color: #00FF00;
     border: 1px solid #00FF00;
-    width: 80%;
-    margin-top: 10px;
+    width: 100%;
+    height: 40px;
+    margin-bottom: 20px;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    display: flex;
 }
 
 .save-slot button {
@@ -79,6 +94,10 @@ nav a:hover::before{ /* This makes the line appear */
     padding: 5px 10px;
     margin-top: 10px;
     cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    display: flex;
 }
 .box{
     position:absolute;

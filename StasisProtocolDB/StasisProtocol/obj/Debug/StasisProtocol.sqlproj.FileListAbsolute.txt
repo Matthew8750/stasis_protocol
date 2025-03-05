@@ -1,0 +1,10 @@
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\bin\Debug\StasisProtocol.dacpac
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\obj\Debug\StasisProtocol.sqlproj.AssemblyReference.cache
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\obj\Debug\Model.xml
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\obj\Debug\refactor.xml
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\obj\Debug\postdeploy.sql
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\obj\Debug\predeploy.sql
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\obj\Debug\StasisProtocol.dll
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\obj\Debug\StasisProtocol.pdb
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\bin\Debug\StasisProtocol.dll
+C:\Users\Joshua\source\repos\StasisProtocol\StasisProtocol\bin\Debug\StasisProtocol.pdb

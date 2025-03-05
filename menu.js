@@ -1,1 +1,1 @@
-console.log("Statis Protocol is working);
+console.log("Statis Protocol is working");

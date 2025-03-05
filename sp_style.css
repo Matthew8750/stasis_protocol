@@ -17,11 +17,11 @@ h1{
     margin-top: 100px;
 }
 
-span{
+span{ /* This is the color of the 'Stasis' part */
     color: #34bb03;
 }
 
-nav a{
+nav a{ /* This is the style of the links */
     text-decoration: none;
     text-transform: capitalize;
     color: #898989;
@@ -37,11 +37,11 @@ nav a{
     margin-bottom: 30px;
 }
 
-nav a:hover{
+nav a:hover{ /* This is the color that will appear when you hover over the link */
     color: #fff;
 }
 
-nav a::before{
+nav a::before{ /* This is the line that will appear when you hover over the link */
     content: '';
     position: absolute;
     bottom: -10px;
@@ -52,7 +52,7 @@ nav a::before{
     transition: all .5s;
 }
 
-nav a:hover::before{
+nav a:hover::before{ /* This makes the line appear */
     width: 100%;
 }
 

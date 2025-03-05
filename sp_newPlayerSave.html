@@ -8,16 +8,31 @@
                 <h1><span>Stasis</span> Protocol</h1>
                  <div class="save-slot">
                      <nav>Create a New Player Save</nav>
-                     <input type="text" placeholder="Enter Username">
-                         <nav><a onclick="savePlayer()">Save</a></nav>
+                     <input type="text" id="username" placeholder="Enter Username">
+                        <nav><a onclick="savePlayer()">Save</a></nav>
                      </div>
                      <nav>
                         <a href="sp_menu.html">Back to Main Menu</a>
                     </nav>
                     <script>
                         function savePlayer() {
-                            alert("Player Save Created");
-                        }
+                            let username = document.getElementById("username").value; // Get the input value
+
+                            if (username.trim() === "") {  // Check if the input is empty
+                                 alert("Please enter a username!");
+                                 return;
+                                 }
+
+                             // Send the data to the backend (PHP file)
+                             fetch("save.php", {
+                             method: "POST",
+                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                             body: "username=" + encodeURIComponent(username)
+                            })
+                              .then(response => response.text()) 
+                              .then(data => alert(data)) // Show response from the server
+                              .catch(error => console.error("Error:", error));
+                            }
                     </script>
             </body>
 </html>

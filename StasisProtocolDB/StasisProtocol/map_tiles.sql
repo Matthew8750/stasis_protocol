@@ -4,6 +4,6 @@
 	[tile_id] INT NOT NULL PRIMARY KEY, 
     [x] INT NOT NULL, 
     [y] INT NOT NULL, 
-    [room_idNOT ] INT NULL, -- What type of room this tile contains, null if it's empty space
+    [room_id] INT NOT NULL, -- What type of room this tile contains, null if it's empty space
     FOREIGN KEY (room_id) REFERENCES rooms(room_id)
 )

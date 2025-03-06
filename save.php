@@ -1,8 +1,8 @@
 <?php
-$servername = "localhost"; // Your database server (change if needed)
-$username = "root"; // Your database username
-$password = ""; // Your database password
-$dbname = "StasisProtocolDB"; // Your database name
+$servername = "webhost1.eeecs.qub.ac.uk"; // Your database server (change if needed)
+$username = "jrice27"; // Your database username
+$password = "rZk8FVrXNllcPl8Y"; // Your database password
+$dbname = "CSC1034_CW_13"; // Your database name
 
 // Create database connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -17,7 +17,7 @@ if (isset($_POST['username'])) {
     $username = $_POST['username'];
 
     // Prevent SQL injection by using a prepared statement
-    $stmt = $conn->prepare("INSERT INTO Players (name) VALUES (?)");
+    $stmt = $conn->prepare("INSERT INTO player (name) VALUES (?)");
     $stmt->bind_param("s", $username);
 
     if ($stmt->execute()) {

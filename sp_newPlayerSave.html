@@ -4,39 +4,73 @@
         <title>Stasis Protocol Player Save</title>
         <link href="sp_style.css" type="text/css" rel="stylesheet">
     </head>
-             <body>
-                <h1><span>Stasis</span> Protocol</h1>
-                 <div class="save-slot">
-                     <nav>Create a New Player Save</nav>
-                     <input type="text" id="username" placeholder="Enter Username">
-                        <nav><a onclick="savePlayer()">Save</a></nav>
-                     </div>
-                     <nav>
-                        <a href="sp_menu.html">Back to Main Menu</a>
-                    </nav>
-                    <script>
-                        function savePlayer() {
-                            let username = document.getElementById("username").value; // Get the input value
+    <body>
+        <h1><span>Stasis</span> Protocol</h1>
+        <div class="save-slot">
+            <nav>Create a New Player Save</nav>
+            <input type="text" id="username" placeholder="Enter Username">
+            <nav><a href="#" onclick="savePlayer()">Save</a></nav>
+        </div>
+        <nav>
+            <a href="sp_menu.html">Back to Main Menu</a>
+        </nav>
 
-                            if (username.trim() === "") {  // Check if the input is empty
-                                 alert("Please enter a username!");
-                                 return;
-                                 }
+        <!-- Add a div to display the results -->
+        <div id="results"></div>
 
-                             // Send the data to the backend (PHP file)
-                             fetch("save.php", {
-                             method: "POST",
-                             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                             body: "username=" + encodeURIComponent(username)
-                            })
-                            .then(response => response.text()) 
-                            .then(data => {
-                                alert(data); // Show response from the server
-                            })
-                              .then(response => response.text()) 
-                              .then(data => alert(data)) // Show response from the server
-                              .catch(error => console.error("Error:", error));
-                            }
-                    </script>
-            </body>
+        <script>
+            async function savePlayer() {
+                const input = document.getElementById('username').value;
+
+                if (!input) {
+                    alert("Please enter a username.");
+                    return;
+                }
+
+                let hostname = 'localhost';
+                let username = 'jrice27';
+                let password = 'rZk8FVrXNllcPl8Y';
+                let database = 'CSC1034_CW_13';
+
+                // Create the query string
+                let query = `INSERT INTO player (player_name) VALUES ('${input}')`;
+
+                // Prepare form data to send to the backend
+                let formData = new FormData();
+                formData.append('hostname', hostname);
+                formData.append('username', username);
+                formData.append('password', password);
+                formData.append('database', database);
+                formData.append('query', query);
+
+                try {
+                    let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+                    let response = await fetch(url, {
+                        method: 'POST',
+                        body: formData // Send the form data directly
+                    });
+
+                    let result = await response.json();
+
+                    // Get the results div and clear previous results
+                    let resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+
+                    if (result.error) {
+                        console.log(result.error.toString());
+                        resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+                    } else {
+                        resultsDiv.innerHTML = `<p>${result.success ? 'Query executed successfully' : 'No data returned'}</p>`;
+                        if (result.affected_rows !== undefined) {
+                            resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    let resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                }
+            }
+        </script>
+    </body>
 </html>

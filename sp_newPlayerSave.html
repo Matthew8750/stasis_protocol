@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
     <head>
         <title>Stasis Protocol Player Save</title>
@@ -9,6 +9,7 @@
         <div class="save-slot">
             <nav>Create a New Player Save</nav>
             <input type="text" id="username" placeholder="Enter Username">
+            <input type="text" id="password" placeholder="Enter Password">
             <nav><a href="#" onclick="savePlayer()">Save</a></nav>
         </div>
         <nav>
@@ -20,12 +21,19 @@
 
         <script>
             async function savePlayer() {
-                const input = document.getElementById('username').value;
+                const player_name= document.getElementById('username').value;
+                const player_password= document.getElementById('password').value;
 
-                if (!input) {
+                if (!player_name) {
                     alert("Please enter a username.");
                     return;
                 }
+
+                if (!player_password) {
+                    alert("Please enter a password.");
+                    return;
+                }
+                
 
                 let hostname = 'localhost';
                 let username = 'jrice27';
@@ -33,7 +41,7 @@
                 let database = 'CSC1034_CW_13';
 
                 // Create the query string
-                let query = `INSERT INTO player (player_name) VALUES ('${input}')`;
+                let query = `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${player_password}')`;
 
                 // Prepare form data to send to the backend
                 let formData = new FormData();
@@ -59,11 +67,9 @@
                     if (result.error) {
                         console.log(result.error.toString());
                         resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-                    } else {
-                        resultsDiv.innerHTML = `<p>${result.success ? 'Query executed successfully' : 'No data returned'}</p>`;
-                        if (result.affected_rows !== undefined) {
-                            resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
-                        }
+                    }
+                    else {
+                        resultsDiv.innerHTML = `<p>${result.success ? 'Account created successfully' : ""}</p>`;
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -72,5 +78,6 @@
                 }
             }
         </script>
+        <div class="bezel-overlay"></div>
     </body>
 </html>

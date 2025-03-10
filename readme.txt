@@ -1,5 +1,7 @@
 To connect to database use following code:
 
+PS: this can probably be optimized a lot
+
 ----------------------------------------------------------------
 
 

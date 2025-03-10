@@ -31,7 +31,7 @@ body {
     left: 0;
     width: 100vw; /* Full screen width */
     height: 100vh; /* Full screen height */
-    background: url('../stasis_protocol/images/bezel.png') no-repeat center;
+    background: url('./images/bezel.png') no-repeat center;
     background-size: 100% 100%; /* Stretch to fill without gaps */
     pointer-events: none; /* Prevents interaction issues */
     z-index: 1000; /* Keeps it above everything */

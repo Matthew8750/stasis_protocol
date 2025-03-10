@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stasis Protocol - New Player Save</title>
+    <link href="sp_style.css" type="text/css" rel="stylesheet">
+  </head>
+
+  <body>
+    <h1><span>Stasis</span> Protocol</h1>
+
+    <div class="save-slot">
+      <nav>Create a New Player Save</nav>
+      <input type="text" id="username" placeholder="Enter Username">
+      <input type="password" id="password" placeholder="Enter Password">
+      <nav><a href="#" onclick="savePlayer()">Save</a></nav>
+    </div>
+
+    <nav>
+      <a href="sp_start.html">Back to Main Menu</a>
+    </nav>
+
+    <div id="results"></div>
+
+    <script>
+      async function savePlayer() {
+                const player_name= document.getElementById('username').value;
+                const player_password= document.getElementById('password').value;
+
+                if (!player_name) {
+                    alert("Please enter a username.");
+                    return;
+                }
+
+                if (!player_password) {
+                    alert("Please enter a password.");
+                    return;
+                }
+                
+
+                let hostname = 'localhost';
+                let username = 'jrice27';
+                let password = 'rZk8FVrXNllcPl8Y';
+                let database = 'CSC1034_CW_13';
+
+                // Create the query string
+                let query = `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${player_password}')`;
+
+                // Prepare form data to send to the backend
+                let formData = new FormData();
+                formData.append('hostname', hostname);
+                formData.append('username', username);
+                formData.append('password', password);
+                formData.append('database', database);
+                formData.append('query', query);
+
+                try {
+                    let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+                    let response = await fetch(url, {
+                        method: 'POST',
+                        body: formData // Send the form data directly
+                    });
+
+                    let result = await response.json();
+
+                    // Get the results div and clear previous results
+                    let resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+
+                    if (result.error) {
+                        console.log(result.error.toString());
+                        resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+                    }
+                    else {
+                        resultsDiv.innerHTML = `<p>${result.success ? 'Account created successfully.' : ""}</p>`;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    let resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                }
+            }
+    </script>
+
+    <div class="bezel-overlay"></div>
+  </body>
+</html>

@@ -7,8 +7,38 @@
     <body>
         <h1><span>Stasis</span> Protocol</h1>
         <nav>
+            <div class="save-slot">
+            <nav>Login to Player Save</nav>
+            <input type="text" id="username" placeholder="Enter Username">
+            <input type="text" id="password" placeholder="Enter Password">
+            <nav><a href="#" onclick="validatePlayer()">Login</a></nav>
+            </div>
             <a href="sp_menu.html">Back to Main Menu</a>
         </nav>
+        <script>
+            async function validatePlayer() {
+                // Get user input
+                 const username = document.getElementById('username').value;
+                 const password = document.getElementById('password').value;
+
+                //Ensure both username and password are filled
+                 if (!username || !password) {
+                     alert("Please enter both username and password.");
+                     return;
+                 }
+
+                // Validate input
+                let isValid = await validatePlayer(username, password);
+
+                if (isValid) {
+                    await startGame(username, password); // Call function to start the game
+                }
+            }
+            async function validatePlayer(username, password) {
+                // code to validate player is present in the database
+            }
+
+        </script>
         <div class="bezel-overlay"></div>
     </body>
 </html>

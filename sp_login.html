@@ -31,12 +31,67 @@
                 let isValid = await validatePlayer(username, password);
 
                 if (isValid) {
-                    await startGame(username, password); // Call function to start the game
+                    document.open("sp_game.html"); // Open the game page
+                    // await startGame(username, password); // Call function to start the game
                 }
             }
             async function validatePlayer(username, password) {
-                // code to validate player is present in the database
+                let hostname = 'localhost';
+                let username = 'jrice27';
+                let password = 'rZk8FVrXNllcPl8Y';
+                let database = 'CSC1034_CW_13';
+
+                // Create the query string, what you are asking the database to do
+                let query = `SELECT player_name, player_password FROM player WHERE player_name='${username}'`;
+
+                // Prepare form data to send to the backend
+                let formData = new FormData();
+                formData.append('hostname', hostname);
+                formData.append('username', username);
+                formData.append('password', password);
+                formData.append('database', database);
+                formData.append('query', query);
+
+                try {
+                    let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+                    let response = await fetch(url, {
+                        method: 'POST',
+                        body: formData // Send the form data directly
+                    });
+
+                    let result = await response.json();
+
+                    // Get the results div and clear previous results
+                    let resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+
+                    if (result.error) {
+                        console.log(result.error.toString());
+                        resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+                        return false;
+                    } 
+                   
+                     // Ensure result contains user data
+        if (result.length > 0) {
+            let storedPassword = result[0].player_password; // Get password from DB
+            
+            if (storedPassword === password) {
+                resultsDiv.innerHTML = `<p style="color:green;">Login successful!</p>`;
+                return true;
+            } else {
+                resultsDiv.innerHTML = `<p style="color:red;">Incorrect password.</p>`;
+                return false;
             }
+        } else {
+            resultsDiv.innerHTML = `<p style="color:red;">User not found.</p>`;
+            return false;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('results').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+        return false;
+    }
+}
 
         </script>
         <div class="bezel-overlay"></div>

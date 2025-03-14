@@ -16,81 +16,87 @@
             <a href="sp_menu.html">Back to Main Menu</a>
         </nav>
         <script>
-           async function checkLogin() {
-    // Get user input
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    async function checkLogin() {
+        // Get user input
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
 
-    // Ensure both username and password are filled
-    if (!username || !password) {
-        alert("Please enter both username and password.");
-        return;
+        // Ensure both fields are filled
+        if (!username || !password) {
+            alert("Please enter both username and password.");
+            return;
+        }
+
+        // Validate input
+        let isValid = await validatePlayer(username, password);
+
+        if (isValid) {
+            alert("User successfully logged in!");
+            // window.location.href = "game.html"; // Redirect if needed
+        } else {
+            alert("Invalid username or password.");
+        }
     }
 
-    // Validate input
-    let isValid = await validatePlayer(username, password);
+    async function validatePlayer(username, password) {
+        let hostname = 'localhost';
+        let dbUsername = 'jrice27';  // Database username
+        let dbPassword = 'rZk8FVrXNllcPl8Y'; // Database password
+        let database = 'CSC1034_CW_13';
 
-    if (isValid) {
-        alert("User successfully logged in."); 
-        // await startGame(username, password); // If needed
-    }
-}
+        // Corrected SQL query
+        let query = `SELECT player_password FROM player WHERE player_name='${username}'`;
 
-async function validatePlayer(username, password) {
-    let hostname = 'localhost';
-    let dbUsername = 'jrice27';  // Database username
-    let dbPassword = 'rZk8FVrXNllcPl8Y'; // Database password
-    let database = 'CSC1034_CW_13';
+        // Prepare form data
+        let formData = new FormData();
+        formData.append('hostname', hostname);
+       // formData.append('username', dbUsername);
+       // formData.append('password', dbPassword);
+        formData.append('database', database);
+        formData.append('query', query);
 
-    // Corrected SQL query
-    let query = `SELECT player_password FROM player WHERE player_name='${username}'`;
+        try {
+            let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+            let response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
 
-    // Prepare form data
-    let formData = new FormData();
-    formData.append('hostname', hostname);
-    formData.append('username', dbUsername);
-    formData.append('password', dbPassword);
-    formData.append('database', database);
-    formData.append('query', query);
+            let result = await response.json();
+            let resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
 
-    try {
-        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-        let response = await fetch(url, {
-            method: 'POST',
-            body: formData
-        });
+            if (result.error) {
+                console.log("Database error:", result.error);
+                resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+                return false;
+            } 
 
-        let result = await response.json();
-        let resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '';
+            // Debug: Print the result
+            alert("Database result:", result);
 
-        if (result.error) {
-            console.log(result.error.toString());
-            resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-            return false;
-        } 
-
-        // Ensure result contains user data
-        if (result.length > 0) {
-            let storedPassword = result[0].player_password; // Get password from DB
-            
-            if (storedPassword === password) {
-                resultsDiv.innerHTML = `<p style="color:green;">Login successful!</p>`;
-                return true;
+            // Ensure result contains user data
+            if (Array.isArray(result) && result.length > 0) {
+                let storedPassword = result[0].player_password; // Get password from DB
+                
+                if (storedPassword === password) { // May fail if passwords are hashed
+                    resultsDiv.innerHTML = `<p style="color:green;">Login successful!</p>`;
+                    return true;
+                } else {
+                    resultsDiv.innerHTML = `<p style="color:red;">Incorrect password.</p>`;
+                    return false;
+                }
             } else {
-                resultsDiv.innerHTML = `<p style="color:red;">Incorrect password.</p>`;
+                resultsDiv.innerHTML = `<p style="color:red;">User not found.</p>`;
                 return false;
             }
-        } else {
-            resultsDiv.innerHTML = `<p style="color:red;">User not found.</p>`;
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('results').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
             return false;
         }
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('results').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-        return false;
     }
-}
+
 
         </script>
         <div class="bezel-overlay"></div>

@@ -1,104 +1,71 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Stasis Protocol Login</title>
-        <link href="sp_style.css" type="text/css" rel="stylesheet">
-    </head>
-    <body>
-        <h1><span>Stasis</span> Protocol</h1>
-        <nav>
-            <div class="save-slot">
-            <nav>Login to Player Save</nav>
+<head>
+    <title>Stasis Protocol Login</title>
+    <link href="sp_style.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="save-slot">
+            <p>Login to Player Save</p>
             <input type="text" id="username" placeholder="Enter Username">
-            <input type="text" id="password" placeholder="Enter Password">
+            <input type="password" id="password" placeholder="Enter Password">
             <nav><a href="#" onclick="checkLogin()">Login</a></nav>
-            </div>
-            <a href="sp_menu.html">Back to Main Menu</a>
-        </nav>
-        <script>
-    async function checkLogin() {
-        // Get user input
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
+        </div>
+        <a href="sp_menu.html">Back to Main Menu</a>
+    </nav>
+    
+    <div id="results"></div>
 
-        // Ensure both fields are filled
-        if (!username || !password) {
-            alert("Please enter both username and password.");
-            return;
-        }
-
-        // Validate input
-        let isValid = await validatePlayer(username, password);
-
-        if (isValid) {
-            alert("User successfully logged in!");
-            // window.location.href = "game.html"; // Redirect if needed
-        } else {
-            alert("Invalid username or password.");
-        }
-    }
-
-    async function validatePlayer(username, password) {
-        let hostname = 'localhost';
-        let dbUsername = 'jrice27';  // Database username
-        let dbPassword = 'rZk8FVrXNllcPl8Y'; // Database password
-        let database = 'CSC1034_CW_13';
-
-        // Corrected SQL query
-        let query = `SELECT player_password FROM player WHERE player_name='${username}'`;
-
-        // Prepare form data
-        let formData = new FormData();
-        formData.append('hostname', hostname);
-       // formData.append('username', dbUsername);
-       // formData.append('password', dbPassword);
-        formData.append('database', database);
-        formData.append('query', query);
-
-        try {
-            let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-            let response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
-
-            let result = await response.json();
-            let resultsDiv = document.getElementById('results');
+    <script>
+         async function checkLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
 
-            if (result.error) {
-                console.log("Database error:", result.error);
-                resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-                return false;
-            } 
+            if (!username || !password) {
+                resultsDiv.innerHTML = '<p style="color:red;">Please enter both username and password.</p>';
+                return;
+            }
 
-            // Debug: Print the result
-            alert("Database result:", result);
+            const isValid = await validatePlayer(username, password);
+            resultsDiv.innerHTML = isValid 
+                ? '<p style="color:green;">User successfully logged in!</p>'
+                : '<p style="color:red;">Invalid username or password.</p>';
+        }
 
-            // Ensure result contains user data
-            if (Array.isArray(result) && result.length > 0) {
-                let storedPassword = result[0].player_password; // Get password from DB
-                
-                if (storedPassword === password) { // May fail if passwords are hashed
-                    resultsDiv.innerHTML = `<p style="color:green;">Login successful!</p>`;
-                    return true;
-                } else {
-                    resultsDiv.innerHTML = `<p style="color:red;">Incorrect password.</p>`;
+        async function validatePlayer(username, password) {
+            const formData = new FormData();
+            formData.append('hostname', 'localhost');
+            formData.append('username', 'jrice27');
+            formData.append('password', 'rZk8FVrXNllcPl8Y');
+            formData.append('database', 'CSC1034_CW_13');
+
+            // Pass username and password safely as parameters
+            formData.append('query', `SELECT COUNT(*) AS count FROM player WHERE player_name = '${username}' AND player_password = '${password}'`);
+            
+            try {
+                const response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    console.error("Database error:", result.error);
                     return false;
                 }
-            } else {
-                resultsDiv.innerHTML = `<p style="color:red;">User not found.</p>`;
+
+                return result.success && result.data.length > 0 && result.data[0].count > 0; // Ensure correct extraction of count
+            } catch (error) {
+                console.error('Error:', error);
                 return false;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('results').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-            return false;
         }
-    }
-
-
-        </script>
-        <div class="bezel-overlay"></div>
-    </body>
+    </script>
+    
+    <div class="bezel-overlay"></div>
+</body>
 </html>

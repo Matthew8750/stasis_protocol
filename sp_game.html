@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html> 
+    <head>
+        <title>Stasis Protocol</title>
+        <link href="sp_style.css" type="text/css" rel="stylesheet">
+        <style>
+            .image-panel {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 65vw;
+                height: 58vh;
+                background-color: rgba(0, 0, 0, 0.8);
+                color: rgb(0, 255, 0);
+                font-family: monospace;
+                padding: 10px;
+                border: 2px solid rgb(0, 0, 0);
+                border-radius: 6px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+            }
+
+            .image-panel img {
+                max-width: 100%;
+                max-height: 100%;
+            }
+
+            .console-panel, .player-icon-panel, .map-panel, .room-panel, .ai-companion-panel, .inventory-slot {
+                background-color: rgba(0, 0, 0, 0.8);
+                color: rgb(0, 255, 0);
+                font-family: monospace;
+                border: 2px solid rgb(0, 0, 0);
+                border-radius: 6px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+            }
+
+            .console-panel {
+                position: absolute;
+                top: 64vh;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 65vw;
+                height: 20vh;
+                padding: 10px;
+                overflow-y: auto;
+                white-space: pre-wrap;
+            }
+
+            .inventory {
+                position: absolute;
+                bottom: 45px;
+                left: 60px;
+                display: grid;
+                grid-template-columns: repeat(2, 72px);
+                grid-template-rows: repeat(2, 72px);
+                gap: 10px;
+            }
+
+            .inventory-slot {
+                width: 70px;
+                height: 70px;
+            }
+
+            .player-icon-panel {
+                position: absolute;
+                top: 30px;
+                left: 47px;
+                width: 167px;
+                height: 150px;
+            }
+
+            .room-panel {
+                position: absolute;
+                top: 190px;
+                left: 45px;
+                width: 170px;
+                height: 40px;
+            }
+
+            .map-panel {
+                position: absolute;
+                top: 30px;
+                right: 47px;
+                width: 167px;
+                height: 150px;
+            }
+
+            .ai-companion-panel {
+                position: absolute;
+                bottom: 40px;
+                right: 40px;
+                width: 175px;
+                height: 350px;
+                overflow: hidden;
+            }
+
+            .ai-companion-panel img {
+                max-width: 100%;
+                max-height: 100%;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <nav></nav>
+
+        <div class="image-panel">
+            <img id="display-image" src="default-image.jpg" alt="Display">
+        </div>
+
+        <div class="console-panel" id="console">
+            [System]: Console initialized...
+        </div>
+
+        <div class="inventory">
+            <div class="inventory-slot" id="slot1"></div>
+            <div class="inventory-slot" id="slot2"></div>
+            <div class="inventory-slot" id="slot3"></div>
+            <div class="inventory-slot" id="slot4"></div>
+        </div>
+
+        <div class="player-icon-panel">
+            [PLAYER]
+        </div>
+
+        <div class="room-panel" id="room-display">
+            Room: Unknown
+        </div>
+
+        <div class="map-panel">
+            [MAP]
+        </div>
+
+        <div class="ai-companion-panel">
+            <img id="ai-companion" src="ai-placeholder.jpg" alt="AI Companion">
+        </div>
+
+        <div class="bezel-overlay"></div>
+
+        <script>
+            function changeImage(newSrc) {
+                document.getElementById("display-image").src = newSrc;
+            }
+
+            function logToConsole(message) {
+                const consolePanel = document.getElementById("console");
+                consolePanel.innerHTML += "<br>" + message;
+                consolePanel.scrollTop = consolePanel.scrollHeight;
+            }
+
+            function updateAIImage(newSrc) {
+                document.getElementById("ai-companion").src = newSrc;
+            }
+
+            function updateRoom(roomName) {
+                document.getElementById("room-display").textContent = "Room: " + roomName;
+            }
+        </script>
+    </body>
+</html>

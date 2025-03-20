@@ -24,7 +24,7 @@
                 const player_password = document.getElementById('password').value.trim();
                 const resultsDiv = document.getElementById('results');
                 resultsDiv.innerHTML = '';
-
+        
                 if (!player_name) {
                     resultsDiv.innerHTML = '<p style="color:red;">Please enter a username.</p>';
                     return;
@@ -33,25 +33,45 @@
                     resultsDiv.innerHTML = '<p style="color:red;">Please enter a password.</p>';
                     return;
                 }
-
-                let formData = new FormData();
-                formData.append('hostname', 'localhost');
-                formData.append('username', 'jrice27');
-                formData.append('password', 'rZk8FVrXNllcPl8Y');
-                formData.append('database', 'CSC1034_CW_13');
-                formData.append('query', `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${player_password}')`);
-
+        
+                let formDataCheck = new FormData();
+                formDataCheck.append('hostname', 'localhost');
+                formDataCheck.append('username', 'jrice27');
+                formDataCheck.append('password', 'rZk8FVrXNllcPl8Y');
+                formDataCheck.append('database', 'CSC1034_CW_13');
+                formDataCheck.append('query', `SELECT COUNT(*) AS count FROM player WHERE player_name = '${player_name}'`);
+        
                 try {
-                    let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                    // Check if username already exists
+                    let responseCheck = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
                         method: 'POST',
-                        body: formData
+                        body: formDataCheck
                     });
-
-                    let result = await response.json();
-
-                    if (result.error) {
-                        console.log(result.error.toString());
-                        resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+        
+                    let resultCheck = await responseCheck.json();
+        
+                    if (resultCheck.data[0].count > 0) {
+                        resultsDiv.innerHTML = `<p style="color:red;">Username already taken. Please choose another.</p>`;
+                        return;
+                    }
+        
+                    // If username is unique, create the player
+                    let formDataInsert = new FormData();
+                    formDataInsert.append('hostname', 'localhost');
+                    formDataInsert.append('username', 'jrice27');
+                    formDataInsert.append('password', 'rZk8FVrXNllcPl8Y');
+                    formDataInsert.append('database', 'CSC1034_CW_13');
+                    formDataInsert.append('query', `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${player_password}')`);
+        
+                    let responseInsert = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                        method: 'POST',
+                        body: formDataInsert
+                    });
+        
+                    let resultInsert = await responseInsert.json();
+        
+                    if (resultInsert.error) {
+                        resultsDiv.innerHTML = `<p style="color:red;">${resultInsert.error}</p>`;
                     } else {
                         resultsDiv.innerHTML = `<p style="color:green;">Account created successfully.</p>`;
                         sessionStorage.setItem('loggedInUser', player_name); // Log in automatically
@@ -63,6 +83,7 @@
                 }
             }
         </script>
+        
         <div class="bezel-overlay"></div>
     </body>
 </html>

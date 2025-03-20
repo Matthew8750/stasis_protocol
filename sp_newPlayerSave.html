@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
     <head>
         <title>Stasis Protocol Player Save</title>
@@ -20,59 +20,45 @@
 
         <script>
             async function savePlayer() {
-                const player_name= document.getElementById('username').value;
-                const player_password= document.getElementById('password').value;
+                const player_name = document.getElementById('username').value.trim();
+                const player_password = document.getElementById('password').value.trim();
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
 
                 if (!player_name) {
-                    alert("Please enter a username.");
+                    resultsDiv.innerHTML = '<p style="color:red;">Please enter a username.</p>';
                     return;
                 }
-
                 if (!player_password) {
-                    alert("Please enter a password.");
+                    resultsDiv.innerHTML = '<p style="color:red;">Please enter a password.</p>';
                     return;
                 }
-                
 
-                let hostname = 'localhost';
-                let username = 'jrice27';
-                let password = 'rZk8FVrXNllcPl8Y';
-                let database = 'CSC1034_CW_13';
-
-                // Create the query string
-                let query = `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${player_password}')`;
-
-                // Prepare form data to send to the backend
                 let formData = new FormData();
-                formData.append('hostname', hostname);
-                formData.append('username', username);
-                formData.append('password', password);
-                formData.append('database', database);
-                formData.append('query', query);
+                formData.append('hostname', 'localhost');
+                formData.append('username', 'jrice27');
+                formData.append('password', 'rZk8FVrXNllcPl8Y');
+                formData.append('database', 'CSC1034_CW_13');
+                formData.append('query', `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${player_password}')`);
 
                 try {
-                    let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-                    let response = await fetch(url, {
+                    let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
                         method: 'POST',
-                        body: formData // Send the form data directly
+                        body: formData
                     });
 
                     let result = await response.json();
 
-                    // Get the results div and clear previous results
-                    let resultsDiv = document.getElementById('results');
-                    resultsDiv.innerHTML = '';
-
                     if (result.error) {
                         console.log(result.error.toString());
                         resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-                    }
-                    else {
-                        resultsDiv.innerHTML = `<p>${result.success ? 'Account created successfully.' : ""}</p>`;
+                    } else {
+                        resultsDiv.innerHTML = `<p style="color:green;">Account created successfully.</p>`;
+                        sessionStorage.setItem('loggedInUser', player_name); // Log in automatically
+                        window.location.href = 'sp_play.html'; // Redirect to play page
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    let resultsDiv = document.getElementById('results');
                     resultsDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
                 }
             }

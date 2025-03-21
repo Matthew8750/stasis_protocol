@@ -36,6 +36,7 @@ body {
     pointer-events: none; /* Prevents interaction issues */
     z-index: 1000; /* Keeps it above everything */
 }
+
 .show-password img {
     width: 45px; 
     height: 45px; 
@@ -47,7 +48,6 @@ body {
     height: 45px;
     cursor: pointer; /* Change cursor to indicate it's clickable */
 }
-
 
 /* Adding scanline effect */
 body::after {
@@ -167,6 +167,7 @@ nav a:hover {
     color: #33ff33;
     text-shadow: 0 0 5px #33ff33;
 }
+
 .box {
     position: absolute;
     top: 50%;
@@ -205,4 +206,26 @@ nav a:hover {
     background: #33ff33;
     color: black;
     text-shadow: none;
-} 
+}
+
+/* Buttons styling adjustments for Back and Save buttons */
+.save-slot .save-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px; /* Add space between buttons */
+}
+
+.save-slot .back-button {
+    display: inline-block;
+    margin-right: 20px; /* Space between Back and Save button */
+}
+
+.save-slot .save-button {
+    margin-left: 10px; /* Space between Save and Back button */
+}
+
+/* Keep the eye (show password) button as it is */
+.save-slot .show-password {
+    display: inline-block;
+}

@@ -152,6 +152,7 @@ nav a:hover {
     font-size: 16px;
     text-align: center;
     margin-top: 10px;
+    z-index: 10;
 }
 
 /* Styling the login link */

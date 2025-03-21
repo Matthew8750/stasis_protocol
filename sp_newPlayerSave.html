@@ -16,9 +16,9 @@
             <input type="password" id="password" placeholder="Enter Password">
             <input type="password" id="confirm_password" placeholder="Confirm Password"> <!-- Password confirmation field -->
 
-            <label>
-                <input type="checkbox" id="show_password"> 👁️‍🗨️
-            </label> <!-- Show Password checkbox -->
+            <div class="show-password" id="show_password">
+                <span>👁️</span>
+            </div> <!-- Eye icon to toggle password visibility -->
 
             <nav>
                 <a href="#" onclick="savePlayer()">Save</a>
@@ -34,11 +34,11 @@
         <div id="results"></div>
 
         <script>
-            // Toggle password visibility based on checkbox state
-            document.getElementById('show_password').addEventListener('change', function() {
+            // Toggle password visibility based on eye icon click
+            document.getElementById('show_password').addEventListener('click', function() {
                 const passwordField = document.getElementById('password');
                 const confirmPasswordField = document.getElementById('confirm_password');
-                if (this.checked) {
+                if (passwordField.type === 'password') {
                     passwordField.type = 'text';
                     confirmPasswordField.type = 'text';
                 } else {

@@ -8,7 +8,8 @@
         <div class="save-slot">
             <nav>Create a New Player Save</nav>
             <input type="text" id="username" placeholder="Enter Username">
-            <input type="text" id="password" placeholder="Enter Password">
+            <input type="password" id="password" placeholder="Enter Password">
+            <input type="password" id="confirm_password" placeholder="Confirm Password"> <!-- New input field for password confirmation -->
             <nav><a href="#" onclick="savePlayer()">Save</a></nav>
         </div>
         <nav>
@@ -22,11 +23,11 @@
             async function savePlayer() {
                 const player_name = document.getElementById('username').value.trim();
                 const player_password = document.getElementById('password').value.trim();
-                const player_confirm_password = document.getElementById('confirm_password').value.trim();  // New confirmation field
+                const player_confirm_password = document.getElementById('confirm_password').value.trim();  // Get confirm password value
                 const resultsDiv = document.getElementById('results');
                 resultsDiv.innerHTML = '';
-            
-                // Basic Password Check
+        
+                // Basic validation checks
                 if (!player_name) {
                     resultsDiv.innerHTML = '<p style="color:red;">Enter a username.</p>';
                     return;
@@ -39,7 +40,7 @@
                     resultsDiv.innerHTML = '<p style="color:red;">Passwords do not match. Please try again.</p>';
                     return;
                 }
-            
+        
                 // Check if username is taken
                 let checkData = new FormData();
                 checkData.append('hostname', 'localhost');
@@ -47,18 +48,18 @@
                 checkData.append('password', 'rZk8FVrXNllcPl8Y');
                 checkData.append('database', 'CSC1034_CW_13');
                 checkData.append('query', `SELECT COUNT(*) AS count FROM player WHERE player_name = '${player_name}'`);
-            
+        
                 let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: checkData });
                 let checkResult = await checkResponse.json();
-            
+        
                 if (checkResult.data[0].count > 0) {
                     resultsDiv.innerHTML = '<p style="color:red;">Username taken. Try another.</p>';
                     return;
                 }
-            
+        
                 // Hash password (SHA-256)
                 const hashedPassword = await hashPassword(player_password);
-            
+        
                 // Insert user into DB
                 let insertData = new FormData();
                 insertData.append('hostname', 'localhost');
@@ -66,10 +67,10 @@
                 insertData.append('password', 'rZk8FVrXNllcPl8Y');
                 insertData.append('database', 'CSC1034_CW_13');
                 insertData.append('query', `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${hashedPassword}')`);
-            
+        
                 let insertResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: insertData });
                 let insertResult = await insertResponse.json();
-            
+        
                 if (insertResult.error) {
                     resultsDiv.innerHTML = `<p style="color:red;">${insertResult.error}</p>`;
                 } else {
@@ -78,7 +79,7 @@
                     window.location.href = 'sp_play.html'; 
                 }
             }
-            
+        
             async function hashPassword(password) {
                 const encoder = new TextEncoder();
                 const data = encoder.encode(password);
@@ -87,7 +88,8 @@
                     .map(byte => byte.toString(16).padStart(2, '0'))
                     .join('');
             }
-        </script>
+        </script>        
+        
         <div class="bezel-overlay"></div>
     </body>
 </html>

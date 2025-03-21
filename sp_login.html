@@ -11,13 +11,29 @@
             <input type="text" id="username" placeholder="Enter Username">
             <input type="password" id="password" placeholder="Enter Password">
             <nav><a href="#" onclick="checkLogin()">Login</a></nav>
+            <label>
+                <input type="checkbox" id="show_password"> Show Password
+            </label> <!-- Show Password checkbox -->
         </div>
+        
         <a href="sp_menu.html">Back to Main Menu</a>
     </nav>
     
     <div id="results"></div>
 
     <script>
+        // Toggle password visibility based on checkbox state
+        document.getElementById('show_password').addEventListener('change', function() {
+                const passwordField = document.getElementById('password');
+                const confirmPasswordField = document.getElementById('confirm_password');
+                if (this.checked) {
+                    passwordField.type = 'text';
+                    confirmPasswordField.type = 'text';
+                } else {
+                    passwordField.type = 'password';
+                    confirmPasswordField.type = 'password';
+                }
+            });
          async function checkLogin() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();

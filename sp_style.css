@@ -37,11 +37,6 @@ body {
     z-index: 1000; /* Keeps it above everything */
 }
 
-
-
-
-
-
 /* Adding scanline effect */
 body::after {
     content: "";
@@ -95,6 +90,15 @@ nav a:hover {
     text-shadow: 0 0 5px #33ff33;
 }
 
+.save-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px; /* Max width for input fields */
+}
+
 .save-slot input {
     background-color: black;
     color: #33ff33;
@@ -103,44 +107,69 @@ nav a:hover {
     height: 40px;
     text-align: center;
     font-family: "Fixedsys Excelsior 3.01", monospace;
+    padding: 10px;
 }
 
-.box {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 250px;
-    padding: 20px;
-    background: black;
+.save-slot label {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    padding-left: 5px;
+    font-size: 14px;
+}
+
+.save-slot input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+nav {
+    text-transform: uppercase;
     color: #33ff33;
-    text-align: center;
-    box-shadow: 0 0 10px #33ff33;
-    border: 2px solid #33ff33;
-    border-radius: 5px;
-    display: none;
+    font-size: 40px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
 }
 
-.box p {
-    font-size: 16px;
-}
-
-.box label span {
-    display: inline-block;
-    margin: 20px 10px;
+nav a {
+    text-decoration: none;
+    color: #33aa33;
+    font-size: 20px;
     padding: 5px;
-    width: 70px;
-    background: black;
-    color: #33ff33;
-    border: 1px solid #33ff33;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s;
+    transition: color 0.5s;
 }
 
-.box label span:hover {
-    background: #33ff33;
-    color: black;
-    text-shadow: none;
+nav a:hover {
+    color: #33ff33;
+    text-shadow: 0 0 5px #33ff33;
 }
+
+/* Button for Show Password */
+.save-slot label {
+    align-items: center;
+}
+
+.save-slot #show_password {
+    margin-left: 10px;
+}
+
+#results {
+    font-size: 16px;
+    text-align: center;
+}
+
+.bezel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('./images/bezel.png') no-repeat center;
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+

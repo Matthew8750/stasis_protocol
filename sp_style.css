@@ -149,10 +149,13 @@ nav a:hover {
 }
 
 #results {
-    font-size: 16px;
-    text-align: center;
-    margin-top: 10px;
+    position: fixed;  
+    top: 10px;        
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10;
+    color: red;
+    font-size: 16px;
 }
 
 /* Styling the login link */

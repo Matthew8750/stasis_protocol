@@ -1,5 +1,7 @@
 /* Fallout Terminal Style */
 
+/* Fallout Terminal Style */
+
 body {
     width: 100%;
     height: 100vh;
@@ -55,89 +57,17 @@ body::after {
     pointer-events: none;
 }
 
-/* Save Slot Form Styling */
-.save-slot {
-    width: 80%; /* Adjust width as needed */
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
-    background: #000;
-    color: #33ff33;
-    border-radius: 8px;
-    box-shadow: 0 0 10px #33ff33;
-    position: relative;
-}
-
-/* Heading Styling */
 h1 {
     font-size: 30px;
-    margin-top: 50px; /* Move the heading down */
-    margin-bottom: 20px; /* Space between heading and form inputs */
+    margin-top: 100px; /* Increase this value to move the heading down */
+    margin-bottom: 20px; /* Add some space below the heading */
     text-transform: uppercase;
     color: #33ff33;
+    text-align: center;
 }
 
-/* Inputs styling */
-input[type="text"],
-input[type="password"] {
-    background-color: #111;
+span { /* Stasis color */
     color: #33ff33;
-    border: 1px solid #33ff33;
-    padding: 10px;
-    width: 100%;
-    margin: 10px 0;
-    border-radius: 5px;
-    font-family: "Fixedsys Excelsior 3.01", monospace;
-}
-
-/* Show Password checkbox styling */
-label {
-    color: #33ff33;
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-
-/* Save button link styling */
-nav a {
-    color: #33ff33;
-    font-size: 20px;
-    font-weight: bold;
-    text-decoration: none;
-    padding: 10px 20px;
-    border: 2px solid #33ff33;
-    border-radius: 5px;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
-
-nav a:hover {
-    background-color: #33ff33;
-    color: black;
-    text-shadow: none;
-}
-
-/* Back to Main Menu button */
-nav a[href="sp_menu.html"] {
-    margin-top: 10px; /* Move the back button up */
-}
-
-/* Bezel Overlay */
-.bezel-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: url('./images/bezel.png') no-repeat center;
-    background-size: 100% 100%;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-/* Results Section */
-#results {
-    margin-top: 20px;
-    color: #ff0000;
 }
 
 nav {
@@ -165,6 +95,23 @@ nav a:hover {
     text-shadow: 0 0 5px #33ff33;
 }
 
+.save-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px; /* Max width for input fields */
+    padding: 20px;
+}
+
+.save-slot p {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #33ff33;
+}
+
 .save-slot input {
     background-color: black;
     color: #33ff33;
@@ -173,44 +120,40 @@ nav a:hover {
     height: 40px;
     text-align: center;
     font-family: "Fixedsys Excelsior 3.01", monospace;
-}
-
-.box {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 250px;
-    padding: 20px;
-    background: black;
-    color: #33ff33;
-    text-align: center;
-    box-shadow: 0 0 10px #33ff33;
-    border: 2px solid #33ff33;
+    padding: 10px;
+    margin-bottom: 15px;
     border-radius: 5px;
-    display: none;
 }
 
-.box p {
-    font-size: 16px;
-}
-
-.box label span {
-    display: inline-block;
-    margin: 20px 10px;
-    padding: 5px;
-    width: 70px;
-    background: black;
+/* Checkbox Styling */
+.save-slot label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     color: #33ff33;
-    border: 1px solid #33ff33;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s;
+    font-size: 14px;
 }
 
-.box label span:hover {
-    background: #33ff33;
-    color: black;
-    text-shadow: none;
+.save-slot input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+#results {
+    font-size: 16px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Styling the login link */
+.save-slot nav a {
+    text-decoration: none;
+    color: #33aa33;
+    font-size: 20px;
+    padding: 5px;
+    transition: color 0.5s;
+}
+
+.save-slot nav a:hover {
+    color: #33ff33;
+    text-shadow: 0 0 5px #33ff33;
 }

@@ -1,29 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Stasis Protocol Player Save</title>
         <link href="sp_style.css" type="text/css" rel="stylesheet">
     </head>
     <body>
+
+        <!-- Save Slot Form -->
         <div class="save-slot">
             <nav>Create a New Player Save</nav>
+
             <input type="text" id="username" placeholder="Enter Username">
             <input type="password" id="password" placeholder="Enter Password">
-            <input type="password" id="confirm_password" placeholder="Confirm Password"> <!-- New input field for password confirmation -->
+            <input type="password" id="confirm_password" placeholder="Confirm Password"> <!-- Password confirmation field -->
+
             <label>
                 <input type="checkbox" id="show_password"> Show Password
             </label> <!-- Show Password checkbox -->
-            <nav><a href="#" onclick="savePlayer()">Save</a></nav>
+
+            <nav>
+                <a href="#" onclick="savePlayer()">Save</a>
+            </nav>
         </div>
+
+        <!-- Navigation Back to Main Menu -->
         <nav>
             <a href="sp_menu.html">Back to Main Menu</a>
         </nav>
 
-        <!-- Add a div to display the results -->
+        <!-- Results Section for feedback -->
         <div id="results"></div>
 
         <script>
-            // Toggle password visibility
+            // Toggle password visibility based on checkbox state
             document.getElementById('show_password').addEventListener('change', function() {
                 const passwordField = document.getElementById('password');
                 const confirmPasswordField = document.getElementById('confirm_password');
@@ -36,66 +47,68 @@
                 }
             });
 
+            // Function to save player details and perform validation
             async function savePlayer() {
-                const player_name = document.getElementById('username').value.trim();
-                const player_password = document.getElementById('password').value.trim();
-                const player_confirm_password = document.getElementById('confirm_password').value.trim();  // Get confirm password value
+                const playerName = document.getElementById('username').value.trim();
+                const playerPassword = document.getElementById('password').value.trim();
+                const playerConfirmPassword = document.getElementById('confirm_password').value.trim();
                 const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML = '';
-        
-                // Basic validation checks
-                if (!player_name) {
+                resultsDiv.innerHTML = ''; // Clear previous results
+                
+                // Validation checks
+                if (!playerName) {
                     resultsDiv.innerHTML = '<p style="color:red;">Enter a username.</p>';
                     return;
                 }
-                if (player_password.length < 6) { 
+                if (playerPassword.length < 6) {
                     resultsDiv.innerHTML = '<p style="color:red;">Password must be at least 6 characters.</p>';
                     return;
                 }
-                if (player_password !== player_confirm_password) {  // Check if passwords match
+                if (playerPassword !== playerConfirmPassword) {
                     resultsDiv.innerHTML = '<p style="color:red;">Passwords do not match. Please try again.</p>';
                     return;
                 }
-        
-                // Check if username is taken
-                let checkData = new FormData();
+
+                // Check if the username is taken
+                const checkData = new FormData();
                 checkData.append('hostname', 'localhost');
                 checkData.append('username', 'jrice27');
                 checkData.append('password', 'rZk8FVrXNllcPl8Y');
                 checkData.append('database', 'CSC1034_CW_13');
-                checkData.append('query', `SELECT COUNT(*) AS count FROM player WHERE player_name = '${player_name}'`);
-        
+                checkData.append('query', `SELECT COUNT(*) AS count FROM player WHERE player_name = '${playerName}'`);
+
                 let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: checkData });
                 let checkResult = await checkResponse.json();
-        
+
                 if (checkResult.data[0].count > 0) {
                     resultsDiv.innerHTML = '<p style="color:red;">Username taken. Try another.</p>';
                     return;
                 }
-        
-                // Hash password (SHA-256)
-                const hashedPassword = await hashPassword(player_password);
-        
-                // Insert user into DB
-                let insertData = new FormData();
+
+                // Hash the password
+                const hashedPassword = await hashPassword(playerPassword);
+
+                // Insert new user into the database
+                const insertData = new FormData();
                 insertData.append('hostname', 'localhost');
                 insertData.append('username', 'jrice27');
                 insertData.append('password', 'rZk8FVrXNllcPl8Y');
                 insertData.append('database', 'CSC1034_CW_13');
-                insertData.append('query', `INSERT INTO player (player_name, player_password) VALUES ('${player_name}', '${hashedPassword}')`);
-        
+                insertData.append('query', `INSERT INTO player (player_name, player_password) VALUES ('${playerName}', '${hashedPassword}')`);
+
                 let insertResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: insertData });
                 let insertResult = await insertResponse.json();
-        
+
                 if (insertResult.error) {
                     resultsDiv.innerHTML = `<p style="color:red;">${insertResult.error}</p>`;
                 } else {
                     resultsDiv.innerHTML = '<p style="color:green;">Account created successfully.</p>';
-                    sessionStorage.setItem('loggedInUser', player_name);
-                    window.location.href = 'sp_play.html'; 
+                    sessionStorage.setItem('loggedInUser', playerName);
+                    window.location.href = 'sp_play.html';
                 }
             }
-        
+
+            // Function to hash password using SHA-256
             async function hashPassword(password) {
                 const encoder = new TextEncoder();
                 const data = encoder.encode(password);
@@ -104,9 +117,12 @@
                     .map(byte => byte.toString(16).padStart(2, '0'))
                     .join('');
             }
-        </script>        
-        
+        </script>
+
+        <!-- Bezel Overlay for visual effect -->
         <div class="bezel-overlay"></div>
+        
     </body>
 </html>
+
 

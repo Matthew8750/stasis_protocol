@@ -1,82 +1,100 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Stasis Protocol Login</title>
-    <link href="sp_style.css" type="text/css" rel="stylesheet">
-</head>
-<body>
-    <nav>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Stasis Protocol Login</title>
+        <link href="sp_style.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+
+        <!-- Login Form -->
         <div class="save-slot">
-            <p>Login to Player Save</p>
+            <nav><h1>Login to Player Save</h1></nav>
+
             <input type="text" id="username" placeholder="Enter Username">
             <input type="password" id="password" placeholder="Enter Password">
-            <nav><a href="#" onclick="checkLogin()">Login</a></nav>
-            <label>
-                <input type="checkbox" id="show_password"> Show Password
-            </label> <!-- Show Password checkbox -->
-        </div>
-        
-        <a href="sp_menu.html">Back to Main Menu</a>
-    </nav>
-    
-    <div id="results"></div>
 
-    <script>
-        // Toggle password visibility based on checkbox state
-        document.getElementById('show_password').addEventListener('change', function() {
+            <!-- Eye icon to toggle password visibility -->
+            <div class="show-password" id="show_password">
+                <img src="images/showPasswordImage.png" alt="Show Password" id="eye_icon">
+            </div>
+
+            <!-- Login and Navigation buttons -->
+            <nav class="button-nav">
+                <a href="#" onclick="checkLogin()" id="login_button">Login</a>
+                <a href="sp_menu.html" id="back_button">Back to Main Menu</a>
+            </nav>
+        </div>
+
+        <!-- Results Section for feedback -->
+        <div id="results"></div>
+
+        <script>
+            // Toggle password visibility and switch eye icon images on click
+            document.getElementById('show_password').addEventListener('click', function() {
                 const passwordField = document.getElementById('password');
-                const confirmPasswordField = document.getElementById('confirm_password');
-                if (this.checked) {
+                const eyeIcon = document.getElementById('eye_icon');
+                
+                // Toggle visibility of password field
+                if (passwordField.type === 'password') {
                     passwordField.type = 'text';
-                    confirmPasswordField.type = 'text';
+                    // Switch the image to 'hidePassword.png'
+                    eyeIcon.src = 'images/hidePasswordImage.png';
                 } else {
                     passwordField.type = 'password';
-                    confirmPasswordField.type = 'password';
+                    // Switch the image to 'showPassword.png'
+                    eyeIcon.src = 'images/showPasswordImage.png';
                 }
             });
-         async function checkLogin() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
 
-            if (!username || !password) {
-                resultsDiv.innerHTML = '<p style="color:red;">Please enter both username and password.</p>';
-                return;
+            // Function to check login credentials
+            async function checkLogin() {
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+
+                if (!username || !password) {
+                    resultsDiv.innerHTML = '<p style="color:red;">Please enter both username and password.</p>';
+                    return;
+                }
+
+                const isValid = await validatePlayer(username, password);
+                if (isValid) {
+                    sessionStorage.setItem('loggedInUser', username); // Save user
+                    window.location.href = 'sp_play.html'; // Redirect to gameplay
+                } else {
+                    resultsDiv.innerHTML = '<p style="color:red;">Invalid username or password.</p>';
+                }
             }
 
-            const isValid = await validatePlayer(username, password);
-            if (isValid) {
-                sessionStorage.setItem('loggedInUser', username); // Save user
-                window.location.href = 'sp_play.html'; // Redirect in same tab
-            } else {
-                resultsDiv.innerHTML = '<p style="color:red;">Invalid username or password.</p>';
+            // Function to validate user login with database
+            async function validatePlayer(username, password) {
+                const formData = new FormData();
+                formData.append('hostname', 'localhost');
+                formData.append('username', 'jrice27');
+                formData.append('password', 'rZk8FVrXNllcPl8Y');
+                formData.append('database', 'CSC1034_CW_13');
+                formData.append('query', `SELECT COUNT(*) AS count FROM player WHERE player_name = '${username}' AND player_password = '${password}'`);
+
+                try {
+                    const response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    return result.success && result.data.length > 0 && result.data[0].count > 0;
+                } catch (error) {
+                    console.error('Error:', error);
+                    return false;
+                }
             }
-        }
+        </script>
 
-        async function validatePlayer(username, password) {
-            const formData = new FormData();
-            formData.append('hostname', 'localhost');
-            formData.append('username', 'jrice27');
-            formData.append('password', 'rZk8FVrXNllcPl8Y');
-            formData.append('database', 'CSC1034_CW_13');
-            formData.append('query', `SELECT COUNT(*) AS count FROM player WHERE player_name = '${username}' AND player_password = '${password}'`);
+        <!-- Bezel Overlay for visual effect -->
+        <div class="bezel-overlay"></div>
 
-            try {
-                const response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                return result.success && result.data.length > 0 && result.data[0].count > 0;
-            } catch (error) {
-                console.error('Error:', error);
-                return false;
-            }
-        }
-    </script>
-    
-    <div class="bezel-overlay"></div>
-</body>
+    </body>
 </html>

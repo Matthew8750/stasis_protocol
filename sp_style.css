@@ -36,18 +36,15 @@ body {
     pointer-events: none; /* Prevents interaction issues */
     z-index: 1000; /* Keeps it above everything */
 }
-/* Show Password Icon Styling */
-.show-password {
-    display: inline-block;
-    margin-top: 10px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #33ff33;
-    padding: 10px;
+.show-password img {
+    width: 24px; 
+    height: 24px; 
+    cursor: pointer; /* Change cursor to indicate it's clickable */
 }
-
-.show-password:hover {
-    color: #66ff66;
+.hide-password img {
+    width: 24px;  
+    height: 24px;
+    cursor: pointer; /* Change cursor to indicate it's clickable */
 }
 
 /* Adding scanline effect */

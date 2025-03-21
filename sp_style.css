@@ -36,18 +36,6 @@ body {
     pointer-events: none; /* Prevents interaction issues */
     z-index: 1000; /* Keeps it above everything */
 }
-.show-password img {
-    width: 45px; 
-    height: 45px; 
-    cursor: pointer; /* Change cursor to indicate it's clickable */
-}
-
-.hide-password img {
-    width: 45px;  
-    height: 45px;
-    cursor: pointer; /* Change cursor to indicate it's clickable */
-}
-
 
 /* Adding scanline effect */
 body::after {
@@ -113,6 +101,7 @@ nav a:hover {
     width: 100%;
     max-width: 400px; /* Max width for input fields */
     padding: 20px;
+    margin-top: 50px; /* Move everything down a bit */
 }
 
 .save-slot p {
@@ -167,6 +156,7 @@ nav a:hover {
     color: #33ff33;
     text-shadow: 0 0 5px #33ff33;
 }
+
 .box {
     position: absolute;
     top: 50%;
@@ -205,4 +195,26 @@ nav a:hover {
     background: #33ff33;
     color: black;
     text-shadow: none;
-} 
+}
+
+/* Move the Save button to the right of the Show Password button */
+.save-slot .show-password {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.save-slot .save-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.save-slot nav a {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.save-slot .back-button {
+    display: inline-block;
+    margin-right: 20px;
+}

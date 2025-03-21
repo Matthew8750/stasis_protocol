@@ -168,3 +168,42 @@ nav a:hover {
     color: #33ff33;
     text-shadow: 0 0 5px #33ff33;
 }
+.box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 250px;
+    padding: 20px;
+    background: black;
+    color: #33ff33;
+    text-align: center;
+    box-shadow: 0 0 10px #33ff33;
+    border: 2px solid #33ff33;
+    border-radius: 5px;
+    display: none;
+}
+
+.box p {
+    font-size: 16px;
+}
+
+.box label span {
+    display: inline-block;
+    margin: 20px 10px;
+    padding: 5px;
+    width: 70px;
+    background: black;
+    color: #33ff33;
+    border: 1px solid #33ff33;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.box label span:hover {
+    background: #33ff33;
+    color: black;
+    text-shadow: none;
+} 

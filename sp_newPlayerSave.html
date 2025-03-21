@@ -10,6 +10,9 @@
             <input type="text" id="username" placeholder="Enter Username">
             <input type="password" id="password" placeholder="Enter Password">
             <input type="password" id="confirm_password" placeholder="Confirm Password"> <!-- New input field for password confirmation -->
+            <label>
+                <input type="checkbox" id="show_password"> Show Password
+            </label> <!-- Show Password checkbox -->
             <nav><a href="#" onclick="savePlayer()">Save</a></nav>
         </div>
         <nav>
@@ -20,6 +23,19 @@
         <div id="results"></div>
 
         <script>
+            // Toggle password visibility
+            document.getElementById('show_password').addEventListener('change', function() {
+                const passwordField = document.getElementById('password');
+                const confirmPasswordField = document.getElementById('confirm_password');
+                if (this.checked) {
+                    passwordField.type = 'text';
+                    confirmPasswordField.type = 'text';
+                } else {
+                    passwordField.type = 'password';
+                    confirmPasswordField.type = 'password';
+                }
+            });
+
             async function savePlayer() {
                 const player_name = document.getElementById('username').value.trim();
                 const player_password = document.getElementById('password').value.trim();
@@ -93,3 +109,4 @@
         <div class="bezel-overlay"></div>
     </body>
 </html>
+

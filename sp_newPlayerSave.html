@@ -17,8 +17,9 @@
             <input type="password" id="confirm_password" placeholder="Confirm Password"> <!-- Password confirmation field -->
 
             <div class="show-password" id="show_password">
-                <span>👁️</span>
+                <img src="showPassword.png" alt="Show Password" id="eye_icon">
             </div> <!-- Eye icon to toggle password visibility -->
+            
 
             <nav>
                 <a href="#" onclick="savePlayer()">Save</a>
@@ -34,18 +35,26 @@
         <div id="results"></div>
 
         <script>
-            // Toggle password visibility based on eye icon click
+            // Toggle password visibility and switch eye icon images on click
             document.getElementById('show_password').addEventListener('click', function() {
                 const passwordField = document.getElementById('password');
                 const confirmPasswordField = document.getElementById('confirm_password');
+                const eyeIcon = document.getElementById('eye_icon');
+                
+                // Toggle visibility of password fields
                 if (passwordField.type === 'password') {
                     passwordField.type = 'text';
                     confirmPasswordField.type = 'text';
+                    // Switch the image to 'hidePassword.png'
+                    eyeIcon.src = 'hidePassword.png';
                 } else {
                     passwordField.type = 'password';
                     confirmPasswordField.type = 'password';
+                    // Switch the image to 'showPassword.png'
+                    eyeIcon.src = 'showPassword.png';
                 }
             });
+
 
             // Function to save player details and perform validation
             async function savePlayer() {

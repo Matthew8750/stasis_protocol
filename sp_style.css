@@ -37,14 +37,26 @@ body {
     z-index: 1000; /* Keeps it above everything */
 }
 .show-password img {
-    width: 24px; 
-    height: 24px; 
+    width: 30px; 
+    height: 30px; 
     cursor: pointer; /* Change cursor to indicate it's clickable */
+    box-shadow: 0 0 10px 3px rgba(0, 255, 0, 0.7);  /* Green glow effect */
+    transition: box-shadow 0.3s ease; /* Smooth transition when hovering */
+}
+
+/* Optional: Add a glow effect when hovering over the image */
+.show-password img:hover {
+    box-shadow: 0 0 15px 5px rgba(0, 255, 0, 1); /* Intensify the green glow on hover */
 }
 .hide-password img {
-    width: 24px;  
-    height: 24px;
+    width: 30px;  
+    height: 30px;
     cursor: pointer; /* Change cursor to indicate it's clickable */
+    box-shadow: 0 0 10px 3px rgba(0, 255, 0, 0.7); /* green glow effect */
+    transition: box-shadow 0.3s ease; /* Smooth transition when hovering */
+}
+.hide-password img:hover {
+    box-shadow: 0 0 15px 5px rgba(0, 255, 0, 1); /* Intensify the green glow on hover */
 }
 
 /* Adding scanline effect */

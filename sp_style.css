@@ -59,8 +59,11 @@ body::after {
 
 h1 {
     font-size: 30px;
-    margin-top: 100px;
+    margin-top: 100px; /* Increase this value to move the heading down */
+    margin-bottom: 20px; /* Add some space below the heading */
     text-transform: uppercase;
+    color: #33ff33;
+    text-align: center;
 }
 
 span { /* Stasis color */

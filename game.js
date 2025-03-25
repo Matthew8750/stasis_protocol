@@ -1,10 +1,14 @@
 function initializeGame() {
     logToConsole("[System]: Game initialized...");
-    changeImage("images/CryogenicChamberRoom.jpg"); // Corrected path
+    logToConsole(" Example starting story");
+    changeImage("images/room_Chamber.jpg"); // Corrected path
+    changeImage("images/map.jpg");
 }
 
 function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc; // Corrected ID
+    document.getElementById("display-map").src = newSrc;
+    document.getElementById("player-icon").src = newSrc;
 }
 
 

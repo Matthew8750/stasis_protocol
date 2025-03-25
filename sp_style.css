@@ -249,11 +249,11 @@ nav a:hover {
 
 .image-panel {
     position: absolute;
-    top: 10px;
-    left: 50%;
+    top: 40px;
+    left: 50.5%;
     transform: translateX(-50%);
-    width: 65vw;
-    height: 60vh;
+    width: 55vw;
+    height: 58vh;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
@@ -271,10 +271,10 @@ nav a:hover {
 .console-panel {
     position: absolute;
     top: 64vh;
-    left: 50%;
+    left: 50.5%;
     transform: translateX(-50%);
-    width: 64vw;
-    height: 22vh;
+    width: 54vw;
+    height: 21.5vh;
     background-color: rgba(0, 0, 0, 0.8);
     color: rgb(0, 255, 0);
     font-family: monospace;
@@ -287,17 +287,17 @@ nav a:hover {
 
 .inventory {
     position: absolute;
-    bottom: 60px;
-    left: 65px;
+    bottom: 90px;
+    left: 90px;
     display: grid;
     grid-template-columns: repeat(2, 50px);
     grid-template-rows: repeat(2, 50px);
-    gap: 40px;
+    gap: 70px;
 }
 
 .inventory-slot {
-    width: 70px;
-    height: 70px;
+    width: 100px;
+    height: 100px;
     background-color: rgba(0, 0, 0, 0.8);
     border: 2px solid rgb(0, 0, 0);
     border-radius: 6px;
@@ -310,10 +310,10 @@ nav a:hover {
 /* Player Icon Panel (Top-Left) */
 .player-icon-panel {
     position: absolute;
-    top: 30px;
-    left: 57px;
-    width: 167px;
-    height: 150px;
+    top: 40px;
+    left: 70px;
+    width: 250px;
+    height: 250px;
     background-color: rgba(0, 0, 0, 0.8);
     border: 2px solid rgb(0, 0, 0);
     border-radius: 6px;
@@ -324,11 +324,16 @@ nav a:hover {
     font-family: monospace;
 }
 
+.player-icon-panel img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
 /* Room Panel (Below Player Icon, Styled Like Console) */
 .room-panel {
     position: absolute;
-    top: 190px;
-    left: 55px;
+    top: 220px;
+    left: 65px;
     width: 150px;
     height: 40px;
     background-color: rgba(0, 0, 0, 0.8);
@@ -347,10 +352,10 @@ nav a:hover {
 /* Map Panel (Top-Right) */
 .map-panel {
     position: absolute;
-    top: 30px;
-    right: 57px;
-    width: 167px;
-    height: 150px;
+    top: 40px;
+    right: 50px;
+    width: 250px;
+    height: 250px;
     background-color: rgba(0, 0, 0, 0.8);
     border: 2px solid rgb(0, 0, 0);
     border-radius: 6px;
@@ -361,13 +366,18 @@ nav a:hover {
     font-family: monospace;
 }
 
+.map-panel img {
+    max-width: 190%;
+    max-height: 190%;
+}
+
 /* AI Companion Panel (Bottom-Right) */
 .ai-companion-panel {
     position: absolute;
-    bottom: 35px;
+    bottom: 40px;
     right: 50px;
-    width: 175px;
-    height: 350px;
+    width: 250px;
+    height: 450px;
     background-color: rgba(0, 0, 0, 0.8);
     border: 2px solid rgb(0, 0, 0);
     color: rgb(0, 255, 0);

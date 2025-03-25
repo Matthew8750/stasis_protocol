@@ -252,20 +252,21 @@ nav a:hover {
     top: 40px;
     left: 50.5%;
     transform: translateX(-50%);
-    width: 55vw;
-    height: 58vh;
+    width: 52vw;
+    height: 57vh;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid rgb(0, 0, 0);
+    border: 4px solid rgb(0, 0, 0);
     border-radius: 6px;
     overflow: hidden;
+    padding: 4px;
 }
 
 .image-panel img {
     max-width: 100%;
-    width: 80%;
+    width: 100%;
     max-height: 100%;
 }
 
@@ -274,7 +275,7 @@ nav a:hover {
     top: 64vh;
     left: 50.5%;
     transform: translateX(-50%);
-    width: 54vw;
+    width: 52vw;
     height: 21.5vh;
     background-color: rgba(0, 0, 0, 0.8);
     color: rgb(0, 255, 0);
@@ -316,7 +317,7 @@ nav a:hover {
     width: 250px;
     height: 250px;
     background-color: rgba(0, 0, 0, 0.8);
-    border: 2px solid rgb(0, 0, 0);
+    border: 4px solid rgb(0, 0, 0);
     border-radius: 6px;
     display: flex;
     justify-content: center;
@@ -333,13 +334,14 @@ nav a:hover {
 /* Room Panel (Below Player Icon, Styled Like Console) */
 .room-panel {
     position: absolute;
-    top: 220px;
-    left: 65px;
-    width: 150px;
+    top: 310px;
+    left: 85px;
+    width: 200px;
     height: 40px;
     background-color: rgba(0, 0, 0, 0.8);
     color: rgb(0, 255, 0);
     font-family: monospace;
+    font-size: larger;
     padding: 10px;
     border: 2px solid rgb(0, 0, 0);
     border-radius: 6px;

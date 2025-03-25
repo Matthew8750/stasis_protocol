@@ -28,7 +28,7 @@
         </div>
 
         <!-- Results Section for feedback -->
-        <div id="results"></div>
+        <div id="results_login_player"></div>
 
         <script>
 
@@ -59,7 +59,7 @@
             async function checkLogin() {
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
-                const resultsDiv = document.getElementById('results');
+                const resultsDiv = document.getElementById('results_login_player');
                 resultsDiv.innerHTML = '';
 
                 if (!username || !password) {

@@ -1,11 +1,12 @@
 function initializeGame() {
     logToConsole("[System]: Game initialized...");
-    changeImage("images/ArmoryImage.jpg");
+    changeImage("images/CryogenicChamberRoom.jpg"); // Corrected path
 }
 
 function changeImage(newSrc) {
-    document.getElementById("display-image").src = newSrc;
+    document.getElementById("display-image").src = newSrc; // Corrected ID
 }
+
 
 function logToConsole(message) {
     const consolePanel = document.getElementById("console");

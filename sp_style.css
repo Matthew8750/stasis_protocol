@@ -147,16 +147,29 @@ nav a:hover {
 .save-slot input[type="checkbox"] {
     margin-right: 10px;
 }
-
-#results {
-    position: fixed;  
-    top: 10px;        
+#results_login_player{
+    position: absolute;
+    bottom: 32.5%; 
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
     color: red;
     font-size: 16px;
+    text-align: center;
+    width: 100%;
 }
+#results_new_player {
+    position: absolute;
+    bottom: 26%; 
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    color: red;
+    font-size: 16px;
+    text-align: center;
+    width: 100%;
+}
+
 
 /* Styling the login link */
 .save-slot nav a {

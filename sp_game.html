@@ -3,17 +3,16 @@
     <head>
         <title>Stasis Protocol</title>
         <link href="sp_style.css" type="text/css" rel="stylesheet">
+        <script src="sp_game.js" defer></script>
     </head>
-    <body>
+    <body onload="initializeGame()">
         <nav></nav>
 
         <div class="image-panel">
-            <img id="display-image" src="defaultImage.jpg" alt="Display">
+            <img id="display-image" src="images/default-image.png" alt="Display">
         </div>
 
-        <div class="console-panel" id="console">
-            [System]: Console initialized...
-        </div>
+        <div class="console-panel" id="console"></div>
 
         <div class="inventory">
             <div class="inventory-slot" id="slot1"></div>
@@ -39,25 +38,5 @@
         </div>
 
         <div class="bezel-overlay"></div>
-
-        <script>
-            function changeImage(newSrc) {
-                document.getElementById("display-image").src = newSrc;
-            }
-
-            function logToConsole(message) {
-                const consolePanel = document.getElementById("console");
-                consolePanel.innerHTML += "<br>" + message;
-                consolePanel.scrollTop = consolePanel.scrollHeight;
-            }
-
-            function updateAIImage(newSrc) {
-                document.getElementById("ai-companion").src = newSrc;
-            }
-
-            function updateRoom(roomName) {
-                document.getElementById("room-display").textContent = "Room: " + roomName;
-            }
-        </script>
     </body>
 </html>

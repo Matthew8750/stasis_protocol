@@ -3,7 +3,7 @@ function initializeGame() {
     logToConsole("You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet.");
     logToConsole("Stasis disengaged. System diagnostics: comprised.")
     logToConsole("A mechanical voice cuts through the silence.")
-    logToConsole("[Cortana]: Welcome back, Operator. I'm your AI companion, The ship is in critical condition. We need to exit the cryo-chamber and assess the situation.");
+    logToConsole("[Ai-Companion]: Welcome back, Operator. I'm your AI companion, The ship is in critical condition. We need to exit the cryo-chamber and assess the situation.");
     handleRoomEntry("Cryogenic Chamber");
 }
 

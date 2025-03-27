@@ -1,12 +1,54 @@
 function initializeGame() {
-    logToConsole("[System]: Game initialized...");
-    logToConsole("You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet.");
-    logToConsole("Stasis disengaged. System diagnostics: comprised.")
-    logToConsole("A mechanical voice cuts through the silence.")
-    logToConsole("[Ai-Companion]: Welcome back, Operator. I'm your AI companion, The ship is in critical condition. We need to exit the cryo-chamber and assess the situation.");
+    typeText(
+        "[System]: Game initialized...\n" +
+        "You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet.\n" +
+        "Stasis disengaged. System diagnostics: compromised.\n" +
+        "A mechanical voice cuts through the silence.\n" +
+        "[AI-Companion]: Welcome back, Operator. I'm your AI companion. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
+    );
     handleRoomEntry("Cryogenic Chamber");
-    connectToDatabase();
-    fetchAndDisplayInventory();
+}
+
+//type to console, use for dialogue or story
+function typeText(message) {
+    const consolePanel = document.getElementById("console");
+
+    // Create a text container to hold the dialogue separately from buttons
+    let textContainer = document.getElementById("text-container");
+    if (!textContainer) {
+        textContainer = document.createElement("div");
+        textContainer.id = "text-container";
+        consolePanel.insertBefore(textContainer, consolePanel.firstChild); // Keeps it above buttons
+    }
+    
+    textContainer.innerHTML = ""; // Clear only the text area, not buttons
+
+    let index = 0;
+    let cleanMessage = message.split("\n"); // Split message into lines
+
+    function typeLine(lineIndex = 0) {
+        if (lineIndex < cleanMessage.length) {
+            let line = cleanMessage[lineIndex];
+            let charIndex = 0;
+
+            function typeCharacter() {
+                if (charIndex < line.length) {
+                    textContainer.innerHTML += line[charIndex];
+                    charIndex++;
+                    setTimeout(typeCharacter, 30); // Typing speed
+                } else {
+                    textContainer.innerHTML += "<br>"; // Proper line break
+                    setTimeout(() => typeLine(lineIndex + 1), 300); // Delay between lines
+                }
+            }
+
+            typeCharacter();
+        } else {
+            consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
+        }
+    }
+
+    typeLine();
 }
 
 
@@ -18,82 +60,82 @@ function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
-            exits: ["Hallway One"]
+            choices: ["Hallway One"]
         },
         "Hallway One": {
             image: "images/room_Hallway.jpg",
-            exits: ["Cryogenic Chamber", "Med Bay", "Lab"]
+            choices: ["Med Bay", "Lab"]
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
-            exits: ["Hallway One"]
+            choices: ["Hallway One"]
         },
         "Lab": {
             image: "images/room_Lab.jpg",
-            exits: ["Hallway Two", "Hallway Three"]
+            choices: ["Hallway Two", "Hallway Three"]
         },
         "Hallway Two": {
             image: "images/room_Hallway.jpg",
-            exits: ["Admin", "Cafeteria", "Lab"]
+            choices: ["Admin", "Cafeteria", "Lab"]
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            exits: ["Hallway Two"]
+            choices: ["Hallway Two"]
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
-            exits: ["Hallway Two"]
+            choices: ["Hallway Two"]
         },
         "Hallway Three": {
             image: "images/room_Hallway.jpg",
-            exits: ["Lab", "Engine Left", "Engine Right", "Hallway Final"]
+            choices: ["Lab", "Engine Left", "Engine Right", "Hallway Final"]
         },
         "Engine Left": {
             image: "images/room_Engine1.jpg",
-            exits: ["Hallway Three"]
+            choices: ["Hallway Three"]
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
-            exits: ["Hallway Three"]
+            choices: ["Hallway Three"]
         },
         "Hallway Final": {
             image: "images/room_Hallway.jpg",
-            exits: ["Hallway Three", "Armory", "Escape Pods"]
+            choices: ["Hallway Three", "Armory", "Escape Pods"]
         },
         "Armory": {
             image: "images/room_Armory.jpg",
-            exits: ["Hallway Final"]
+            choices: ["Hallway Final"]
         },
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
-            exits: ["Hallway Final"]
+            choices: ["Hallway Final"]
         }
     };
 
     if (!roomData[roomName]) {
-        logToConsole(`[Error]: Room "${roomName}" not found.`);
+        console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
 
     const roomInfo = roomData[roomName];
 
+    // Log room entry (Debugging)
+    console.log(`[Debug]: Entered ${roomName}...`);
+
     // Update room display
     document.getElementById("room-display").textContent = `Room: ${roomName}`;
-
-    // Log room entry
-    logToConsole(`[System]: Entered ${roomName}...`);
 
     // Change the room image
     changeImage(roomInfo.image);
 
-    // Create exit buttons
-    createExitButtons(roomInfo.exits);
+    // Create buttons for available choices
+    createChoiceButtons(roomInfo.choices);
 }
 
-function createExitButtons(exits) {
+function createChoiceButtons(choices) {
     const consolePanel = document.getElementById("console");
 
-    if (!exits || exits.length === 0) {
+    if (!choices || choices.length === 0) {
         consolePanel.innerHTML += "[Error]: No available exits.<br>";
         return;
     }
@@ -115,10 +157,21 @@ function createExitButtons(exits) {
     buttonContainer.style.flexWrap = "wrap"; // Allow buttons to wrap if necessary
     buttonContainer.style.maxWidth = "100%"; // Prevent overflow
 
-    exits.forEach(exit => {
+    // Debugging: Log choices to ensure they are being passed correctly
+    console.log("Choices available:", choices);
+
+    choices.forEach(choice => {
         const button = document.createElement("button");
-        button.textContent = exit;
-        button.onclick = () => handleRoomEntry(exit);
+        button.textContent = choice;
+
+        // Debugging: Log button creation to verify that buttons are being made
+        console.log("Creating button for:", choice);
+
+        // Simple click handler to test if button clicks are recognized
+        button.addEventListener('click', () => {
+            console.log(`[Debug]: Button clicked for room: ${choice}`); // Log when button is clicked
+            handleRoomEntry(choice); // Trigger room entry with the chosen room
+        });
 
         // Styled for better appearance inside the console
         button.style.padding = "5px 10px";
@@ -132,33 +185,12 @@ function createExitButtons(exits) {
         buttonContainer.appendChild(button);
     });
 
+    // Debugging: Log the button container's HTML to check if buttons are added
+    console.log("Button container HTML:", buttonContainer.innerHTML);
+
     // Append the button container at the bottom-left of the console
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep the buttons visible
-}
-
-
-
-
-function logToConsole(message) {
-    const consolePanel = document.getElementById("console");
-
-    // Define the maximum number of lines to keep in the console
-    const maxLines = 5;
-
-    // Append the new message to the console
-    consolePanel.innerHTML += "<br>" + message;
-
-    // Split the content of the console into lines and check if the number of lines exceeds the maximum
-    const lines = consolePanel.innerHTML.split("<br>");
-
-    if (lines.length > maxLines) {
-        // Remove the first line (oldest message) and keep the remaining lines
-        consolePanel.innerHTML = lines.slice(lines.length - maxLines).join("<br>");
-    }
-
-    // Scroll to the bottom of the console to show the latest message
-    consolePanel.scrollTop = consolePanel.scrollHeight;
 }
 
 
@@ -169,15 +201,6 @@ function updateAIImage(newSrc) {
 function updateRoom(roomName) {
     document.getElementById("room-display").textContent = "Room: " + roomName;
 }
-
-// Expose functions to global scope
-window.initializeGame = initializeGame;
-window.changeImage = changeImage;
-window.logToConsole = logToConsole;
-window.updateAIImage = updateAIImage;
-window.updateRoom = updateRoom;
-window.handleRoomEntry = handleRoomEntry;
-window.createExitButtons = createExitButtons;
 
 async function connectToDatabase() {
 
@@ -264,7 +287,7 @@ async function fetchAndDisplayInventory() {
 
         if (result.error) {
             console.error(result.error.toString());
-            logToConsole(`[Error]: ${result.error}`);
+            console.log(`[Error]: ${result.error}`);
             return;
         }
 
@@ -291,12 +314,19 @@ async function fetchAndDisplayInventory() {
             inventoryContainer.appendChild(slot);
         });
 
-        logToConsole(`[System]: Inventory updated with ${result.data.length} items.`);
+        console.log(`[System]: Inventory updated with ${result.data.length} items.`);
     } catch (error) {
         console.error('Error:', error);
-        logToConsole('[Error]: Unable to fetch inventory items. Please try again later.');
+        console.log('[Error]: Unable to fetch inventory items. Please try again later.');
     }
 }
 
-// Call this function after the game initializes
+// Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;
+window.initializeGame = initializeGame;
+window.changeImage = changeImage;
+window.typeText = typeText;
+window.updateAIImage = updateAIImage;
+window.updateRoom = updateRoom;
+window.handleRoomEntry = handleRoomEntry;
+window.createChoiceButtons = createChoiceButtons;

@@ -3,6 +3,10 @@ function initializeGame() {
     logToConsole(" Example starting story");
     handleRoomEntry("Cryogenic Chamber");
 }
+//"You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet."
+//"Stasis disengaged. System diagnostics: comprised."
+//"A mechanical voice cuts through the silence."
+//"[Cortana]: Welcome back, Operator. I'm your AI companion, The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
 
 function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;

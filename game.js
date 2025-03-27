@@ -5,6 +5,8 @@ function initializeGame() {
     logToConsole("A mechanical voice cuts through the silence.")
     logToConsole("[Cortana]: Welcome back, Operator. I'm your AI companion, The ship is in critical condition. We need to exit the cryo-chamber and assess the situation.");
     handleRoomEntry("Cryogenic Chamber");
+    connectToDatabase();
+    fetchAndDisplayInventory();
 }
 
 
@@ -111,3 +113,125 @@ window.updateAIImage = updateAIImage;
 window.updateRoom = updateRoom;
 window.handleRoomEntry = handleRoomEntry;
 window.createExitButtons = createExitButtons;
+
+async function connectToDatabase() {
+
+    console.log('Connecting to the database...');
+
+    let hostname = 'localhost';
+    let username = 'jrice27';
+    let password = 'rZk8FVrXNllcPl8Y';
+    let database = 'CSC1034_CW_13';
+
+    // Get the input value from the user
+    let input = document.getElementById('player-name').value; // Replace 'player-name' with the actual input field ID
+
+    // Sanitize the input to prevent SQL injection
+    let sanitizedInput = input.replace(/'/g, "\\'");
+
+    // Create the query string
+    let query = `INSERT INTO player (player_name) VALUES ('${sanitizedInput}')`;
+
+    // Prepare form data to send to the backend
+    let formData = new FormData();
+    formData.append('hostname', hostname);
+    formData.append('username', username);
+    formData.append('password', password);
+    formData.append('database', database);
+    formData.append('query', query);
+
+    try {
+        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+        let response = await fetch(url, {
+            method: 'POST',
+            body: formData
+        });
+
+        let result = await response.json();
+
+        // Get the results div and clear previous results
+        let resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (result.error) {
+            console.log(result.error.toString());
+            resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+        } else {
+            resultsDiv.innerHTML = `<p>${result.success ? 'Query executed successfully' : 'No data returned'}</p>`;
+            if (result.affected_rows !== undefined) {
+                resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        let resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = `<p style="color:red;">Unable to connect to the database. Please try again later.</p>`;
+    }
+}
+
+async function fetchAndDisplayInventory() {
+    console.log('Fetching inventory items from the database...');
+
+    let hostname = 'localhost';
+    let username = 'jrice27';
+    let password = 'rZk8FVrXNllcPl8Y';
+    let database = 'CSC1034_CW_13';
+
+    // Query to fetch items from the database
+    let query = `SELECT item_name, item_image FROM player_inventory`;
+
+    // Prepare form data to send to the backend
+    let formData = new FormData();
+    formData.append('hostname', hostname);
+    formData.append('username', username);
+    formData.append('password', password);
+    formData.append('database', database);
+    formData.append('query', query);
+
+    try {
+        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+        let response = await fetch(url, {
+            method: 'POST',
+            body: formData
+        });
+
+        let result = await response.json();
+
+        if (result.error) {
+            console.error(result.error.toString());
+            logToConsole(`[Error]: ${result.error}`);
+            return;
+        }
+
+        // Clear the inventory slots
+        const inventoryContainer = document.querySelector('.inventory');
+        inventoryContainer.innerHTML = '';
+
+        // Populate inventory slots with items
+        result.data.forEach(item => {
+            const slot = document.createElement('div');
+            slot.classList.add('inventory-slot');
+
+            // Create an image element for the item
+            const img = document.createElement('img');
+            img.src = item.item_image; // Use the image URL from the database
+            img.alt = item.item_name; // Use the item name as alt text
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+
+            // Append the image to the slot
+            slot.appendChild(img);
+
+            // Append the slot to the inventory container
+            inventoryContainer.appendChild(slot);
+        });
+
+        logToConsole(`[System]: Inventory updated with ${result.data.length} items.`);
+    } catch (error) {
+        console.error('Error:', error);
+        logToConsole('[Error]: Unable to fetch inventory items. Please try again later.');
+    }
+}
+
+// Call this function after the game initializes
+window.fetchAndDisplayInventory = fetchAndDisplayInventory;

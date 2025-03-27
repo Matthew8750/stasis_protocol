@@ -335,8 +335,8 @@ nav a:hover {
 .room-panel {
     position: absolute;
     top: 36vh;
-    left: 6.5vw;
-    width: 11.5vw;
+    left: 6vw;
+    width: 13vw;
     height: 5vh;
     background-color: rgba(0, 0, 0, 0.8);
     color: rgb(0, 255, 0);

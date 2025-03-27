@@ -249,7 +249,7 @@ nav a:hover {
 
 .image-panel {
     position: absolute;
-    top: 40px;
+    top: 4.5vh;
     left: 50.5%;
     transform: translateX(-50%);
     width: 52vw;
@@ -289,8 +289,8 @@ nav a:hover {
 
 .inventory {
     position: absolute;
-    bottom: 90px;
-    left: 90px;
+    bottom: 10.4vh;
+    left: 6.5vw;
     display: grid;
     grid-template-columns: repeat(2, 50px);
     grid-template-rows: repeat(2, 50px);
@@ -312,8 +312,8 @@ nav a:hover {
 /* Player Icon Panel (Top-Left) */
 .player-icon-panel {
     position: absolute;
-    top: 40px;
-    left: 70px;
+    top: 4.5vh;
+    left: 5.5vw;
     width: 250px;
     height: 250px;
     background-color: rgba(0, 0, 0, 0.8);
@@ -334,8 +334,8 @@ nav a:hover {
 /* Room Panel (Below Player Icon, Styled Like Console) */
 .room-panel {
     position: absolute;
-    top: 310px;
-    left: 85px;
+    top: 36vh;
+    left: 6.5vw;
     width: 200px;
     height: 40px;
     background-color: rgba(0, 0, 0, 0.8);
@@ -355,8 +355,8 @@ nav a:hover {
 /* Map Panel (Top-Right) */
 .map-panel {
     position: absolute;
-    top: 40px;
-    right: 50px;
+    top: 4.5vh;
+    right: 4vw;
     width: 250px;
     height: 250px;
     background-color: rgba(0, 0, 0, 0.8);
@@ -377,8 +377,8 @@ nav a:hover {
 /* AI Companion Panel (Bottom-Right) */
 .ai-companion-panel {
     position: absolute;
-    bottom: 40px;
-    right: 50px;
+    bottom: 4.5vh;
+    right: 4vw;
     width: 250px;
     height: 450px;
     background-color: rgba(0, 0, 0, 0.8);

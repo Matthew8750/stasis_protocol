@@ -3,6 +3,7 @@ let typingInProgress = false; // Track ongoing typing
 let labEventTriggered = false;
 let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
+let gunPickedUp = false; // Global flag to track if the gun has been picked up
 
 function initializeGame() {
     typeText(
@@ -132,7 +133,8 @@ function handleRoomEntry(roomName) {
         },
         "Armory": {
             image: "images/room_Armory.jpg",
-            choices: ["Hallway Final"]
+            choices: ["Hallway Final"],
+            gun: true // Add a flag to indicate the gun should be displayed
         },
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
@@ -182,9 +184,19 @@ function handleRoomEntry(roomName) {
         wrenchPanel.style.display = "none"; // Hide the wrench
         console.log("Wrench panel is hidden.");
     }
+    
+    // Show or hide the gun image
+    const gunPanel = document.querySelector(".gun-item-panel");
+    if (roomInfo.gun && !gunPickedUp) {
+        gunPanel.style.display = "block";
+        console.log("Gun panel is now visible.");
+    } else {
+        gunPanel.style.display = "none";
+        console.log("Gun panel is hidden.");
+    }
 
     // Create buttons for available choices
-    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp, roomInfo.wrench && !wrenchPickedUp);
+    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp, roomInfo.wrench && !wrenchPickedUp, roomInfo.gun && !gunPickedUp);
 }
 
 function labEvent() {
@@ -262,7 +274,7 @@ function labEvent() {
 }
 
 
-function createChoiceButtons(choices, hasKeycard, hasWrench) {
+function createChoiceButtons(choices, hasKeycard, hasWrench, hasGun) {
     const consolePanel = document.getElementById("console");
 
     if (!choices || choices.length === 0) {
@@ -280,12 +292,12 @@ function createChoiceButtons(choices, hasKeycard, hasWrench) {
     const buttonContainer = document.createElement("div");
     buttonContainer.id = "button-container";
     buttonContainer.style.position = "absolute";
-    buttonContainer.style.bottom = "5px"; // Always against the bottom
-    buttonContainer.style.left = "5px"; // Always against the left border
-    buttonContainer.style.display = "flex"; // Set to row direction for left to right
-    buttonContainer.style.gap = "5px"; // Spacing between buttons
-    buttonContainer.style.flexWrap = "wrap"; // Allow buttons to wrap if necessary
-    buttonContainer.style.maxWidth = "100%"; // Prevent overflow
+    buttonContainer.style.bottom = "5px";
+    buttonContainer.style.left = "5px";
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "5px";
+    buttonContainer.style.flexWrap = "wrap";
+    buttonContainer.style.maxWidth = "100%";
 
     // Create buttons for each room choice
     choices.forEach(choice => {
@@ -293,7 +305,7 @@ function createChoiceButtons(choices, hasKeycard, hasWrench) {
         button.textContent = choice;
 
         button.addEventListener('click', () => {
-            handleRoomEntry(choice); // Trigger room entry with the chosen room
+            handleRoomEntry(choice);
         });
 
         // Apply styles for room buttons
@@ -349,6 +361,32 @@ function createChoiceButtons(choices, hasKeycard, hasWrench) {
         });
 
         // Apply styles for the "Pickup Wrench" button
+        styleButton(pickupButton);
+
+        buttonContainer.appendChild(pickupButton);
+    }
+
+    // Add a "Pickup Gun" button if the room has a gun and it hasn't been picked up
+    if (hasGun) {
+        const pickupButton = document.createElement("button");
+        pickupButton.textContent = "Pickup Gun";
+
+        pickupButton.addEventListener('click', () => {
+            console.log("[Debug]: Gun picked up!");
+
+            // Hide the gun image and the button
+            const gunPanel = document.querySelector(".gun-item-panel");
+            gunPanel.style.display = "none";
+            pickupButton.style.display = "none";
+
+            // Add the gun to the first empty inventory slot
+            addItemToInventory("images/item_Gun.png", "Gun");
+
+            // Set the flag to true to prevent the gun from being picked up again
+            gunPickedUp = true;
+        });
+
+        // Apply styles for the "Pickup Gun" button
         styleButton(pickupButton);
 
         buttonContainer.appendChild(pickupButton);

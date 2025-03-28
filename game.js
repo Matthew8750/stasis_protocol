@@ -2,6 +2,7 @@ let typingTimeouts = []; // Store all active timeouts
 let typingInProgress = false; // Track ongoing typing
 let labEventTriggered = false;
 let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
+let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 
 function initializeGame() {
     typeText(
@@ -118,7 +119,8 @@ function handleRoomEntry(roomName) {
         },
         "Engine Left": {
             image: "images/room_Engine1.jpg",
-            choices: ["Hallway Three"]
+            choices: ["Hallway Three"],
+            wrench: true // Add a flag to indicate the wrench should be displayed
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
@@ -170,9 +172,19 @@ function handleRoomEntry(roomName) {
         keycardPanel.style.display = "none"; // Hide the keycard
         console.log("Keycard panel is hidden.");
     }
+    
+    // Show or hide the wrench image based on the room and whether it has been picked up
+    const wrenchPanel = document.querySelector(".wrench-item-panel");
+    if (roomInfo.wrench && !wrenchPickedUp) {
+        wrenchPanel.style.display = "block"; // Show the wrench
+        console.log("Wrench panel is now visible.");
+    } else {
+        wrenchPanel.style.display = "none"; // Hide the wrench
+        console.log("Wrench panel is hidden.");
+    }
 
     // Create buttons for available choices
-    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp);
+    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp, roomInfo.wrench && !wrenchPickedUp);
 }
 
 function labEvent() {
@@ -250,7 +262,7 @@ function labEvent() {
 }
 
 
-function createChoiceButtons(choices, hasKeycard) {
+function createChoiceButtons(choices, hasKeycard, hasWrench) {
     const consolePanel = document.getElementById("console");
 
     if (!choices || choices.length === 0) {
@@ -284,14 +296,8 @@ function createChoiceButtons(choices, hasKeycard) {
             handleRoomEntry(choice); // Trigger room entry with the chosen room
         });
 
-        // Style for better appearance inside the console
-        button.style.padding = "5px 10px";
-        button.style.backgroundColor = "black";
-        button.style.color = "rgb(0, 255, 0)";
-        button.style.border = "1px solid rgb(0, 255, 0)";
-        button.style.fontFamily = "monospace";
-        button.style.cursor = "pointer";
-        button.style.borderRadius = "4px";
+        // Apply styles for room buttons
+        styleButton(button);
 
         buttonContainer.appendChild(button);
     });
@@ -301,10 +307,6 @@ function createChoiceButtons(choices, hasKeycard) {
         const pickupButton = document.createElement("button");
         pickupButton.textContent = "Pickup Keycard";
 
-        // Debugging: Log button creation for keycard
-        console.log("Creating Pickup Keycard button");
-
-        // Click handler for the keycard button
         pickupButton.addEventListener('click', () => {
             console.log("[Debug]: Keycard picked up!");
 
@@ -314,39 +316,40 @@ function createChoiceButtons(choices, hasKeycard) {
             pickupButton.style.display = "none";
 
             // Add the keycard to the first empty inventory slot
-            const inventorySlots = document.querySelectorAll(".inventory-slot");
-            const keycardImage = document.createElement("img");
-            keycardImage.src = "images/item_Keycard.png"; // Path to the keycard image
-            keycardImage.alt = "Keycard";
-            keycardImage.style.maxWidth = "100%";
-            keycardImage.style.maxHeight = "100%";
-
-            let addedToInventory = false;
-            for (let slot of inventorySlots) {
-                if (slot.children.length === 0) { // Check if the slot is empty
-                    slot.appendChild(keycardImage);
-                    console.log("[System]: Keycard added to inventory slot.");
-                    addedToInventory = true;
-                    break;
-                }
-            }
-
-            if (!addedToInventory) {
-                console.log("[Error]: No empty inventory slots available.");
-            }
+            addItemToInventory("images/item_Keycard.png", "Keycard");
 
             // Set the flag to true to prevent the keycard from being picked up again
             keycardPickedUp = true;
         });
 
-        // Styled for better appearance
-        pickupButton.style.padding = "5px 10px";
-        pickupButton.style.backgroundColor = "black";
-        pickupButton.style.color = "rgb(0, 255, 0)";
-        pickupButton.style.border = "1px solid rgb(0, 255, 0)";
-        pickupButton.style.fontFamily = "monospace";
-        pickupButton.style.cursor = "pointer";
-        pickupButton.style.borderRadius = "4px";
+        // Apply styles for the "Pickup Keycard" button
+        styleButton(pickupButton);
+
+        buttonContainer.appendChild(pickupButton);
+    }
+
+    // Add a "Pickup Wrench" button if the room has a wrench and it hasn't been picked up
+    if (hasWrench) {
+        const pickupButton = document.createElement("button");
+        pickupButton.textContent = "Pickup Wrench";
+
+        pickupButton.addEventListener('click', () => {
+            console.log("[Debug]: Wrench picked up!");
+
+            // Hide the wrench image and the button
+            const wrenchPanel = document.querySelector(".wrench-item-panel");
+            wrenchPanel.style.display = "none";
+            pickupButton.style.display = "none";
+
+            // Add the wrench to the first empty inventory slot
+            addItemToInventory("images/item_Wrench.png", "Wrench");
+
+            // Set the flag to true to prevent the wrench from being picked up again
+            wrenchPickedUp = true;
+        });
+
+        // Apply styles for the "Pickup Wrench" button
+        styleButton(pickupButton);
 
         buttonContainer.appendChild(pickupButton);
     }
@@ -354,6 +357,17 @@ function createChoiceButtons(choices, hasKeycard) {
     // Append the button container at the bottom-left of the console
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep the buttons visible
+}
+
+// Helper function to apply button styles
+function styleButton(button) {
+    button.style.padding = "5px 10px";
+    button.style.backgroundColor = "black";
+    button.style.color = "rgb(0, 255, 0)";
+    button.style.border = "1px solid rgb(0, 255, 0)";
+    button.style.fontFamily = "monospace";
+    button.style.cursor = "pointer";
+    button.style.borderRadius = "4px";
 }
 
 function playerDeath() {
@@ -540,6 +554,29 @@ function clearInventory() {
         slot.innerHTML = ""; // Remove all items from the inventory slots
     });
     console.log("[System]: Inventory cleared.");
+}
+
+function addItemToInventory(imageSrc, altText) {
+    const inventorySlots = document.querySelectorAll(".inventory-slot");
+    const itemImage = document.createElement("img");
+    itemImage.src = imageSrc;
+    itemImage.alt = altText;
+    itemImage.style.maxWidth = "100%";
+    itemImage.style.maxHeight = "100%";
+
+    let addedToInventory = false;
+    for (let slot of inventorySlots) {
+        if (slot.children.length === 0) { // Check if the slot is empty
+            slot.appendChild(itemImage);
+            console.log(`[System]: ${altText} added to inventory slot.`);
+            addedToInventory = true;
+            break;
+        }
+    }
+
+    if (!addedToInventory) {
+        console.log("[Error]: No empty inventory slots available.");
+    }
 }
 
 // Expose functions to global scope

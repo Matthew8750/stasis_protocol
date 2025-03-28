@@ -1,6 +1,7 @@
 let typingTimeouts = []; // Store all active timeouts
 let typingInProgress = false; // Track ongoing typing
 let labEventTriggered = false;
+let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
 
 function initializeGame() {
     typeText(
@@ -152,18 +153,18 @@ function handleRoomEntry(roomName) {
     // Change the room image
     changeImage(roomInfo.image);
 
-     // Show or hide the keycard image based on the room
-     const keycardPanel = document.querySelector(".keycard-item-panel");
-     if (roomInfo.keycard) {
-         keycardPanel.style.display = "block"; // Show the keycard
-         console.log("Keycard panel is now visible.");
-     } else {
-         keycardPanel.style.display = "none"; // Hide the keycard
-         console.log("Keycard panel is hidden.");
-     }
+    // Show or hide the keycard image based on the room and whether it has been picked up
+    const keycardPanel = document.querySelector(".keycard-item-panel");
+    if (roomInfo.keycard && !keycardPickedUp) {
+        keycardPanel.style.display = "block"; // Show the keycard
+        console.log("Keycard panel is now visible.");
+    } else {
+        keycardPanel.style.display = "none"; // Hide the keycard
+        console.log("Keycard panel is hidden.");
+    }
 
     // Create buttons for available choices
-    createChoiceButtons(roomInfo.choices, roomInfo.keycard);
+    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp);
 }
 
 function labEvent() {
@@ -287,7 +288,7 @@ function createChoiceButtons(choices, hasKeycard) {
         buttonContainer.appendChild(button);
     });
 
-    // Add a "Pickup Keycard" button if the room has a keycard
+    // Add a "Pickup Keycard" button if the room has a keycard and it hasn't been picked up
     if (hasKeycard) {
         const pickupButton = document.createElement("button");
         pickupButton.textContent = "Pickup Keycard";
@@ -325,17 +326,20 @@ function createChoiceButtons(choices, hasKeycard) {
             if (!addedToInventory) {
                 console.log("[Error]: No empty inventory slots available.");
             }
+
+            // Set the flag to true to prevent the keycard from being picked up again
+            keycardPickedUp = true;
         });
 
-         // Styled for better appearance
-         pickupButton.style.padding = "5px 10px";
-         pickupButton.style.backgroundColor = "black";
-         pickupButton.style.color = "rgb(0, 255, 0)";
-         pickupButton.style.border = "1px solid rgb(0, 255, 0)";
-         pickupButton.style.fontFamily = "monospace";
-         pickupButton.style.cursor = "pointer";
-         pickupButton.style.borderRadius = "4px";
-        // Append the Pickup Keycard button to the button container
+        // Styled for better appearance
+        pickupButton.style.padding = "5px 10px";
+        pickupButton.style.backgroundColor = "black";
+        pickupButton.style.color = "rgb(0, 255, 0)";
+        pickupButton.style.border = "1px solid rgb(0, 255, 0)";
+        pickupButton.style.fontFamily = "monospace";
+        pickupButton.style.cursor = "pointer";
+        pickupButton.style.borderRadius = "4px";
+
         buttonContainer.appendChild(pickupButton);
     }
 
@@ -343,7 +347,6 @@ function createChoiceButtons(choices, hasKeycard) {
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep the buttons visible
 }
-
 
 function playerDeath() {
     typeText("You died...");

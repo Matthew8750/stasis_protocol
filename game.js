@@ -22,7 +22,7 @@ function initializeGame() {
         "You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet.\n" +
         "Stasis disengaged. System diagnostics: compromised.\n" +
         "A mechanical voice cuts through the silence.\n" +
-        "[AI-Companion]: Welcome back, Operator. I'm your AI companion. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
+        "[N0VA]: Welcome back, Operator. I'm your AI companion 'N0VA'. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
     );
 
     // Reset global flags
@@ -165,6 +165,13 @@ function handleRoomEntry(roomName) {
         return; // Prevent access to the Armory
     }
 
+    // Check if the Escape Pods require the wrench
+    if (roomName === "Escape Pods" && !isItemInInventory("Wrench")) {
+        typeText("[N0VA]: The escape pods are damaged. You need the wrench to repair them and escape.");
+        console.log("[Debug]: Access to escape pods denied. Wrench not found in inventory.");
+        return; // Prevent escape without the wrench
+    }
+
     const roomInfo = roomData[roomName];
 
     // Log room entry (Debugging)
@@ -221,7 +228,7 @@ function handleRoomEntry(roomName) {
 function labEvent() {
     // Stop any ongoing typing and notify the player
     stopTyping();
-    typeText("[AI-Companion] Did you hear that? Hide now!", 15);
+    typeText("[N0VA] Did you hear that? Hide now!", 15);
 
     const consolePanel = document.getElementById("console");
     const choices = ["Hide inside the medical closet.", "Hide under the desk"];
@@ -252,7 +259,7 @@ function labEvent() {
     // Start a timer that kills the player if they don't hide in 5 seconds
     let hideTimer = setTimeout(() => {
         console.log("[DEBUG] Timer expired! Player failed to hide."); // Debugging log
-        typeText("[AI-Companion] Too slow! It's too late...", 15);
+        typeText("[N0VA] Too slow! It's too late...", 15);
         changeImage("images/LabRoomImage_Death.png");
         playerDeath();
     }, 5000); // 5 seconds

@@ -10,7 +10,9 @@ function initializeGame() {
     let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
     backgroundMusic.loop = true; // Loop the music
     backgroundMusic.play();
-    
+    let deathSound = new Audio("Audio/PlayerDeath.mp3");
+    deathSound.play();
+
 
     typeText(
         "[System]: Game initialized...\n" +

@@ -5,6 +5,18 @@ let keycardPickedUp = false; // Global flag to track if the keycard has been pic
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 
 function initializeGame() {
+    // Create the audio element
+    var audio = new Audio('Audio/StasisProtocolBgMusic.mp3');
+
+    // Set audio to loop and autoplay
+    audio.loop = true;
+    audio.autoplay = true;
+
+    // Play the audio
+    audio.play().catch(function(error) {
+        console.error("Error playing audio:", error);
+    });
+
     typeText(
         "[System]: Game initialized...\n" +
         "You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet.\n" +

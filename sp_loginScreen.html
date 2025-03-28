@@ -73,7 +73,7 @@
                 const isValid = await validatePlayer(username, hashedPassword);
                 if (isValid) {
                     sessionStorage.setItem('loggedInUser', username); // Save user
-                    window.location.href = 'sp_play.html'; // Redirect to gameplay
+                    window.location.href = 'sp_playGame.html'; // Redirect to gameplay
                 } else {
                     resultsDiv.innerHTML = '<p style="color:red;">Invalid username or password.</p>';
                 }

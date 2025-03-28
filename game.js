@@ -388,7 +388,7 @@ function playerDeath() {
         button.textContent = "Restart";
 
         button.addEventListener("click", () => {
-            initializeGame();
+            initializeGame(); // Restart the game
         });
 
         // Styled for better appearance inside the console

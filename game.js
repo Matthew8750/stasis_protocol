@@ -152,6 +152,14 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
+
+    // Check if the Armory is locked
+    if (roomName === "Armory" && !isItemInInventory("Keycard")) {
+        typeText("[System]: The Armory is locked. You need the keycard to enter.");
+        console.log("[Debug]: Access to the Armory denied. Keycard not found in inventory.");
+        return; // Prevent access to the Armory
+    }
+
     const roomInfo = roomData[roomName];
 
     // Log room entry (Debugging)
@@ -621,6 +629,16 @@ function addItemToInventory(imageSrc, altText) {
     if (!addedToInventory) {
         console.log("[Error]: No empty inventory slots available.");
     }
+}
+
+function isItemInInventory(itemAltText) {
+    const inventorySlots = document.querySelectorAll(".inventory-slot");
+    for (let slot of inventorySlots) {
+        if (slot.children.length > 0 && slot.children[0].alt === itemAltText) {
+            return true; // Item is found in the inventory
+        }
+    }
+    return false; // Item is not in the inventory
 }
 
 // Expose functions to global scope

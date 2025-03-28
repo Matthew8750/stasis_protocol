@@ -418,8 +418,27 @@ nav a:hover {
 /* Wrench Item Panel */
 .wrench-item-panel {
     position: absolute;
-    top: 42%; /* Same position as the keycard */
-    left: 54%; /* Same position as the keycard */
+    top: 62%; /* Same position as the keycard */
+    left: 69%; /* Same position as the keycard */
+    transform: translate(-50%, -50%);
+    width: 50px; /* Same size as the keycard */
+    height: 50px;
+    z-index: 2000; /* Ensure it appears above all other elements */
+    display: none; /* Hidden by default */
+}
+
+.wrench-item-panel img {
+    width: 100%; /* Make the image fit the container */
+    height: 100%;
+    object-fit: contain; /* Maintain aspect ratio */
+    transform: scaleX(-1); /* Flip the image horizontally */
+}
+
+/* Gun Item Panel */
+.gun-item-panel {
+    position: absolute;
+    top: 42%; /* Adjust position as needed */
+    left: 54%; /* Adjust position as needed */
     transform: translate(-50%, -50%);
     width: 40px; /* Same size as the keycard */
     height: 40px;
@@ -427,7 +446,7 @@ nav a:hover {
     display: none; /* Hidden by default */
 }
 
-.wrench-item-panel img {
+.gun-item-panel img {
     width: 100%; /* Make the image fit the container */
     height: 100%;
     object-fit: contain; /* Maintain aspect ratio */

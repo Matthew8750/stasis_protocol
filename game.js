@@ -72,7 +72,7 @@ function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
 
-function handleRoomEntry(roomName) {
+async function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
@@ -96,7 +96,11 @@ function handleRoomEntry(roomName) {
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Hallway Two"]
+            choices: ["Hallway Two", "Search Desk"]
+        },
+        "Search Desk": {
+            image: "images/room_SearchDesk.jpg",
+            choices: ["Admin"]
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
@@ -153,6 +157,11 @@ function handleRoomEntry(roomName) {
 
     // Create buttons for available choices
     createChoiceButtons(roomInfo.choices);
+
+     // **If entering 'Search Desk', add keycard to inventory**
+     if (roomName === "Search Desk") {
+        await addItemToInventory("Key Card", "images/item_KeyCard.png");
+    }
 }
 
 function labEvent() {
@@ -455,6 +464,93 @@ async function fetchAndDisplayInventory() {
         console.log('[Error]: Unable to fetch inventory items. Please try again later.');
     }
 }
+
+
+
+
+
+
+async function addItemToInventory(itemName, itemImage) {
+    console.log(`[System]: Adding ${itemName} to inventory...`);
+
+    // Retrieve the logged-in user's username from sessionStorage
+    const username = sessionStorage.getItem('loggedInUser');
+    if (!username) {
+        console.error('[Error]: No user is logged in.');
+        return;
+    }
+
+    let hostname = 'localhost';
+    let dbUsername = 'jrice27'; 
+    let password = 'rZk8FVrXNllcPl8Y'; 
+    let database = 'CSC1034_CW_13';
+
+    // Query to fetch player_id based on the logged-in username
+    let playerQuery = `SELECT player_id FROM players WHERE player_username = '${username}'`;
+
+    // Query to fetch item_id based on the item name
+    let itemQuery = `SELECT item_id FROM items WHERE item_name = '${itemName}'`;
+
+    // First, retrieve the player_id and item_id
+    try {
+        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+
+        // Fetch player_id
+        let response = await fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams({ query: playerQuery, hostname, username: dbUsername, password, database })
+        });
+        let playerResult = await response.json();
+
+        if (playerResult.error || playerResult.data.length === 0) {
+            console.error('[Error]: Player not found.');
+            return;
+        }
+
+        let playerId = playerResult.data[0].player_id;
+
+        // Fetch item_id
+        response = await fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams({ query: itemQuery, hostname, username: dbUsername, password, database })
+        });
+        let itemResult = await response.json();
+
+        if (itemResult.error || itemResult.data.length === 0) {
+            console.error('[Error]: Item not found.');
+            return;
+        }
+
+        let itemId = itemResult.data[0].item_id;
+
+        // Query to insert the item into the player's inventory
+        let query = `INSERT INTO player_inventory (player_id, item_id) VALUES (${playerId}, ${itemId})`;
+
+        // Insert the item into the inventory
+        response = await fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams({ query: query, hostname, username: dbUsername, password, database })
+        });
+
+        let result = await response.json();
+
+        if (result.error) {
+            console.error(`[Error]: ${result.error}`);
+            return;
+        }
+
+        console.log(`[System]: ${itemName} successfully added to ${username}'s inventory.`);
+        await fetchAndDisplayInventory(); // Refresh inventory UI
+
+    } catch (error) {
+        console.error('[Error]: Unable to add item to inventory.', error);
+    }
+}
+
+
+
+
+
 
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;

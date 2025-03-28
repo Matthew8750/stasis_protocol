@@ -9,14 +9,13 @@
         <nav></nav>
 
         <div class="image-panel">
-        <img id="display-image" src="images\CryogenicChamberRoom.jpg" alt="Display">
+            <img id="display-image" src="images\CryogenicChamberRoom.jpg" alt="Display">
         </div>
+        
         <audio autoplay loop>
             <source src="Audio/StasisProtocolBgMusic.mp3" type="audio/mp3">
-            Your browser does not support the audio element.
         </audio>
-        
-          
+
         <div class="console-panel" id="console"></div>
 
         <div class="inventory">
@@ -38,6 +37,8 @@
             <img id="map" src="images\map.png" alt="Map">
         </div>
 
+        <div id="results"></div>
+
         <div class="ai-companion-panel">
             <img id="ai-companion" src="images/CortanaGIF.gif" alt="AI Companion">
         </div>
@@ -47,5 +48,14 @@
         </div>
 
         <div class="bezel-overlay"></div>
+
+        <!-- Escape Menu Overlay -->
+        <div id="escapeMenu">
+            <div class="menu-content">
+                <h2>Escape Menu</h2>
+                <button id="returnButton">Return to Game</button>
+                <button id="exitButton">Exit Game</button>
+            </div>
+        </div>
     </body>
 </html>

@@ -2,6 +2,11 @@ let typingTimeouts = []; // Store all active timeouts
 let typingInProgress = false; // Track ongoing typing
 let labEventTriggered = false;
 let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
+let noOfDeaths = 0;
+let time_played = 0;
+let rooms_explored = 0;
+let location_name = "Cryogenic Chamber";
+let startTime = Date.now();  // Store the timestamp when the game starts
 
 function initializeGame() {
     typeText(
@@ -11,6 +16,7 @@ function initializeGame() {
         "A mechanical voice cuts through the silence.\n" +
         "[AI-Companion]: Welcome back, Operator. I'm your AI companion. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
     );
+    typeText(noOfDeaths.toString());
 
     // Reset global flags
     labEventTriggered = false;
@@ -170,7 +176,7 @@ function handleRoomEntry(roomName) {
         keycardPanel.style.display = "none"; // Hide the keycard
         console.log("Keycard panel is hidden.");
     }
-
+    rooms_explored++;
     // Create buttons for available choices
     createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp);
 }
@@ -178,7 +184,7 @@ function handleRoomEntry(roomName) {
 function labEvent() {
     // Stop any ongoing typing and notify the player
     stopTyping();
-    typeText("[AI-Companion] Did you hear that? Hide now!", 15);
+    typeText("[AI Companion]: Warning: Unknown lifeform detected nearby. Sensors indicate rapid movement—it's close. You need to hide, now. Find cover and remain silent. I'll monitor its position… Stay out of sight.", 15);
 
     const consolePanel = document.getElementById("console");
     const choices = ["Hide inside the medical closet.", "Hide under the desk"];
@@ -209,10 +215,9 @@ function labEvent() {
     // Start a timer that kills the player if they don't hide in 5 seconds
     let hideTimer = setTimeout(() => {
         console.log("[DEBUG] Timer expired! Player failed to hide."); // Debugging log
-        typeText("[AI-Companion] Too slow! It's too late...", 15);
         changeImage("images/LabRoomImage_Death.png");
         playerDeath();
-    }, 5000); // 5 seconds
+    }, 7000); // 5 seconds
 
     choices.forEach(choice => {
         const button = document.createElement("button");
@@ -225,6 +230,8 @@ function labEvent() {
 
             if (choice === "Hide inside the medical closet.") {
                 labEventTriggered = true;
+                consolePanel.innerHTML = '';
+                typeText("[AI Companion] add some text here when you hide in the closet ")
                 handleRoomEntry("Lab");
             } else if (choice === "Hide under the desk") {
                 changeImage("images/LabRoomImage_Death.png");
@@ -248,7 +255,6 @@ function labEvent() {
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
 }
-
 
 function createChoiceButtons(choices, hasKeycard) {
     const consolePanel = document.getElementById("console");
@@ -388,6 +394,7 @@ function playerDeath() {
         button.textContent = "Restart";
 
         button.addEventListener("click", () => {
+            noOfDeaths++;
             initializeGame(); // Restart the game
         });
 
@@ -415,49 +422,104 @@ function updateRoom(roomName) {
     document.getElementById("room-display").textContent = "Room: " + roomName;
 }
 
-async function connectToDatabase() {
+async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name) {
+    console.log('Connecting to the database...');
+
+    // Get the logged-in user ID from session storage
+    const loggedInID = sessionStorage.getItem('loggedInID');
+
+    if (!loggedInID) {
+        console.error("Error: No logged-in ID found.");
+        return;
+    }
+
+    // Ensure location_name is defined, defaulting to "Cryogenic Chamber"
+    let sanitizedLocation = (location_name || "Cryogenic Chamber").trim();
+    sanitizedLocation = sanitizedLocation.replace(/'/g, "\\'"); // Escape single quotes
+
+    let deaths = parseInt(noOfDeaths, 10) || 0;
+    let time = parseInt(time_played, 10) || 0;
+    let rooms = parseInt(rooms_explored, 10) || 0;
+
+    // Construct SQL query safely
+    let query = `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name) 
+                 VALUES ('${loggedInID}', ${deaths}, ${time}, ${rooms}, '${sanitizedLocation}')`;
+
+    // Prepare form data for the request
+    let formData = new FormData();
+    formData.append('hostname', 'localhost');
+    formData.append('username', 'jrice27');
+    formData.append('password', 'rZk8FVrXNllcPl8Y');
+    formData.append('database', 'CSC1034_CW_13');
+    formData.append('query', query);
+
+    try {
+        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+        let response = await fetch(url, { method: 'POST', body: formData });
+
+        let result = await response.json();
+
+        if (result.error) {
+            console.error("SQL Error:", result.error);
+            alert(`Database Error: ${result.error}`);
+        } else {
+            console.log("Database updated successfully.");
+        }
+    } catch (error) {
+        console.error('Fetch Error:', error);
+        alert("Error connecting to the database. Please try again.");
+    }
+}
+
+async function loadStats()
+{
 
     console.log('Connecting to the database...');
 
-    let hostname = 'localhost';
-    let username = 'jrice27';
-    let password = 'rZk8FVrXNllcPl8Y';
-    let database = 'CSC1034_CW_13';
-
     // Get the input value from the user
-    let input = document.getElementById('player-name').value; // Replace 'player-name' with the actual input field ID
-
+    const loggedInID = sessionStorage.getItem('loggedInID');
+    
     // Sanitize the input to prevent SQL injection
-    let sanitizedInput = input.replace(/'/g, "\\'");
-
+    let sanitizedLoggedInID = loggedInID.replace(/'/g, "\\'");
+    
     // Create the query string
-    let query = `INSERT INTO player (player_name) VALUES ('${sanitizedInput}')`;
-
-    // Prepare form data to send to the backend
+    let query = `SELECT deaths, time_played, rooms_explored, location_name FROM game_stats WHERE player_ID = '${sanitizedLoggedInID}'`;
+    
     let formData = new FormData();
-    formData.append('hostname', hostname);
-    formData.append('username', username);
-    formData.append('password', password);
-    formData.append('database', database);
+    formData.append('hostname', 'localhost');
+    formData.append('username', 'jrice27');
+    formData.append('password', 'rZk8FVrXNllcPl8Y');
+    formData.append('database', 'CSC1034_CW_13');
     formData.append('query', query);
-
+    
     try {
         let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
         let response = await fetch(url, {
             method: 'POST',
             body: formData
         });
-
+    
         let result = await response.json();
-
+    
         // Get the results div and clear previous results
         let resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = '';
-
+    
         if (result.error) {
             console.log(result.error.toString());
             resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
         } else {
+            if (result.data && result.data.length > 0) {
+                // If data exists, set the variables to the fetched values
+                noOfDeaths = result.data[0].deaths || 0;
+                time_played = result.data[0].time_played || 0;
+                rooms_explored = result.data[0].rooms_explored || 0;
+                location_name = result.data[0].location_name || "Cryogenic Chamber"; // Default value if null or undefined
+            } else {
+                resultsDiv.innerHTML = '<p>No game stats found for this player.</p>';
+            }
+    
+            // Display a success message
             resultsDiv.innerHTML = `<p>${result.success ? 'Query executed successfully' : 'No data returned'}</p>`;
             if (result.affected_rows !== undefined) {
                 resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
@@ -541,6 +603,56 @@ function clearInventory() {
     });
     console.log("[System]: Inventory cleared.");
 }
+
+// Function to show the escape menu
+function showEscapeMenu() {
+    document.getElementById('escapeMenu').style.display = 'block'; // Set to block to show the menu
+}
+
+// Function to hide the escape menu
+function hideEscapeMenu() {
+    document.getElementById('escapeMenu').style.display = 'none'; // Hide the menu
+}
+
+// Function to return to the game (reload the game page)
+function returnToGame() {
+    hideEscapeMenu(); // Close the escape menu
+    // You can add additional code to resume the game here if needed
+    window.location.href = "sp_play.html";  // Redirects to the game page
+}
+
+// Function to exit the game (or close the window)
+function exitGame() 
+{
+    rooms_explored = document.getElementById("room-display").textContent
+    saveToDatabase(noOfDeaths, getTimePlayed(), rooms_explored, location_name);
+    //window.location.href = 'sp_play.html'; // Redirect to previous screen
+}
+
+// Function to get the total time played in seconds
+function getTimePlayed() {
+    let elapsedTime = Math.floor((Date.now() - startTime) / 1000); // Convert ms to seconds
+    return elapsedTime;
+}
+
+
+// Event listener for the Escape key to open the menu
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        const escapeMenu = document.getElementById('escapeMenu');
+        // Toggle escape menu visibility on Escape key press
+        if (escapeMenu.style.display === 'none' || escapeMenu.style.display === '') {
+            showEscapeMenu();  // Show the escape menu
+        } else {
+            hideEscapeMenu();  // Hide the escape menu if it's already visible
+        }
+    }
+});
+
+// Set up event listeners for the buttons in the escape menu
+document.getElementById('returnButton').addEventListener('click', hideEscapeMenu);
+document.getElementById('exitButton').addEventListener('click', exitGame);
+
 
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;

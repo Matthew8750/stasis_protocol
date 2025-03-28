@@ -10,17 +10,29 @@ let startTime = Date.now();  // Store the timestamp when the game starts
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 let gunPickedUp = false; // Global flag to track if the gun has been picked up
 
-function initializeGame() {
-    // Play background music
+async function initializeGame(restartGame = false) {
+    console.log("[System]: Initializing game...");
+
     let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
     backgroundMusic.loop = true;
-    
-    // Wait for user to click anywhere on the page
-    document.addEventListener('click', function() {
-        backgroundMusic.play().catch(function(error) {
-            console.error("Error playing audio:", error);
+
+    document.addEventListener("click", function () {
+        backgroundMusic.play().catch((error) => {
+            console.error("[Error]: Unable to play audio.", error);
         });
     });
+
+    const loggedInID = sessionStorage.getItem("loggedInID");
+
+    if (!restartGame && loggedInID) {
+        let saveExists = await loadSave(loggedInID);
+        if (saveExists) {
+            console.log("[System]: Save loaded successfully.");
+            return; // Prevents starting a new game
+        }
+    }
+
+    console.log("[System]: Starting a new game...");
 
     typeText(
         "[System]: Game initialized...\n" +
@@ -29,16 +41,11 @@ function initializeGame() {
         "A mechanical voice cuts through the silence.\n" +
         "[N0VA]: Welcome back, Operator. I'm your AI companion 'N0VA'. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
     );
-    typeText(noOfDeaths.toString());
 
-    // Reset global flags
     labEventTriggered = false;
-    keycardPickedUp = false; // Reset the keycard flag
-
-    // Clear the inventory
+    keycardPickedUp = false;
     clearInventory();
 
-    // Start the game in the Cryogenic Chamber
     handleRoomEntry("Cryogenic Chamber");
 }
 
@@ -117,36 +124,32 @@ function handleRoomEntry(roomName) {
         },
         "Lab": {
             image: "images/room_Lab.jpg",
-            choices: ["Hallway One", "Hallway Two", "Hallway Three"]
-        },
-        "Hallway Two": {
-            image: "images/room_Hallway.jpg",
-            choices: ["Admin", "Cafeteria", "Lab"]
+            choices: ["Hallway One", "Cafeteria", "Hallway Two"]
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Hallway Two"]
+            choices: ["Cafeteria"]
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
-            choices: ["Hallway Two"]
+            choices: ["Lab", "Admin"]
         },
-        "Hallway Three": {
+        "Hallway Two": {
             image: "images/room_Hallway.jpg",
             choices: ["Lab", "Engine Left", "Engine Right", "Hallway Final"]
         },
         "Engine Left": {
             image: "images/room_Engine1.jpg",
-            choices: ["Hallway Three"],
+            choices: ["Hallway Two"],
             wrench: true // Add a flag to indicate the wrench should be displayed
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
-            choices: ["Hallway Three"]
+            choices: ["Hallway Two"]
         },
         "Hallway Final": {
             image: "images/room_Hallway.jpg",
-            choices: ["Hallway Three", "Armory", "Escape Pods"]
+            choices: ["Hallway Twps", "Armory", "Escape Pods"]
         },
         "Armory": {
             image: "images/room_Armory.jpg",
@@ -163,40 +166,7 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
-    if (roomName === "Cafeteria") {
-        typeText("[N0VA]: This is the Cafeteria, a designated crew dining area. Status: abandoned. Food trays and supplies are scattered—signs of a hasty departure. Terminal access available, but system integrity is unknown. No immediate threats detected, but caution is advised.");
-    }
-    if (roomName === "Med Bay"){
-        typeText("[N0VA]: This is the Med Bay. Primary function: medical treatment and emergency care. Current status: compromised. Bloodstains indicate recent injury or conflict. Medical equipment is still operational, but some systems appear damaged. Proceed with caution—unknown variables present. A security keycard is present; retrieval is advised, as it may be critical for future access.")
-    }
-    if (roomName === "Admin"){
-        typeText("[N0VA]: This is the Admin Control Room. Primary function: ship-wide system management and oversight. Status: heavily damaged. Multiple terminals are active but unstable—data corruption detected. Debris and signs of struggle indicate past conflict.")
-    }
-    if (roomName === "Hallway One"){
-        typeText("[N0VA]: This is Hallway One. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Hallway Two"){   
-        typeText("[N0VA]: This is Hallway Two. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Hallway Three"){
-        typeText("[N0VA]: This is Hallway Three. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Hallway Final"){
-        typeText("[N0VA]: This is Hallway Final. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Engine Right"){
-        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard.")
-    }
-    if (roomName === "Engine Left"){   
-        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard. A wrench is present; retrieval is advised, as it may be helpul in the future.")
-    }
-    if (roomName === "Lab"){
-        typeText("[N0VA]: This laboratory appears compromised. The containment unit has been forcibly opened. There are signs of struggle... blood. Whatever was inside is no longer here.")
-    }
-    if (roomName === "Armory"){
-        typeText("[N0VA]: This is the Armory, the ship’s secured weapons storage. Here you’ll find essential firepower. A high-powered firearm has been left, your best chance at defending against the hostile threat onboard. Arm yourself and proceed with caution.")
-    }
-        // Check if the Armory is locked
+    // Check if the Armory is locked
     if (roomName === "Armory" && !isItemInInventory("Keycard")) {
         typeText("[System]: The Armory is locked. You need the keycard to enter.");
         console.log("[Debug]: Access to the Armory denied. Keycard not found in inventory.");
@@ -297,11 +267,9 @@ function labEvent() {
 
     // Start a timer that kills the player if they don't hide in 5 seconds
     let hideTimer = setTimeout(() => {
-        console.log("[DEBUG] Timer expired! Player failed to hide."); // Debugging log
-        typeText("[N0VA] Too slow! It's too late...", 15);
         changeImage("images/LabRoomImage_Death.png");
         playerDeath();
-    }, 7000); // 5 seconds
+    }, 7000); // 7 seconds
 
     choices.forEach(choice => {
         const button = document.createElement("button");
@@ -339,7 +307,6 @@ function labEvent() {
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
 }
-
 
 function createChoiceButtons(choices, hasKeycard, hasWrench, hasGun) {
     const consolePanel = document.getElementById("console");
@@ -508,7 +475,7 @@ function playerDeath() {
 
         button.addEventListener("click", () => {
             noOfDeaths++;
-            initializeGame(); // Restart the game
+            initializeGame(true); // Restart the game
         });
 
         // Styled for better appearance inside the console
@@ -527,38 +494,101 @@ function playerDeath() {
     }, 2000); // Delay adding the button to allow text to fully type out
 }
 
-function updateAIImage(newSrc) {
-    document.getElementById("ai-companion").src = newSrc;
-}
-
-function updateRoom(roomName) {
-    document.getElementById("room-display").textContent = "Room: " + roomName;
-}
-
-async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name) {
+//Database Functions Below
+async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name, labEventTriggered) {
     console.log('Connecting to the database...');
 
-    // Get the logged-in user ID from session storage
     const loggedInID = sessionStorage.getItem('loggedInID');
-
     if (!loggedInID) {
-        console.error("Error: No logged-in ID found.");
+        console.error('Error: No player ID found in session.');
         return;
     }
 
-    // Ensure location_name is defined, defaulting to "Cryogenic Chamber"
-    let sanitizedLocation = (location_name || "Cryogenic Chamber").trim();
-    sanitizedLocation = sanitizedLocation.replace(/'/g, "\\'"); // Escape single quotes
+    let sanitizedInput = loggedInID.replace(/'/g, "\\'");
+    let sanitizedLocation = location_name.replace(/^Room:\s*/, '').replace(/'/g, "\\'");
 
-    let deaths = parseInt(noOfDeaths, 10) || 0;
-    let time = parseInt(time_played, 10) || 0;
-    let rooms = parseInt(rooms_explored, 10) || 0;
+    // Calculate time played since the last save
+    let currentTime = Date.now() / 1000; // Get the current time in seconds
+    let elapsedTime = currentTime - gameStartTime + lastSaveTime;
 
-    // Construct SQL query safely
-    let query = `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name) 
-                 VALUES ('${loggedInID}', ${deaths}, ${time}, ${rooms}, '${sanitizedLocation}')`;
+    // Convert the elapsed time to HH:MM:SS format
+    let hours = Math.floor(elapsedTime / 3600).toString().padStart(2, '0');
+    let minutes = Math.floor((elapsedTime % 3600) / 60).toString().padStart(2, '0');
+    let seconds = (elapsedTime % 60).toString().padStart(2, '0');
+    let formattedTime = `${hours}:${minutes}:${seconds}`;
 
-    // Prepare form data for the request
+    // Ensure labEventTriggered is always 0 or 1
+    let labTriggeredValue = labEventTriggered ? 1 : 0; // Convert true → 1, false → 0
+
+    // Check if a save already exists for this player
+    let checkQuery = `SELECT COUNT(*) AS saveExists FROM game_stats WHERE player_id = '${sanitizedInput}'`;
+
+    let checkData = new FormData();
+    checkData.append('hostname', 'localhost');
+    checkData.append('username', 'jrice27');
+    checkData.append('password', 'rZk8FVrXNllcPl8Y');
+    checkData.append('database', 'CSC1034_CW_13');
+    checkData.append('query', checkQuery);
+
+    try {
+        let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+            method: 'POST',
+            body: checkData
+        });
+
+        let checkResult = await checkResponse.json();
+        let saveExists = checkResult.data && checkResult.data[0].saveExists > 0;
+
+        // If a save exists, update it; otherwise, insert a new one
+        let query;
+        if (saveExists) {
+            query = `UPDATE game_stats 
+                     SET deaths = ${noOfDeaths}, time_played = '${formattedTime}', 
+                     rooms_explored = ${rooms_explored}, location_name = '${sanitizedLocation}', 
+                     labEventTriggered = ${labTriggeredValue} 
+                     WHERE player_id = '${sanitizedInput}'`;
+        } else {
+            query = `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered) 
+                     VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue})`;
+        }
+
+        let formData = new FormData();
+        formData.append('hostname', 'localhost');
+        formData.append('username', 'jrice27');
+        formData.append('password', 'rZk8FVrXNllcPl8Y');
+        formData.append('database', 'CSC1034_CW_13');
+        formData.append('query', query);
+
+        let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        let result = await response.json();
+        let resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (result.error) {
+            console.log(result.error.toString());
+            resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
+        } else {
+            resultsDiv.innerHTML = `<p>${result.success ? 'Save updated successfully' : 'New save created successfully'}</p>`;
+            if (result.affected_rows !== undefined) {
+                resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        let resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = `<p style="color:red;">Unable to connect to the database. Please try again later.</p>`;
+    }
+}
+
+async function loadSave(playerID) {
+    console.log("[System]: Checking for saved game...");
+
+    let query = `SELECT deaths, time_played, rooms_explored, location_name, labEventTriggered FROM game_stats WHERE player_ID = '${playerID}'`;
+
     let formData = new FormData();
     formData.append('hostname', 'localhost');
     formData.append('username', 'jrice27');
@@ -573,75 +603,47 @@ async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_
         let result = await response.json();
 
         if (result.error) {
-            console.error("SQL Error:", result.error);
-            alert(`Database Error: ${result.error}`);
-        } else {
-            console.log("Database updated successfully.");
+            console.error("[Error]:", result.error);
+            return false; // Error occurred, no save loaded
         }
-    } catch (error) {
-        console.error('Fetch Error:', error);
-        alert("Error connecting to the database. Please try again.");
-    }
-}
 
-async function loadStats()
-{
+        if (result.data && result.data.length > 0) {
+            // Load save data
+            let saveData = result.data[0];
 
-    console.log('Connecting to the database...');
+            // Convert the time_played from HH:MM:SS to seconds
+            let startTime = saveData.time_played || "00:00:00"; // Default if undefined
+            let [hours, minutes, seconds] = startTime.split(":").map(Number);
 
-    // Get the input value from the user
-    const loggedInID = sessionStorage.getItem('loggedInID');
-    
-    // Sanitize the input to prevent SQL injection
-    let sanitizedLoggedInID = loggedInID.replace(/'/g, "\\'");
-    
-    // Create the query string
-    let query = `SELECT deaths, time_played, rooms_explored, location_name FROM game_stats WHERE player_ID = '${sanitizedLoggedInID}'`;
-    
-    let formData = new FormData();
-    formData.append('hostname', 'localhost');
-    formData.append('username', 'jrice27');
-    formData.append('password', 'rZk8FVrXNllcPl8Y');
-    formData.append('database', 'CSC1034_CW_13');
-    formData.append('query', query);
-    
-    try {
-        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-        let response = await fetch(url, {
-            method: 'POST',
-            body: formData
-        });
-    
-        let result = await response.json();
-    
-        // Get the results div and clear previous results
-        let resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '';
-    
-        if (result.error) {
-            console.log(result.error.toString());
-            resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-        } else {
-            if (result.data && result.data.length > 0) {
-                // If data exists, set the variables to the fetched values
-                noOfDeaths = result.data[0].deaths || 0;
-                time_played = result.data[0].time_played || 0;
-                rooms_explored = result.data[0].rooms_explored || 0;
-                location_name = result.data[0].location_name || "Cryogenic Chamber"; // Default value if null or undefined
-            } else {
-                resultsDiv.innerHTML = '<p>No game stats found for this player.</p>';
+            // If time is not valid, set it to the default
+            if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+                startTime = "00:00:00"; // Set to default if invalid
+                hours = 0;
+                minutes = 0;
+                seconds = 0;
             }
-    
-            // Display a success message
-            resultsDiv.innerHTML = `<p>${result.success ? 'Query executed successfully' : 'No data returned'}</p>`;
-            if (result.affected_rows !== undefined) {
-                resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
-            }
+
+            // Convert startTime to seconds
+            lastSaveTime = hours * 3600 + minutes * 60 + seconds;
+            gameStartTime = Date.now() / 1000; // Set the current time in seconds
+
+            noOfDeaths = saveData.deaths || 0;
+            rooms_explored = saveData.rooms_explored || 0;
+            location_name = saveData.location_name || "Cryogenic Chamber"; // Default room
+            labEventTriggered = saveData.labEventTriggered || false;
+
+            // Load the saved room
+            handleRoomEntry(location_name);
+
+            console.log(`Loaded save time: ${lastSaveTime} seconds`);
+            return true; // Save successfully loaded
         }
+
+        console.log("[System]: No save data found.");
+        return false; // No save found
     } catch (error) {
-        console.error('Error:', error);
-        let resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = `<p style="color:red;">Unable to connect to the database. Please try again later.</p>`;
+        console.error("[Error]: Unable to connect to the database.", error);
+        return false;
     }
 }
 
@@ -717,6 +719,13 @@ function clearInventory() {
     console.log("[System]: Inventory cleared.");
 }
 
+function updateAIImage(newSrc) {
+    document.getElementById("ai-companion").src = newSrc;
+}
+
+function updateRoom(roomName) {
+    document.getElementById("room-display").textContent = "Room: " + roomName;
+}
 // Function to show the escape menu
 function showEscapeMenu() {
     document.getElementById('escapeMenu').style.display = 'block'; // Set to block to show the menu
@@ -730,15 +739,14 @@ function hideEscapeMenu() {
 // Function to return to the game (reload the game page)
 function returnToGame() {
     hideEscapeMenu(); // Close the escape menu
-    // You can add additional code to resume the game here if needed
     window.location.href = "sp_play.html";  // Redirects to the game page
 }
 
 // Function to exit the game (or close the window)
 function exitGame() 
 {
-    rooms_explored = document.getElementById("room-display").textContent
-    saveToDatabase(noOfDeaths, getTimePlayed(), rooms_explored, location_name);
+    location_name = document.getElementById("room-display").textContent
+    saveToDatabase(noOfDeaths, getTimePlayed(), rooms_explored, location_name, labEventTriggered);
     //window.location.href = 'sp_play.html'; // Redirect to previous screen
 }
 
@@ -747,7 +755,6 @@ function getTimePlayed() {
     let elapsedTime = Math.floor((Date.now() - startTime) / 1000); // Convert ms to seconds
     return elapsedTime;
 }
-
 
 // Event listener for the Escape key to open the menu
 document.addEventListener('keydown', function(event) {
@@ -761,10 +768,6 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
-
-// Set up event listeners for the buttons in the escape menu
-document.getElementById('returnButton').addEventListener('click', hideEscapeMenu);
-document.getElementById('exitButton').addEventListener('click', exitGame);
 
 function addItemToInventory(imageSrc, altText) {
     const inventorySlots = document.querySelectorAll(".inventory-slot");
@@ -808,3 +811,6 @@ window.updateAIImage = updateAIImage;
 window.updateRoom = updateRoom;
 window.handleRoomEntry = handleRoomEntry;
 window.createChoiceButtons = createChoiceButtons;
+// Set up event listeners for the buttons in the escape menu
+document.getElementById('returnButton').addEventListener('click', hideEscapeMenu);
+document.getElementById('exitButton').addEventListener('click', exitGame);

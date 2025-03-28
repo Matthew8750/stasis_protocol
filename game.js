@@ -157,8 +157,40 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
-
-    // Check if the Armory is locked
+    if (roomName === "Cafeteria") {
+        typeText("[N0VA]: This is the Cafeteria, a designated crew dining area. Status: abandoned. Food trays and supplies are scattered—signs of a hasty departure. Terminal access available, but system integrity is unknown. No immediate threats detected, but caution is advised.");
+    }
+    if (roomName === "Med Bay"){
+        typeText("[N0VA]: This is the Med Bay. Primary function: medical treatment and emergency care. Current status: compromised. Bloodstains indicate recent injury or conflict. Medical equipment is still operational, but some systems appear damaged. Proceed with caution—unknown variables present. A security keycard is present; retrieval is advised, as it may be critical for future access.")
+    }
+    if (roomName === "Admin"){
+        typeText("[N0VA]: This is the Admin Control Room. Primary function: ship-wide system management and oversight. Status: heavily damaged. Multiple terminals are active but unstable—data corruption detected. Debris and signs of struggle indicate past conflict.")
+    }
+    if (roomName === "Hallway One"){
+        typeText("[N0VA]: This is Hallway One. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Hallway Two"){   
+        typeText("[N0VA]: This is Hallway Two. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Hallway Three"){
+        typeText("[N0VA]: This is Hallway Three. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Hallway Final"){
+        typeText("[N0VA]: This is Hallway Final. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Engine Right"){
+        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard.")
+    }
+    if (roomName === "Engine Left"){   
+        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard. A wrench is present; retrieval is advised, as it may be helpul in the future.")
+    }
+    if (roomName === "Lab"){
+        typeText("[N0VA]: This laboratory appears compromised. The containment unit has been forcibly opened. There are signs of struggle... blood. Whatever was inside is no longer here.")
+    }
+    if (roomName === "Armory"){
+        typeText("[N0VA]: This is the Armory, the ship’s secured weapons storage. Here you’ll find essential firepower. A high-powered firearm has been left, your best chance at defending against the hostile threat onboard. Arm yourself and proceed with caution.")
+    }
+        // Check if the Armory is locked
     if (roomName === "Armory" && !isItemInInventory("Keycard")) {
         typeText("[System]: The Armory is locked. You need the keycard to enter.");
         console.log("[Debug]: Access to the Armory denied. Keycard not found in inventory.");

@@ -68,7 +68,8 @@ function handleRoomEntry(roomName) {
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
-            choices: ["Hallway One"]
+            choices: ["Hallway One"],
+            keycard: true // Add a flag to indicate the keycard should be displayed
         },
         "Lab": {
             image: "images/room_Lab.jpg",
@@ -128,11 +129,21 @@ function handleRoomEntry(roomName) {
     // Change the room image
     changeImage(roomInfo.image);
 
+    // Show or hide the keycard image based on the room
+    const keycardPanel = document.querySelector(".keycard-item-panel");
+    if (roomInfo.keycard) {
+        keycardPanel.style.display = "block"; // Show the keycard
+        console.log("Keycard panel is now visible.");
+    } else {
+        keycardPanel.style.display = "none"; // Hide the keycard
+        console.log("Keycard panel is hidden.");
+    }
+
     // Create buttons for available choices
-    createChoiceButtons(roomInfo.choices);
+    createChoiceButtons(roomInfo.choices, roomInfo.keycard);
 }
 
-function createChoiceButtons(choices) {
+function createChoiceButtons(choices, hasKeycard) {
     const consolePanel = document.getElementById("console");
 
     if (!choices || choices.length === 0) {
@@ -184,6 +195,58 @@ function createChoiceButtons(choices) {
 
         buttonContainer.appendChild(button);
     });
+
+    // Add a "Pickup Keycard" button if the room has a keycard
+    if (hasKeycard) {
+        const pickupButton = document.createElement("button");
+        pickupButton.textContent = "Pickup Keycard";
+
+        // Debugging: Log button creation for keycard
+        console.log("Creating Pickup Keycard button");
+
+        // Click handler for the keycard button
+        pickupButton.addEventListener('click', () => {
+            console.log("[Debug]: Keycard picked up!");
+
+            // Hide the keycard image and the button
+            const keycardPanel = document.querySelector(".keycard-item-panel");
+            keycardPanel.style.display = "none";
+            pickupButton.style.display = "none";
+
+            // Add the keycard to the first empty inventory slot
+            const inventorySlots = document.querySelectorAll(".inventory-slot");
+            const keycardImage = document.createElement("img");
+            keycardImage.src = "images/item_Keycard.png"; // Path to the keycard image
+            keycardImage.alt = "Keycard";
+            keycardImage.style.maxWidth = "100%";
+            keycardImage.style.maxHeight = "100%";
+
+            let addedToInventory = false;
+            for (let slot of inventorySlots) {
+                if (slot.children.length === 0) { // Check if the slot is empty
+                    slot.appendChild(keycardImage);
+                    console.log("[System]: Keycard added to inventory slot.");
+                    addedToInventory = true;
+                    break;
+                }
+            }
+
+            if (!addedToInventory) {
+                console.log("[Error]: No empty inventory slots available.");
+            }
+        });
+
+        // Styled for better appearance
+        pickupButton.style.padding = "5px 10px";
+        pickupButton.style.backgroundColor = "black";
+        pickupButton.style.color = "rgb(0, 255, 0)";
+        pickupButton.style.border = "1px solid rgb(0, 255, 0)";
+        pickupButton.style.fontFamily = "monospace";
+        pickupButton.style.cursor = "pointer";
+        pickupButton.style.borderRadius = "4px";
+
+        buttonContainer.appendChild(pickupButton);
+    }
 
     // Debugging: Log the button container's HTML to check if buttons are added
     console.log("Button container HTML:", buttonContainer.innerHTML);

@@ -2,7 +2,7 @@
 <html> 
     <head>
         <title>Stasis Protocol Play Game</title>
-        <link href="sp_style.css" type="text/css" rel="stylesheet">
+        <link href="sp-styles.css" type="text/css" rel="stylesheet">
     </head>
 
     <body>
@@ -10,7 +10,8 @@
         <p id="welcomeMessage"></p> <!-- This will display the logged-in user -->
 
         <nav>
-            <a href="sp_game.html">Play Game</a>
+            <a href="sp-game.html">Play Game</a>
+            <a href="sp-leaderboard.html">Leaderboard</a> <!-- Link to individual player statistics -->
             <a href="#" onclick="logout()">Log Out</a> <!-- Log out link -->
         </nav>
 
@@ -29,6 +30,12 @@
     getID.append('password', 'rZk8FVrXNllcPl8Y');
     getID.append('database', 'CSC1034_CW_13');
     getID.append('query', `SELECT player_ID FROM player WHERE player_name = '${username}'`);
+            if (username) {
+                document.getElementById('welcomeMessage').innerText = `Welcome, ${username}!`;
+            } else {
+                // If no user is logged in, send them back to the main menu
+                window.location.href = 'sp-mainmenu.html';
+            }
 
     try {
         let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: getID });
@@ -52,7 +59,7 @@
 retrievePlayerID(); // Call the async function to run it
             function logout() {
                 sessionStorage.removeItem('loggedInUser'); // Clear user data
-                window.location.href = 'sp_menu.html'; // Redirect to menu
+                window.location.href = 'sp-mainmenu.html'; // Redirect to menu
             }
         </script>
     </body>

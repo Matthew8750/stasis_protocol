@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Stasis Protocol Login</title>
-        <link href="sp_style.css" type="text/css" rel="stylesheet">
+        <link href="sp-styles.css" type="text/css" rel="stylesheet">
     </head>
     <body>
 
@@ -23,7 +23,7 @@
             <!-- Login and Navigation buttons -->
             <nav class="button-nav">
                 <a href="#" onclick="checkLogin()" id="login_button">Login</a>
-                <a href="sp_menu.html" id="back_button">Back to Main Menu</a>
+                <a href="sp-mainmenu.html" id="back_button">Back to Main Menu</a>
             </nav>
         </div>
 
@@ -73,7 +73,7 @@
                 const isValid = await validatePlayer(username, hashedPassword);
                 if (isValid) {
                     sessionStorage.setItem('loggedInUser', username); // Save user
-                    window.location.href = 'sp_play.html'; // Redirect to gameplay
+                    window.location.href = 'sp-gamehub.html'; // Redirect to gameplay
                 } else {
                     resultsDiv.innerHTML = '<p style="color:red;">Invalid username or password.</p>';
                 }

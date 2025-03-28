@@ -7,14 +7,27 @@ let time_played = 0;
 let rooms_explored = 0;
 let location_name = "Cryogenic Chamber";
 let startTime = Date.now();  // Store the timestamp when the game starts
+let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
+let gunPickedUp = false; // Global flag to track if the gun has been picked up
 
 function initializeGame() {
+    // Play background music
+    let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
+    backgroundMusic.loop = true;
+    
+    // Wait for user to click anywhere on the page
+    document.addEventListener('click', function() {
+        backgroundMusic.play().catch(function(error) {
+            console.error("Error playing audio:", error);
+        });
+    });
+
     typeText(
         "[System]: Game initialized...\n" +
         "You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet.\n" +
         "Stasis disengaged. System diagnostics: compromised.\n" +
         "A mechanical voice cuts through the silence.\n" +
-        "[AI-Companion]: Welcome back, Operator. I'm your AI companion. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
+        "[N0VA]: Welcome back, Operator. I'm your AI companion 'N0VA'. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
     );
     typeText(noOfDeaths.toString());
 
@@ -124,7 +137,8 @@ function handleRoomEntry(roomName) {
         },
         "Engine Left": {
             image: "images/room_Engine1.jpg",
-            choices: ["Hallway Three"]
+            choices: ["Hallway Three"],
+            wrench: true // Add a flag to indicate the wrench should be displayed
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
@@ -136,7 +150,8 @@ function handleRoomEntry(roomName) {
         },
         "Armory": {
             image: "images/room_Armory.jpg",
-            choices: ["Hallway Final"]
+            choices: ["Hallway Final"],
+            gun: true // Add a flag to indicate the gun should be displayed
         },
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
@@ -148,6 +163,53 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
+    if (roomName === "Cafeteria") {
+        typeText("[N0VA]: This is the Cafeteria, a designated crew dining area. Status: abandoned. Food trays and supplies are scattered—signs of a hasty departure. Terminal access available, but system integrity is unknown. No immediate threats detected, but caution is advised.");
+    }
+    if (roomName === "Med Bay"){
+        typeText("[N0VA]: This is the Med Bay. Primary function: medical treatment and emergency care. Current status: compromised. Bloodstains indicate recent injury or conflict. Medical equipment is still operational, but some systems appear damaged. Proceed with caution—unknown variables present. A security keycard is present; retrieval is advised, as it may be critical for future access.")
+    }
+    if (roomName === "Admin"){
+        typeText("[N0VA]: This is the Admin Control Room. Primary function: ship-wide system management and oversight. Status: heavily damaged. Multiple terminals are active but unstable—data corruption detected. Debris and signs of struggle indicate past conflict.")
+    }
+    if (roomName === "Hallway One"){
+        typeText("[N0VA]: This is Hallway One. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Hallway Two"){   
+        typeText("[N0VA]: This is Hallway Two. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Hallway Three"){
+        typeText("[N0VA]: This is Hallway Three. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Hallway Final"){
+        typeText("[N0VA]: This is Hallway Final. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
+    }
+    if (roomName === "Engine Right"){
+        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard.")
+    }
+    if (roomName === "Engine Left"){   
+        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard. A wrench is present; retrieval is advised, as it may be helpul in the future.")
+    }
+    if (roomName === "Lab"){
+        typeText("[N0VA]: This laboratory appears compromised. The containment unit has been forcibly opened. There are signs of struggle... blood. Whatever was inside is no longer here.")
+    }
+    if (roomName === "Armory"){
+        typeText("[N0VA]: This is the Armory, the ship’s secured weapons storage. Here you’ll find essential firepower. A high-powered firearm has been left, your best chance at defending against the hostile threat onboard. Arm yourself and proceed with caution.")
+    }
+        // Check if the Armory is locked
+    if (roomName === "Armory" && !isItemInInventory("Keycard")) {
+        typeText("[System]: The Armory is locked. You need the keycard to enter.");
+        console.log("[Debug]: Access to the Armory denied. Keycard not found in inventory.");
+        return; // Prevent access to the Armory
+    }
+
+    // Check if the Escape Pods require the wrench
+    if (roomName === "Escape Pods" && !isItemInInventory("Wrench")) {
+        typeText("[N0VA]: The escape pods are damaged. You need the wrench to repair them and escape.");
+        console.log("[Debug]: Access to escape pods denied. Wrench not found in inventory.");
+        return; // Prevent escape without the wrench
+    }
+
     const roomInfo = roomData[roomName];
 
     // Log room entry (Debugging)
@@ -177,14 +239,35 @@ function handleRoomEntry(roomName) {
         console.log("Keycard panel is hidden.");
     }
     rooms_explored++;
+    
+    // Show or hide the wrench image based on the room and whether it has been picked up
+    const wrenchPanel = document.querySelector(".wrench-item-panel");
+    if (roomInfo.wrench && !wrenchPickedUp) {
+        wrenchPanel.style.display = "block"; // Show the wrench
+        console.log("Wrench panel is now visible.");
+    } else {
+        wrenchPanel.style.display = "none"; // Hide the wrench
+        console.log("Wrench panel is hidden.");
+    }
+    
+    // Show or hide the gun image
+    const gunPanel = document.querySelector(".gun-item-panel");
+    if (roomInfo.gun && !gunPickedUp) {
+        gunPanel.style.display = "block";
+        console.log("Gun panel is now visible.");
+    } else {
+        gunPanel.style.display = "none";
+        console.log("Gun panel is hidden.");
+    }
+
     // Create buttons for available choices
-    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp);
+    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp, roomInfo.wrench && !wrenchPickedUp, roomInfo.gun && !gunPickedUp);
 }
 
 function labEvent() {
     // Stop any ongoing typing and notify the player
     stopTyping();
-    typeText("[AI Companion]: Warning: Unknown lifeform detected nearby. Sensors indicate rapid movement—it's close. You need to hide, now. Find cover and remain silent. I'll monitor its position… Stay out of sight.", 15);
+    typeText("[N0VA] Did you hear that? Hide now!", 15);
 
     const consolePanel = document.getElementById("console");
     const choices = ["Hide inside the medical closet.", "Hide under the desk"];
@@ -215,6 +298,7 @@ function labEvent() {
     // Start a timer that kills the player if they don't hide in 5 seconds
     let hideTimer = setTimeout(() => {
         console.log("[DEBUG] Timer expired! Player failed to hide."); // Debugging log
+        typeText("[N0VA] Too slow! It's too late...", 15);
         changeImage("images/LabRoomImage_Death.png");
         playerDeath();
     }, 7000); // 5 seconds
@@ -256,7 +340,8 @@ function labEvent() {
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
 }
 
-function createChoiceButtons(choices, hasKeycard) {
+
+function createChoiceButtons(choices, hasKeycard, hasWrench, hasGun) {
     const consolePanel = document.getElementById("console");
 
     if (!choices || choices.length === 0) {
@@ -274,12 +359,12 @@ function createChoiceButtons(choices, hasKeycard) {
     const buttonContainer = document.createElement("div");
     buttonContainer.id = "button-container";
     buttonContainer.style.position = "absolute";
-    buttonContainer.style.bottom = "5px"; // Always against the bottom
-    buttonContainer.style.left = "5px"; // Always against the left border
-    buttonContainer.style.display = "flex"; // Set to row direction for left to right
-    buttonContainer.style.gap = "5px"; // Spacing between buttons
-    buttonContainer.style.flexWrap = "wrap"; // Allow buttons to wrap if necessary
-    buttonContainer.style.maxWidth = "100%"; // Prevent overflow
+    buttonContainer.style.bottom = "5px";
+    buttonContainer.style.left = "5px";
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "5px";
+    buttonContainer.style.flexWrap = "wrap";
+    buttonContainer.style.maxWidth = "100%";
 
     // Create buttons for each room choice
     choices.forEach(choice => {
@@ -287,17 +372,11 @@ function createChoiceButtons(choices, hasKeycard) {
         button.textContent = choice;
 
         button.addEventListener('click', () => {
-            handleRoomEntry(choice); // Trigger room entry with the chosen room
+            handleRoomEntry(choice);
         });
 
-        // Style for better appearance inside the console
-        button.style.padding = "5px 10px";
-        button.style.backgroundColor = "black";
-        button.style.color = "rgb(0, 255, 0)";
-        button.style.border = "1px solid rgb(0, 255, 0)";
-        button.style.fontFamily = "monospace";
-        button.style.cursor = "pointer";
-        button.style.borderRadius = "4px";
+        // Apply styles for room buttons
+        styleButton(button);
 
         buttonContainer.appendChild(button);
     });
@@ -307,10 +386,6 @@ function createChoiceButtons(choices, hasKeycard) {
         const pickupButton = document.createElement("button");
         pickupButton.textContent = "Pickup Keycard";
 
-        // Debugging: Log button creation for keycard
-        console.log("Creating Pickup Keycard button");
-
-        // Click handler for the keycard button
         pickupButton.addEventListener('click', () => {
             console.log("[Debug]: Keycard picked up!");
 
@@ -320,39 +395,66 @@ function createChoiceButtons(choices, hasKeycard) {
             pickupButton.style.display = "none";
 
             // Add the keycard to the first empty inventory slot
-            const inventorySlots = document.querySelectorAll(".inventory-slot");
-            const keycardImage = document.createElement("img");
-            keycardImage.src = "images/item_Keycard.png"; // Path to the keycard image
-            keycardImage.alt = "Keycard";
-            keycardImage.style.maxWidth = "100%";
-            keycardImage.style.maxHeight = "100%";
-
-            let addedToInventory = false;
-            for (let slot of inventorySlots) {
-                if (slot.children.length === 0) { // Check if the slot is empty
-                    slot.appendChild(keycardImage);
-                    console.log("[System]: Keycard added to inventory slot.");
-                    addedToInventory = true;
-                    break;
-                }
-            }
-
-            if (!addedToInventory) {
-                console.log("[Error]: No empty inventory slots available.");
-            }
+            addItemToInventory("images/item_Keycard.png", "Keycard");
 
             // Set the flag to true to prevent the keycard from being picked up again
             keycardPickedUp = true;
         });
 
-        // Styled for better appearance
-        pickupButton.style.padding = "5px 10px";
-        pickupButton.style.backgroundColor = "black";
-        pickupButton.style.color = "rgb(0, 255, 0)";
-        pickupButton.style.border = "1px solid rgb(0, 255, 0)";
-        pickupButton.style.fontFamily = "monospace";
-        pickupButton.style.cursor = "pointer";
-        pickupButton.style.borderRadius = "4px";
+        // Apply styles for the "Pickup Keycard" button
+        styleButton(pickupButton);
+
+        buttonContainer.appendChild(pickupButton);
+    }
+
+    // Add a "Pickup Wrench" button if the room has a wrench and it hasn't been picked up
+    if (hasWrench) {
+        const pickupButton = document.createElement("button");
+        pickupButton.textContent = "Pickup Wrench";
+
+        pickupButton.addEventListener('click', () => {
+            console.log("[Debug]: Wrench picked up!");
+
+            // Hide the wrench image and the button
+            const wrenchPanel = document.querySelector(".wrench-item-panel");
+            wrenchPanel.style.display = "none";
+            pickupButton.style.display = "none";
+
+            // Add the wrench to the first empty inventory slot
+            addItemToInventory("images/item_Wrench.png", "Wrench");
+
+            // Set the flag to true to prevent the wrench from being picked up again
+            wrenchPickedUp = true;
+        });
+
+        // Apply styles for the "Pickup Wrench" button
+        styleButton(pickupButton);
+
+        buttonContainer.appendChild(pickupButton);
+    }
+
+    // Add a "Pickup Gun" button if the room has a gun and it hasn't been picked up
+    if (hasGun) {
+        const pickupButton = document.createElement("button");
+        pickupButton.textContent = "Pickup Gun";
+
+        pickupButton.addEventListener('click', () => {
+            console.log("[Debug]: Gun picked up!");
+
+            // Hide the gun image and the button
+            const gunPanel = document.querySelector(".gun-item-panel");
+            gunPanel.style.display = "none";
+            pickupButton.style.display = "none";
+
+            // Add the gun to the first empty inventory slot
+            addItemToInventory("images/item_Gun.png", "Gun");
+
+            // Set the flag to true to prevent the gun from being picked up again
+            gunPickedUp = true;
+        });
+
+        // Apply styles for the "Pickup Gun" button
+        styleButton(pickupButton);
 
         buttonContainer.appendChild(pickupButton);
     }
@@ -360,6 +462,17 @@ function createChoiceButtons(choices, hasKeycard) {
     // Append the button container at the bottom-left of the console
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep the buttons visible
+}
+
+// Helper function to apply button styles
+function styleButton(button) {
+    button.style.padding = "5px 10px";
+    button.style.backgroundColor = "black";
+    button.style.color = "rgb(0, 255, 0)";
+    button.style.border = "1px solid rgb(0, 255, 0)";
+    button.style.fontFamily = "monospace";
+    button.style.cursor = "pointer";
+    button.style.borderRadius = "4px";
 }
 
 function playerDeath() {
@@ -653,6 +766,38 @@ document.addEventListener('keydown', function(event) {
 document.getElementById('returnButton').addEventListener('click', hideEscapeMenu);
 document.getElementById('exitButton').addEventListener('click', exitGame);
 
+function addItemToInventory(imageSrc, altText) {
+    const inventorySlots = document.querySelectorAll(".inventory-slot");
+    const itemImage = document.createElement("img");
+    itemImage.src = imageSrc;
+    itemImage.alt = altText;
+    itemImage.style.maxWidth = "100%";
+    itemImage.style.maxHeight = "100%";
+
+    let addedToInventory = false;
+    for (let slot of inventorySlots) {
+        if (slot.children.length === 0) { // Check if the slot is empty
+            slot.appendChild(itemImage);
+            console.log(`[System]: ${altText} added to inventory slot.`);
+            addedToInventory = true;
+            break;
+        }
+    }
+
+    if (!addedToInventory) {
+        console.log("[Error]: No empty inventory slots available.");
+    }
+}
+
+function isItemInInventory(itemAltText) {
+    const inventorySlots = document.querySelectorAll(".inventory-slot");
+    for (let slot of inventorySlots) {
+        if (slot.children.length > 0 && slot.children[0].alt === itemAltText) {
+            return true; // Item is found in the inventory
+        }
+    }
+    return false; // Item is not in the inventory
+}
 
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;

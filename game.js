@@ -1,3 +1,7 @@
+let typingTimeouts = []; // Store all active timeouts
+let typingInProgress = false; // Track ongoing typing
+let labEventTriggered = false;
+
 function initializeGame() {
     typeText(
         "[System]: Game initialized...\n" +
@@ -6,12 +10,15 @@ function initializeGame() {
         "A mechanical voice cuts through the silence.\n" +
         "[AI-Companion]: Welcome back, Operator. I'm your AI companion. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
     );
+    let labEventTriggered = false;
     handleRoomEntry("Cryogenic Chamber");
 }
 
-//type to console, use for dialogue or story
-function typeText(message) {
+function typeText(message, speed = 30) {  // Default speed set to 30
     const consolePanel = document.getElementById("console");
+
+    // Stop any ongoing typing
+    stopTyping();
 
     // Create a text container to hold the dialogue separately from buttons
     let textContainer = document.getElementById("text-container");
@@ -22,8 +29,8 @@ function typeText(message) {
     }
     
     textContainer.innerHTML = ""; // Clear only the text area, not buttons
+    typingInProgress = true; // Mark typing as active
 
-    let index = 0;
     let cleanMessage = message.split("\n"); // Split message into lines
 
     function typeLine(lineIndex = 0) {
@@ -32,18 +39,21 @@ function typeText(message) {
             let charIndex = 0;
 
             function typeCharacter() {
+                if (!typingInProgress) return; // Stop if interrupted
+
                 if (charIndex < line.length) {
                     textContainer.innerHTML += line[charIndex];
                     charIndex++;
-                    setTimeout(typeCharacter, 30); // Typing speed
+                    typingTimeouts.push(setTimeout(typeCharacter, speed)); // Use default or passed speed
                 } else {
                     textContainer.innerHTML += "<br>"; // Proper line break
-                    setTimeout(() => typeLine(lineIndex + 1), 300); // Delay between lines
+                    typingTimeouts.push(setTimeout(() => typeLine(lineIndex + 1), 300)); // Delay between lines
                 }
             }
 
             typeCharacter();
         } else {
+            typingInProgress = false; // Mark typing as finished
             consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
         }
     }
@@ -51,12 +61,18 @@ function typeText(message) {
     typeLine();
 }
 
+// Function to stop any ongoing typing
+function stopTyping() {
+    typingInProgress = false; // Mark typing as stopped
+    typingTimeouts.forEach(clearTimeout); // Clear all active timeouts
+    typingTimeouts = []; // Reset timeouts array
+}
 
 function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
 
-function handleRoomEntry(roomName) {
+async function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
@@ -73,7 +89,7 @@ function handleRoomEntry(roomName) {
         },
         "Lab": {
             image: "images/room_Lab.jpg",
-            choices: ["Hallway Two", "Hallway Three"]
+            choices: ["Hallway One", "Hallway Two", "Hallway Three"]
         },
         "Hallway Two": {
             image: "images/room_Hallway.jpg",
@@ -81,7 +97,11 @@ function handleRoomEntry(roomName) {
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Hallway Two"]
+            choices: ["Hallway Two", "Search Desk"]
+        },
+        "Search Desk": {
+            image: "images/room_SearchDesk.jpg",
+            choices: ["Admin"]
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
@@ -117,11 +137,18 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
-
     const roomInfo = roomData[roomName];
 
     // Log room entry (Debugging)
     console.log(`[Debug]: Entered ${roomName}...`);
+
+    // If entering Lab and event hasn't triggered, call labEvent
+    if (roomName === "Lab" && !labEventTriggered) {
+        console.log("[Event]: Lab event triggered!");
+        labEvent();
+        labEventTriggered = true;
+        return;
+    }
 
     // Update room display
     document.getElementById("room-display").textContent = `Room: ${roomName}`;
@@ -143,12 +170,87 @@ function handleRoomEntry(roomName) {
     createChoiceButtons(roomInfo.choices, roomInfo.keycard);
 }
 
+function labEvent() {
+    // Stop any ongoing typing and notify the player
+    stopTyping();
+    typeText("[AI-Companion] Did you hear that? Hide now!", 15);
+
 function createChoiceButtons(choices, hasKeycard) {
+    const consolePanel = document.getElementById("console");
+    const choices = ["Hide inside the medical closet.", "Hide under the desk"];
+    changeImage("images/room_Lab.jpg");
+
+    if (!choices || choices.length === 0) {
+        playerDeath();
+        return;
+    }
+
+    // Remove any existing button container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+
+    // Create a button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.id = "button-container";
+    buttonContainer.style.position = "absolute";
+    buttonContainer.style.bottom = "5px";
+    buttonContainer.style.left = "5px";
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "5px";
+    buttonContainer.style.flexWrap = "wrap";
+    buttonContainer.style.maxWidth = "100%";
+
+    // Start a timer that kills the player if they don't hide in 5 seconds
+    let hideTimer = setTimeout(() => {
+        console.log("[DEBUG] Timer expired! Player failed to hide."); // Debugging log
+        typeText("[AI-Companion] Too slow! It's too late...", 15);
+        changeImage("images/LabRoomImage_Death.png");
+        playerDeath();
+    }, 5000); // 5 seconds
+
+    choices.forEach(choice => {
+        const button = document.createElement("button");
+        button.textContent = choice;
+
+        // Assign specific behavior based on choice
+        button.addEventListener("click", () => {
+            console.log(`[DEBUG] Player selected: ${choice}`); // Debugging log
+            clearTimeout(hideTimer); // Cancel the death timer
+
+            if (choice === "Hide inside the medical closet.") {
+                labEventTriggered = true;
+                handleRoomEntry("Lab");
+            } else if (choice === "Hide under the desk") {
+                changeImage("images/LabRoomImage_Death.png");
+                playerDeath();
+            }
+        });
+
+        // Styled for better appearance
+        button.style.padding = "5px 10px";
+        button.style.backgroundColor = "black";
+        button.style.color = "rgb(0, 255, 0)";
+        button.style.border = "1px solid rgb(0, 255, 0)";
+        button.style.fontFamily = "monospace";
+        button.style.cursor = "pointer";
+        button.style.borderRadius = "4px";
+
+        buttonContainer.appendChild(button);
+    });
+
+    // Append the button container to the console
+    consolePanel.appendChild(buttonContainer);
+    consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
+}
+
+
+function createChoiceButtons(choices) {
     const consolePanel = document.getElementById("console");
 
     if (!choices || choices.length === 0) {
-        consolePanel.innerHTML += "[Error]: No available exits.<br>";
-        return;
+       playerDeath();
     }
 
     // Remove any existing button container
@@ -168,19 +270,11 @@ function createChoiceButtons(choices, hasKeycard) {
     buttonContainer.style.flexWrap = "wrap"; // Allow buttons to wrap if necessary
     buttonContainer.style.maxWidth = "100%"; // Prevent overflow
 
-    // Debugging: Log choices to ensure they are being passed correctly
-    console.log("Choices available:", choices);
-
     choices.forEach(choice => {
         const button = document.createElement("button");
         button.textContent = choice;
 
-        // Debugging: Log button creation to verify that buttons are being made
-        console.log("Creating button for:", choice);
-
-        // Simple click handler to test if button clicks are recognized
         button.addEventListener('click', () => {
-            console.log(`[Debug]: Button clicked for room: ${choice}`); // Log when button is clicked
             handleRoomEntry(choice); // Trigger room entry with the chosen room
         });
 
@@ -247,15 +341,61 @@ function createChoiceButtons(choices, hasKeycard) {
 
         buttonContainer.appendChild(pickupButton);
     }
-
-    // Debugging: Log the button container's HTML to check if buttons are added
-    console.log("Button container HTML:", buttonContainer.innerHTML);
-
     // Append the button container at the bottom-left of the console
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep the buttons visible
 }
 
+function playerDeath() {
+    typeText("You died...");
+
+    // Play death sound
+    let deathSound = new Audio("Audio/PlayerDeath.mp3");
+    deathSound.play();
+
+    // Remove any existing button container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+
+    // Wait for the typing animation to finish before adding the button
+    setTimeout(() => {
+        const consolePanel = document.getElementById("console");
+
+        // Create a button container and position it at the bottom-left
+        const buttonContainer = document.createElement("div");
+        buttonContainer.id = "button-container";
+        buttonContainer.style.position = "absolute";
+        buttonContainer.style.bottom = "5px"; // Always against the bottom
+        buttonContainer.style.left = "5px"; // Always against the left border
+        buttonContainer.style.display = "flex"; // Set to row direction for left to right
+        buttonContainer.style.gap = "5px"; // Spacing between buttons
+        buttonContainer.style.flexWrap = "wrap"; // Allow buttons to wrap if necessary
+        buttonContainer.style.maxWidth = "100%"; // Prevent overflow
+
+        const button = document.createElement("button");
+        button.textContent = "Restart";
+
+        button.addEventListener("click", () => {
+            initializeGame();
+        });
+
+        // Styled for better appearance inside the console
+        button.style.padding = "5px 10px";
+        button.style.backgroundColor = "black";
+        button.style.color = "rgb(0, 255, 0)";
+        button.style.border = "1px solid rgb(0, 255, 0)";
+        button.style.fontFamily = "monospace";
+        button.style.cursor = "pointer";
+        button.style.borderRadius = "4px";
+
+        buttonContainer.appendChild(button);
+
+        // Append the button container at the bottom-left of the console
+        consolePanel.appendChild(buttonContainer);
+    }, 2000); // Delay adding the button to allow text to fully type out
+}
 
 function updateAIImage(newSrc) {
     document.getElementById("ai-companion").src = newSrc;
@@ -383,6 +523,93 @@ async function fetchAndDisplayInventory() {
         console.log('[Error]: Unable to fetch inventory items. Please try again later.');
     }
 }
+
+
+
+
+
+
+async function addItemToInventory(itemName, itemImage) {
+    console.log(`[System]: Adding ${itemName} to inventory...`);
+
+    // Retrieve the logged-in user's username from sessionStorage
+    const username = sessionStorage.getItem('loggedInUser');
+    if (!username) {
+        console.error('[Error]: No user is logged in.');
+        return;
+    }
+
+    let hostname = 'localhost';
+    let dbUsername = 'jrice27'; 
+    let password = 'rZk8FVrXNllcPl8Y'; 
+    let database = 'CSC1034_CW_13';
+
+    // Query to fetch player_id based on the logged-in username
+    let playerQuery = `SELECT player_id FROM players WHERE player_username = '${username}'`;
+
+    // Query to fetch item_id based on the item name
+    let itemQuery = `SELECT item_id FROM items WHERE item_name = '${itemName}'`;
+
+    // First, retrieve the player_id and item_id
+    try {
+        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+
+        // Fetch player_id
+        let response = await fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams({ query: playerQuery, hostname, username: dbUsername, password, database })
+        });
+        let playerResult = await response.json();
+
+        if (playerResult.error || playerResult.data.length === 0) {
+            console.error('[Error]: Player not found.');
+            return;
+        }
+
+        let playerId = playerResult.data[0].player_id;
+
+        // Fetch item_id
+        response = await fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams({ query: itemQuery, hostname, username: dbUsername, password, database })
+        });
+        let itemResult = await response.json();
+
+        if (itemResult.error || itemResult.data.length === 0) {
+            console.error('[Error]: Item not found.');
+            return;
+        }
+
+        let itemId = itemResult.data[0].item_id;
+
+        // Query to insert the item into the player's inventory
+        let query = `INSERT INTO player_inventory (player_id, item_id) VALUES (${playerId}, ${itemId})`;
+
+        // Insert the item into the inventory
+        response = await fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams({ query: query, hostname, username: dbUsername, password, database })
+        });
+
+        let result = await response.json();
+
+        if (result.error) {
+            console.error(`[Error]: ${result.error}`);
+            return;
+        }
+
+        console.log(`[System]: ${itemName} successfully added to ${username}'s inventory.`);
+        await fetchAndDisplayInventory(); // Refresh inventory UI
+
+    } catch (error) {
+        console.error('[Error]: Unable to add item to inventory.', error);
+    }
+}
+
+
+
+
+
 
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;

@@ -10,8 +10,8 @@
         <p id="welcomeMessage"></p> <!-- This will display the logged-in user -->
 
         <nav>
-            <a href="sp_game.html">Play Game</a>
-            <a href="sp_playerStats.html">Game Stats</a> <!-- Link to individual player statistics -->
+            <a href="sp-game.html">Play Game</a>
+            <a href="sp-leaderboard.html">Leaderboard</a> <!-- Link to individual player statistics -->
             <a href="#" onclick="logout()">Log Out</a> <!-- Log out link -->
         </nav>
 
@@ -25,12 +25,12 @@
                 document.getElementById('welcomeMessage').innerText = `Welcome, ${username}!`;
             } else {
                 // If no user is logged in, send them back to the main menu
-                window.location.href = 'sp_menu.html';
+                window.location.href = 'sp-mainmenu.html';
             }
 
             function logout() {
                 sessionStorage.removeItem('loggedInUser'); // Clear user data
-                window.location.href = 'sp_menu.html'; // Redirect to menu
+                window.location.href = 'sp-mainmenu.html'; // Redirect to menu
             }
         </script>
     </body>

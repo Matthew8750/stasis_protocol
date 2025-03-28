@@ -414,3 +414,21 @@ nav a:hover {
     height: 100%;
     object-fit: contain; /* Maintain aspect ratio */
 }
+
+/* Wrench Item Panel */
+.wrench-item-panel {
+    position: absolute;
+    top: 42%; /* Same position as the keycard */
+    left: 54%; /* Same position as the keycard */
+    transform: translate(-50%, -50%);
+    width: 40px; /* Same size as the keycard */
+    height: 40px;
+    z-index: 2000; /* Ensure it appears above all other elements */
+    display: none; /* Hidden by default */
+}
+
+.wrench-item-panel img {
+    width: 100%; /* Make the image fit the container */
+    height: 100%;
+    object-fit: contain; /* Maintain aspect ratio */
+}

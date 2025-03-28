@@ -11,7 +11,15 @@ function initializeGame() {
         "A mechanical voice cuts through the silence.\n" +
         "[AI-Companion]: Welcome back, Operator. I'm your AI companion. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
     );
-    let labEventTriggered = false;
+
+    // Reset global flags
+    labEventTriggered = false;
+    keycardPickedUp = false; // Reset the keycard flag
+
+    // Clear the inventory
+    clearInventory();
+
+    // Start the game in the Cryogenic Chamber
     handleRoomEntry("Cryogenic Chamber");
 }
 
@@ -524,6 +532,14 @@ async function fetchAndDisplayInventory() {
         console.error('Error:', error);
         console.log('[Error]: Unable to fetch inventory items. Please try again later.');
     }
+}
+
+function clearInventory() {
+    const inventorySlots = document.querySelectorAll(".inventory-slot");
+    inventorySlots.forEach(slot => {
+        slot.innerHTML = ""; // Remove all items from the inventory slots
+    });
+    console.log("[System]: Inventory cleared.");
 }
 
 // Expose functions to global scope

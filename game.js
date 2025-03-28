@@ -72,7 +72,7 @@ function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
 
-async function handleRoomEntry(roomName) {
+function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
@@ -84,8 +84,7 @@ async function handleRoomEntry(roomName) {
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
-            choices: ["Hallway One"],
-            keycard: true // Add a flag to indicate the keycard should be displayed
+            choices: ["Hallway One"]
         },
         "Lab": {
             image: "images/room_Lab.jpg",
@@ -97,11 +96,7 @@ async function handleRoomEntry(roomName) {
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Hallway Two", "Search Desk"]
-        },
-        "Search Desk": {
-            image: "images/room_SearchDesk.jpg",
-            choices: ["Admin"]
+            choices: ["Hallway Two"]
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
@@ -156,18 +151,8 @@ async function handleRoomEntry(roomName) {
     // Change the room image
     changeImage(roomInfo.image);
 
-    // Show or hide the keycard image based on the room
-    const keycardPanel = document.querySelector(".keycard-item-panel");
-    if (roomInfo.keycard) {
-        keycardPanel.style.display = "block"; // Show the keycard
-        console.log("Keycard panel is now visible.");
-    } else {
-        keycardPanel.style.display = "none"; // Hide the keycard
-        console.log("Keycard panel is hidden.");
-    }
-
     // Create buttons for available choices
-    createChoiceButtons(roomInfo.choices, roomInfo.keycard);
+    createChoiceButtons(roomInfo.choices);
 }
 
 function labEvent() {
@@ -175,7 +160,6 @@ function labEvent() {
     stopTyping();
     typeText("[AI-Companion] Did you hear that? Hide now!", 15);
 
-function createChoiceButtons(choices, hasKeycard) {
     const consolePanel = document.getElementById("console");
     const choices = ["Hide inside the medical closet.", "Hide under the desk"];
     changeImage("images/room_Lab.jpg");
@@ -289,58 +273,6 @@ function createChoiceButtons(choices) {
 
         buttonContainer.appendChild(button);
     });
-
-    // Add a "Pickup Keycard" button if the room has a keycard
-    if (hasKeycard) {
-        const pickupButton = document.createElement("button");
-        pickupButton.textContent = "Pickup Keycard";
-
-        // Debugging: Log button creation for keycard
-        console.log("Creating Pickup Keycard button");
-
-        // Click handler for the keycard button
-        pickupButton.addEventListener('click', () => {
-            console.log("[Debug]: Keycard picked up!");
-
-            // Hide the keycard image and the button
-            const keycardPanel = document.querySelector(".keycard-item-panel");
-            keycardPanel.style.display = "none";
-            pickupButton.style.display = "none";
-
-            // Add the keycard to the first empty inventory slot
-            const inventorySlots = document.querySelectorAll(".inventory-slot");
-            const keycardImage = document.createElement("img");
-            keycardImage.src = "images/item_Keycard.png"; // Path to the keycard image
-            keycardImage.alt = "Keycard";
-            keycardImage.style.maxWidth = "100%";
-            keycardImage.style.maxHeight = "100%";
-
-            let addedToInventory = false;
-            for (let slot of inventorySlots) {
-                if (slot.children.length === 0) { // Check if the slot is empty
-                    slot.appendChild(keycardImage);
-                    console.log("[System]: Keycard added to inventory slot.");
-                    addedToInventory = true;
-                    break;
-                }
-            }
-
-            if (!addedToInventory) {
-                console.log("[Error]: No empty inventory slots available.");
-            }
-        });
-
-        // Styled for better appearance
-        pickupButton.style.padding = "5px 10px";
-        pickupButton.style.backgroundColor = "black";
-        pickupButton.style.color = "rgb(0, 255, 0)";
-        pickupButton.style.border = "1px solid rgb(0, 255, 0)";
-        pickupButton.style.fontFamily = "monospace";
-        pickupButton.style.cursor = "pointer";
-        pickupButton.style.borderRadius = "4px";
-
-        buttonContainer.appendChild(pickupButton);
-    }
     // Append the button container at the bottom-left of the console
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep the buttons visible
@@ -523,93 +455,6 @@ async function fetchAndDisplayInventory() {
         console.log('[Error]: Unable to fetch inventory items. Please try again later.');
     }
 }
-
-
-
-
-
-
-async function addItemToInventory(itemName, itemImage) {
-    console.log(`[System]: Adding ${itemName} to inventory...`);
-
-    // Retrieve the logged-in user's username from sessionStorage
-    const username = sessionStorage.getItem('loggedInUser');
-    if (!username) {
-        console.error('[Error]: No user is logged in.');
-        return;
-    }
-
-    let hostname = 'localhost';
-    let dbUsername = 'jrice27'; 
-    let password = 'rZk8FVrXNllcPl8Y'; 
-    let database = 'CSC1034_CW_13';
-
-    // Query to fetch player_id based on the logged-in username
-    let playerQuery = `SELECT player_id FROM players WHERE player_username = '${username}'`;
-
-    // Query to fetch item_id based on the item name
-    let itemQuery = `SELECT item_id FROM items WHERE item_name = '${itemName}'`;
-
-    // First, retrieve the player_id and item_id
-    try {
-        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-
-        // Fetch player_id
-        let response = await fetch(url, {
-            method: 'POST',
-            body: new URLSearchParams({ query: playerQuery, hostname, username: dbUsername, password, database })
-        });
-        let playerResult = await response.json();
-
-        if (playerResult.error || playerResult.data.length === 0) {
-            console.error('[Error]: Player not found.');
-            return;
-        }
-
-        let playerId = playerResult.data[0].player_id;
-
-        // Fetch item_id
-        response = await fetch(url, {
-            method: 'POST',
-            body: new URLSearchParams({ query: itemQuery, hostname, username: dbUsername, password, database })
-        });
-        let itemResult = await response.json();
-
-        if (itemResult.error || itemResult.data.length === 0) {
-            console.error('[Error]: Item not found.');
-            return;
-        }
-
-        let itemId = itemResult.data[0].item_id;
-
-        // Query to insert the item into the player's inventory
-        let query = `INSERT INTO player_inventory (player_id, item_id) VALUES (${playerId}, ${itemId})`;
-
-        // Insert the item into the inventory
-        response = await fetch(url, {
-            method: 'POST',
-            body: new URLSearchParams({ query: query, hostname, username: dbUsername, password, database })
-        });
-
-        let result = await response.json();
-
-        if (result.error) {
-            console.error(`[Error]: ${result.error}`);
-            return;
-        }
-
-        console.log(`[System]: ${itemName} successfully added to ${username}'s inventory.`);
-        await fetchAndDisplayInventory(); // Refresh inventory UI
-
-    } catch (error) {
-        console.error('[Error]: Unable to add item to inventory.', error);
-    }
-}
-
-
-
-
-
 
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;

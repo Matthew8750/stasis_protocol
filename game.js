@@ -6,17 +6,11 @@ let wrenchPickedUp = false; // Global flag to track if the wrench has been picke
 let gunPickedUp = false; // Global flag to track if the gun has been picked up
 
 function initializeGame() {
-    // Create the audio element
-    var audio = new Audio('Audio/StasisProtocolBgMusic.mp3');
-
-    // Set audio to loop and autoplay
-    audio.loop = true;
-    audio.autoplay = true;
-
-    // Play the audio
-    audio.play().catch(function(error) {
-        console.error("Error playing audio:", error);
-    });
+    // Play background music
+    let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
+    backgroundMusic.loop = true; // Loop the music
+    backgroundMusic.play();
+    
 
     typeText(
         "[System]: Game initialized...\n" +

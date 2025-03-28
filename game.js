@@ -8,11 +8,14 @@ let gunPickedUp = false; // Global flag to track if the gun has been picked up
 function initializeGame() {
     // Play background music
     let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
-    backgroundMusic.loop = true; // Loop the music
-    backgroundMusic.play();
-    let deathSound = new Audio("Audio/PlayerDeath.mp3");
-    deathSound.play();
-
+    backgroundMusic.loop = true;
+    
+    // Wait for user to click anywhere on the page
+    document.addEventListener('click', function() {
+        backgroundMusic.play().catch(function(error) {
+            console.error("Error playing audio:", error);
+        });
+    });
 
     typeText(
         "[System]: Game initialized...\n" +

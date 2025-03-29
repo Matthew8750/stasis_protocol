@@ -1,7 +1,6 @@
 let typingTimeouts = []; // Store all active timeouts
 let typingInProgress = false; // Track ongoing typing
 let labEventTriggered = false;
-let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
 let noOfDeaths = 0;
 let time_played = 0;
 let rooms_explored = 0;
@@ -9,6 +8,9 @@ let location_name = "Cryogenic Chamber";
 let startTime = Date.now();  // Store the timestamp when the game starts
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 let gunPickedUp = false; // Global flag to track if the gun has been picked up
+let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
+let gameStartTime = Date.now() / 1000;
+let lastSaveTime = 0;
 
 async function initializeGame(restartGame = false) {
     console.log("[System]: Initializing game...");
@@ -225,7 +227,6 @@ function handleRoomEntry(roomName) {
     if (roomName === "Lab" && !labEventTriggered) {
         console.log("[Event]: Lab event triggered!");
         labEvent();
-        labEventTriggered = true;
         return;
     }
 
@@ -242,7 +243,6 @@ function handleRoomEntry(roomName) {
         console.log("Keycard panel is now visible.");
     } else {
         keycardPanel.style.display = "none"; // Hide the keycard
-        console.log("Keycard panel is hidden.");
     }
     rooms_explored++;
     
@@ -253,7 +253,6 @@ function handleRoomEntry(roomName) {
         console.log("Wrench panel is now visible.");
     } else {
         wrenchPanel.style.display = "none"; // Hide the wrench
-        console.log("Wrench panel is hidden.");
     }
     
     // Show or hide the gun image
@@ -263,7 +262,6 @@ function handleRoomEntry(roomName) {
         console.log("Gun panel is now visible.");
     } else {
         gunPanel.style.display = "none";
-        console.log("Gun panel is hidden.");
     }
 
     // Create buttons for available choices
@@ -485,6 +483,8 @@ function playerDeath() {
     let deathSound = new Audio("Audio/PlayerDeath.mp3");
     deathSound.play();
 
+    clearInventory();
+
     // Remove any existing button container
     let existingButtonContainer = document.getElementById("button-container");
     if (existingButtonContainer) {
@@ -541,52 +541,38 @@ async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_
     }
 
     let sanitizedInput = loggedInID.replace(/'/g, "\\'");
-    let sanitizedLocation = location_name.replace(/^Room:\s*/, '').replace(/'/g, "\\'");
+    let sanitizedLocation = location_name ? location_name.replace(/^Room:\s*/, '').replace(/'/g, "\\'") : "Unknown Location";
 
-    // Calculate time played since the last save
-    let currentTime = Date.now() / 1000; // Get the current time in seconds
+    // Calculate time played
+    let currentTime = Date.now() / 1000;
     let elapsedTime = currentTime - gameStartTime + lastSaveTime;
-
-    // Convert the elapsed time to HH:MM:SS format
     let hours = Math.floor(elapsedTime / 3600).toString().padStart(2, '0');
     let minutes = Math.floor((elapsedTime % 3600) / 60).toString().padStart(2, '0');
     let seconds = (elapsedTime % 60).toString().padStart(2, '0');
     let formattedTime = `${hours}:${minutes}:${seconds}`;
 
-    // Ensure labEventTriggered is always 0 or 1
-    let labTriggeredValue = labEventTriggered ? 1 : 0; // Convert true → 1, false → 0
-
-    // Check if a save already exists for this player
-    let checkQuery = `SELECT COUNT(*) AS saveExists FROM game_stats WHERE player_id = '${sanitizedInput}'`;
-
-    let checkData = new FormData();
-    checkData.append('hostname', 'localhost');
-    checkData.append('username', 'jrice27');
-    checkData.append('password', 'rZk8FVrXNllcPl8Y');
-    checkData.append('database', 'CSC1034_CW_13');
-    checkData.append('query', checkQuery);
+    let labTriggeredValue = labEventTriggered ? 1 : 0;
 
     try {
-        let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
-            method: 'POST',
-            body: checkData
-        });
+        // Check if a save already exists
+        let checkQuery = `SELECT COUNT(*) AS saveExists FROM game_stats WHERE player_id = '${sanitizedInput}'`;
+        let checkData = new FormData();
+        checkData.append('hostname', 'localhost');
+        checkData.append('username', 'jrice27');
+        checkData.append('password', 'rZk8FVrXNllcPl8Y');
+        checkData.append('database', 'CSC1034_CW_13');
+        checkData.append('query', checkQuery);
 
+        let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: checkData });
         let checkResult = await checkResponse.json();
         let saveExists = checkResult.data && checkResult.data[0].saveExists > 0;
 
-        // If a save exists, update it; otherwise, insert a new one
-        let query;
-        if (saveExists) {
-            query = `UPDATE game_stats 
-                     SET deaths = ${noOfDeaths}, time_played = '${formattedTime}', 
-                     rooms_explored = ${rooms_explored}, location_name = '${sanitizedLocation}', 
-                     labEventTriggered = ${labTriggeredValue} 
-                     WHERE player_id = '${sanitizedInput}'`;
-        } else {
-            query = `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered) 
-                     VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue})`;
-        }
+        // Save or update game stats
+        let query = saveExists
+            ? `UPDATE game_stats SET deaths = ${noOfDeaths}, time_played = '${formattedTime}', rooms_explored = ${rooms_explored}, 
+                location_name = '${sanitizedLocation}', labEventTriggered = ${labTriggeredValue} WHERE player_id = '${sanitizedInput}'`
+            : `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered) 
+                VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue})`;
 
         let formData = new FormData();
         formData.append('hostname', 'localhost');
@@ -595,28 +581,63 @@ async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_
         formData.append('database', 'CSC1034_CW_13');
         formData.append('query', query);
 
-        let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
-            method: 'POST',
-            body: formData
-        });
-
+        let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formData });
         let result = await response.json();
-        let resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '';
 
         if (result.error) {
             console.log(result.error.toString());
-            resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
         } else {
-            resultsDiv.innerHTML = `<p>${result.success ? 'Save updated successfully' : 'New save created successfully'}</p>`;
-            if (result.affected_rows !== undefined) {
-                resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
+            console.log("Game save successful!");
+        }
+
+        // Function to check if an item exists before inserting
+        async function addItemIfNotExists(itemID) {
+            // Ensure itemID is a valid number
+            if (!itemID || isNaN(itemID) || itemID <= 0) {
+                console.log(`Invalid item ID: ${itemID}, skipping insert.`);
+                return;
+            }
+
+            let itemCheckQuery = `SELECT COUNT(*) AS itemExists FROM player_inventory WHERE player_id = '${sanitizedInput}' AND item_id = ${itemID}`;
+            let itemCheckData = new FormData();
+            itemCheckData.append('hostname', 'localhost');
+            itemCheckData.append('username', 'jrice27');
+            itemCheckData.append('password', 'rZk8FVrXNllcPl8Y');
+            itemCheckData.append('database', 'CSC1034_CW_13');
+            itemCheckData.append('query', itemCheckQuery);
+
+            let itemCheckResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: itemCheckData });
+            let itemCheckResult = await itemCheckResponse.json();
+
+            if (itemCheckResult.data[0].itemExists == 0) {
+                let insertQuery = `INSERT INTO player_inventory (player_id, item_id) VALUES ('${sanitizedInput}', ${itemID})`;
+                let insertData = new FormData();
+                insertData.append('hostname', 'localhost');
+                insertData.append('username', 'jrice27');
+                insertData.append('password', 'rZk8FVrXNllcPl8Y');
+                insertData.append('database', 'CSC1034_CW_13');
+                insertData.append('query', insertQuery);
+
+                let insertResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: insertData });
+                let insertResult = await insertResponse.json();
+
+                if (insertResult.error) {
+                    console.log(`Error saving item ${itemID}:`, insertResult.error);
+                } else {
+                    console.log(`Item ${itemID} added to inventory.`);
+                }
+            } else {
+                console.log(`Item ${itemID} already exists, skipping insert.`);
             }
         }
+
+        // Insert only if the item does not exist
+        if (wrenchPickedUp) await addItemIfNotExists(1);
+        if (keycardPickedUp) await addItemIfNotExists(2);
+        if (gunPickedUp) await addItemIfNotExists(3);
+
     } catch (error) {
         console.error('Error:', error);
-        let resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = `<p style="color:red;">Unable to connect to the database. Please try again later.</p>`;
     }
 }
 
@@ -624,6 +645,7 @@ async function loadSave(playerID) {
     console.log("[System]: Checking for saved game...");
 
     let query = `SELECT deaths, time_played, rooms_explored, location_name, labEventTriggered FROM game_stats WHERE player_ID = '${playerID}'`;
+    let inventoryQuery = `SELECT item_id FROM player_inventory WHERE player_id = '${playerID}'`;
 
     let formData = new FormData();
     formData.append('hostname', 'localhost');
@@ -635,48 +657,73 @@ async function loadSave(playerID) {
     try {
         let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
         let response = await fetch(url, { method: 'POST', body: formData });
-
         let result = await response.json();
 
         if (result.error) {
             console.error("[Error]:", result.error);
-            return false; // Error occurred, no save loaded
+            return false;
         }
 
         if (result.data && result.data.length > 0) {
-            // Load save data
             let saveData = result.data[0];
 
             // Convert the time_played from HH:MM:SS to seconds
             let startTime = saveData.time_played || "00:00:00"; // Default if undefined
             let [hours, minutes, seconds] = startTime.split(":").map(Number);
 
-            // If time is not valid, set it to the default
             if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
-                startTime = "00:00:00"; // Set to default if invalid
+                startTime = "00:00:00";
                 hours = 0;
                 minutes = 0;
                 seconds = 0;
             }
 
-            // Convert startTime to seconds
             lastSaveTime = hours * 3600 + minutes * 60 + seconds;
-            gameStartTime = Date.now() / 1000; // Set the current time in seconds
+            gameStartTime = Date.now() / 1000;
 
             noOfDeaths = saveData.deaths || 0;
             rooms_explored = saveData.rooms_explored || 0;
-            location_name = saveData.location_name || "Cryogenic Chamber"; // Default room
-            labEventTriggered = saveData.labEventTriggered || false;
+            location_name = saveData.location_name || "Cryogenic Chamber";
 
-            // Load the saved room
             handleRoomEntry(location_name);
-
             console.log(`Loaded save time: ${lastSaveTime} seconds`);
-            return true; // Save successfully loaded
+
+            // Fetch inventory items
+            let inventoryFormData = new FormData();
+            inventoryFormData.append('hostname', 'localhost');
+            inventoryFormData.append('username', 'jrice27');
+            inventoryFormData.append('password', 'rZk8FVrXNllcPl8Y');
+            inventoryFormData.append('database', 'CSC1034_CW_13');
+            inventoryFormData.append('query', inventoryQuery);
+
+            let inventoryResponse = await fetch(url, { method: 'POST', body: inventoryFormData });
+            let inventoryResult = await inventoryResponse.json();
+
+            console.log("[Debug]: Inventory query result", inventoryResult);
+
+            if (inventoryResult.data && Array.isArray(inventoryResult.data)) {
+                inventoryResult.data.forEach(item => {
+                    console.log(`[Debug]: Found item with ID ${item.item_id}`);
+                    if (parseInt(item.item_id, 10) === 1) {
+                        addItemToInventory("images/item_Wrench.png", "Wrench");
+                        wrenchPickedUp = true;
+                    } else if (parseInt(item.item_id, 10) === 2) {
+                        addItemToInventory("images/item_Keycard.png", "Keycard");
+                        keycardPickedUp = true;
+                    } else if (parseInt(item.item_id, 10) === 3) {
+                        addItemToInventory("images/item_Gun.png", "Gun");
+                        gunPickedUp = true;
+                    }
+                });
+            } else {
+                console.log("[Debug]: No inventory data found for this player.");
+            }
+
+            return true;
         }
 
         console.log("[System]: No save data found.");
-        return false; // No save found
+        return false;
     } catch (error) {
         console.error("[Error]: Unable to connect to the database.", error);
         return false;
@@ -747,11 +794,45 @@ async function fetchAndDisplayInventory() {
     }
 }
 
-function clearInventory() {
+async function clearInventory() {
     const inventorySlots = document.querySelectorAll(".inventory-slot");
     inventorySlots.forEach(slot => {
         slot.innerHTML = ""; // Remove all items from the inventory slots
     });
+
+    const loggedInID = sessionStorage.getItem('loggedInID');
+    if (!loggedInID) {
+        console.error('Error: No player ID found in session.');
+        return;
+    }
+
+    // Sanitize the logged-in player ID
+    let sanitizedInput = loggedInID.replace(/'/g, "\\'");
+
+    // Query to delete all items for the current player from the player_inventory table
+    let deleteQuery = `DELETE FROM player_inventory WHERE player_id = '${sanitizedInput}'`;
+
+    let formData = new FormData();
+    formData.append('hostname', 'localhost');
+    formData.append('username', 'jrice27');
+    formData.append('password', 'rZk8FVrXNllcPl8Y');
+    formData.append('database', 'CSC1034_CW_13');
+    formData.append('query', deleteQuery);
+
+    try {
+        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+        let response = await fetch(url, { method: 'POST', body: formData });
+        let result = await response.json();
+
+        if (result.error) {
+            console.error("[Error]:", result.error);
+        } else {
+            console.log("[System]: Inventory cleared in database.");
+        }
+    } catch (error) {
+        console.error("[Error]: Unable to connect to the database.", error);
+    }
+
     console.log("[System]: Inventory cleared.");
 }
 
@@ -783,7 +864,7 @@ function exitGame()
 {
     location_name = document.getElementById("room-display").textContent
     saveToDatabase(noOfDeaths, getTimePlayed(), rooms_explored, location_name, labEventTriggered);
-    //window.location.href = 'sp_play.html'; // Redirect to previous screen
+    //window.location.href = 'sp-gamehub.html'; // Redirect to previous screen
 }
 
 // Function to get the total time played in seconds

@@ -111,54 +111,66 @@ function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
-            choices: ["Hallway One"]
+            choices: ["Hallway One"],
+            description: "[N0VA]: You awaken in the Cryogenic Chamber. The ship is eerily silent. Systems flicker weakly—something is wrong."
         },
         "Hallway One": {
             image: "images/room_Hallway.jpg",
-            choices: ["Med Bay", "Lab"]
+            choices: ["Med Bay", "Lab"],
+            description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
             choices: ["Hallway One"],
-            keycard: true // Add a flag to indicate the keycard should be displayed
+            keycard: true,
+            description: "[N0VA]: This is the Med Bay. Primary function: medical treatment and emergency care. Current status: compromised. Bloodstains indicate recent injury or conflict. Medical equipment is still operational, but some systems appear damaged. Proceed with caution—unknown variables present. A security keycard is present; retrieval is advised, as it may be critical for future access."
         },
         "Lab": {
             image: "images/room_Lab.jpg",
-            choices: ["Hallway One", "Cafeteria", "Hallway Two"]
+            choices: ["Hallway One", "Cafeteria", "Hallway Two"],
+            description: "[N0VA]: This laboratory appears compromised. The containment unit has been forcibly opened. There are signs of struggle... blood. Whatever was inside is no longer here."
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Cafeteria"]
+            choices: ["Cafeteria"],
+            description: "[N0VA]: This is the Admin Control Room. Primary function: ship-wide system management and oversight. Status: heavily damaged. Multiple terminals are active but unstable—data corruption detected. Debris and signs of struggle indicate past conflict."
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
-            choices: ["Lab", "Admin"]
+            choices: ["Lab", "Admin"],
+            description: "[N0VA]: This is the Cafeteria, a designated crew dining area. Status: abandoned. Food trays and supplies are scattered—signs of a hasty departure. Terminal access available, but system integrity is unknown. No immediate threats detected, but caution is advised."
         },
         "Hallway Two": {
             image: "images/room_Hallway.jpg",
-            choices: ["Lab", "Engine Left", "Engine Right", "Hallway Final"]
+            choices: ["Lab", "Engine Left", "Engine Right", "Hallway Final"],
+            description: "[N0VA]: This hallway extends deeper into the ship. Darkened corridors stretch ahead, offering little comfort."
         },
         "Engine Left": {
             image: "images/room_Engine1.jpg",
             choices: ["Hallway Two"],
-            wrench: true // Add a flag to indicate the wrench should be displayed
+            wrench: true,
+            description: "[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard."
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
-            choices: ["Hallway Two"]
+            choices: ["Hallway Two"],
+            description: "[N0VA]: Engine Room sector—severe damage. Power systems failing. Tread carefully."
         },
         "Hallway Final": {
             image: "images/room_Hallway.jpg",
-            choices: ["Hallway Twps", "Armory", "Escape Pods"]
+            choices: ["Hallway Two", "Armory", "Escape Pods"],
+            description: "[N0VA]: Final stretch before the escape pods. The air feels heavy—something isn’t right."
         },
         "Armory": {
             image: "images/room_Armory.jpg",
             choices: ["Hallway Final"],
-            gun: true // Add a flag to indicate the gun should be displayed
+            gun: true,
+            description: "[N0VA]: This is the Armory, the ship’s secured weapons storage. Here you’ll find essential firepower. A high-powered firearm has been left, your best chance at defending against the hostile threat onboard. Arm yourself and proceed with caution."
         },
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
-            choices: ["Hallway Final"]
+            choices: ["Hallway Final"],
+            description: "[N0VA]: This is the Escape Pod Bay, the ship’s last resort for evacuation. Multiple pods appear damaged or inoperable. Life support systems are failing, and time is limited. A functioning escape pod may still be accessible, but repairs might be necessary. If you have the required tools, proceed with caution and secure your exit."
         }
     };
 
@@ -166,6 +178,9 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
+
+    // Display room description
+    typeText(roomData[roomName].description);
     // Check if the Armory is locked
     if (roomName === "Armory" && !isItemInInventory("Keycard")) {
         typeText("[System]: The Armory is locked. You need the keycard to enter.");

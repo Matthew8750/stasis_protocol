@@ -494,3 +494,50 @@ nav a:hover {
     height: 100%;
     object-fit: contain; /* Maintain aspect ratio */
 }
+/* Styling the table to fit the Fallout Terminal Theme */
+table {
+    width: 90%; /* Adjust width to fit well on the screen */
+    margin: 0 auto; /* Center the table */
+    background-color: rgba(0, 0, 0, 0.8); /* Dark background */
+    border: 2px solid #33ff33; /* Green border */
+    border-radius: 10px; /* Rounded corners */
+    font-family: "Fixedsys Excelsior 3.01", monospace; /* Fallout-style font */
+    color: #33ff33; /* Green text */
+    text-shadow: 0 0 5px #33ff33; /* Green glow effect */
+    box-shadow: 0 0 10px #33ff33; /* Outer glow */
+    padding: 20px;
+    overflow: hidden;
+    table-layout: auto; /* Ensures table expands evenly */
+}
+
+th, td {
+    padding: 12px 20px;
+    text-align: center; /* Center align text */
+    font-size: 16px; /* Make text size readable */
+    border-bottom: 1px solid #33ff33; /* Green line between rows */
+}
+
+th {
+    text-transform: uppercase; /* Uppercase headings */
+    background-color: rgba(0, 0, 0, 0.9); /* Darker background for headers */
+    color: #33ff33; /* Green text for headers */
+    border-bottom: 2px solid #33ff33; /* Slightly thicker line for header */
+}
+
+tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.7); /* Slightly lighter background for alternate rows */
+}
+
+tr:nth-child(odd) {
+    background-color: rgba(0, 0, 0, 0.6); /* Darker background for odd rows */
+}
+
+tr:hover {
+    background-color: rgba(0, 255, 0, 0.2); /* Light green highlight on hover */
+    color: black; /* Change text color to black when hovering */
+}
+
+tbody {
+    max-height: 300px; /* Set a max height for body */
+    overflow-y: auto; /* Enable scroll when there are many rows */
+}

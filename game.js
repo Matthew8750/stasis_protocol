@@ -178,9 +178,30 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
+    // Play the door open sound when entering the room
+    playDoorOpenSound();
+    
+    // Check for a 10% chance to play the alien random noise
+    if (Math.random() < 0.1) {
+        playAlienRandomNoise();
+    }
 
     // Display room description
     typeText(roomData[roomName].description);
+
+    function playDoorOpenSound() {
+        // Create an audio element if not already created
+        let doorSound = new Audio('Audio/DoorOpen.mp3');
+        doorSound.play();
+    }
+    
+    function playAlienRandomNoise() {
+        // Create an audio element for the Alien Random Noise
+        let alienNoise = new Audio('Audio/AlienRandomNoise.mp3');
+        alienNoise.play();
+    }
+
+
     // Check if the Armory is locked
     if (roomName === "Armory" && !isItemInInventory("Keycard")) {
         typeText("[System]: The Armory is locked. You need the keycard to enter.");

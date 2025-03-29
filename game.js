@@ -196,6 +196,16 @@ function handleRoomEntry(roomName) {
         let doorSound = new Audio('Audio/DoorOpen.mp3');
         doorSound.play();
     }
+    // Introduce 20% chance of death for specific rooms
+//    if (["Admin", "Med Bay", "Cafeteria"].includes(roomName)) {
+//        const deathChance = Math.random();
+//        if (deathChance <= 0.1) {
+//            triggerDeath(roomName); // If death occurs, trigger death event
+//            return;
+//        }
+//    }
+
+
     
     function playAlienRandomNoise() {
         // Create an audio element for the Alien Random Noise
@@ -267,6 +277,25 @@ function handleRoomEntry(roomName) {
     // Create buttons for available choices
     createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp, roomInfo.wrench && !wrenchPickedUp, roomInfo.gun && !gunPickedUp);
 }
+
+//function triggerDeath(roomName) {
+//    let deathImage = "";
+
+    // Set the death image based on the room
+//    if (roomName === "Admin") {
+//        deathImage = "images/AdminRoom_Death.png";
+//   } else if (roomName === "Med Bay") {
+//        deathImage = "images/MedbayRoom_Death.png";
+//    } else if (roomName === "Cafeteria") {
+//        deathImage = "images/CafeteriaRoom_Death.png";
+//    }
+
+    // Display the death image
+//    changeImage(deathImage);
+
+    // Call player death function
+//    playerDeath();
+//}
 
 function labEvent() {
     // Stop any ongoing typing and notify the player

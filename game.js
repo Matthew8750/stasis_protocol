@@ -223,6 +223,11 @@ function handleRoomEntry(roomName) {
         return;
     }
 
+    if (roomName === "Lab" && !labUnlocked) {
+        typeText("[N0VA]: The lab is locked. You should head to Admin and unlock it.");
+        return; // Prevent access to the Armory
+    }
+    
     if (roomName === "Lab" && !labEventTriggered) {
         labEventTriggered = true;
         labEvent();
@@ -247,11 +252,6 @@ function handleRoomEntry(roomName) {
     if (roomName === "Armory" && !keycardPickedUp) {
         typeText("[System]: The Armory is locked. You need the keycard to enter.");
         console.log("[Debug]: Access to the Armory denied. Keycard not found in inventory.");
-        return; // Prevent access to the Armory
-    }
-
-    if (roomName === "Lab" && !labUnlocked) {
-        typeText("[N0VA]: The lab is locked. You should head to Admin and unlock it.");
         return; // Prevent access to the Armory
     }
 

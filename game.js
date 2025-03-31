@@ -1,48 +1,67 @@
 let typingTimeouts = []; // Store all active timeouts
 let typingInProgress = false; // Track ongoing typing
 let labEventTriggered = false;
-let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
+let noOfDeaths = 0;
+let time_played = 0;
+let rooms_explored = 0;
+let location_name = "Cryogenic Chamber";
+let startTime = Date.now();  // Store the timestamp when the game starts
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 let gunPickedUp = false; // Global flag to track if the gun has been picked up
+let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
+let gameStartTime = Date.now() / 1000;
+let lastSaveTime = 0;
+/*
+Current Bugs: 
 
-function initializeGame() {
-    // Play background music
+*/
+
+async function initializeGame(restartGame = false) {
+    console.log("[System]: Initializing game...");
+
     let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
     backgroundMusic.loop = true;
-    
-    // Wait for user to click anywhere on the page
-    document.addEventListener('click', function() {
-        backgroundMusic.play().catch(function(error) {
-            console.error("Error playing audio:", error);
+
+    document.addEventListener("click", function () {
+        backgroundMusic.play().catch((error) => {
+            console.error("[Error]: Unable to play audio.", error);
         });
     });
 
-    typeText(
-        "[System]: Game initialized...\n" +
-        "You wake up in a cryo-chamber, cold and disoriented. The chamber doors open, revealing the dim, damaged interior of the ship. Something's wrong - systems are failing and the ship is eerily quiet.\n" +
-        "Stasis disengaged. System diagnostics: compromised.\n" +
-        "A mechanical voice cuts through the silence.\n" +
-        "[N0VA]: Welcome back, Operator. I'm your AI companion 'N0VA'. The ship is in critical condition. We need to exit the cryo-chamber and assess the situation."
-    );
+    const loggedInID = sessionStorage.getItem("loggedInID");
 
-    // Reset global flags
+    if (!restartGame && loggedInID) {
+        let saveExists = await loadSave(loggedInID);
+        if (saveExists) {
+            console.log("[System]: Save loaded successfully.");
+            return; // Prevents starting a new game
+        }
+    }
+
+    console.log("[System]: Starting a new game...");
+
+
     labEventTriggered = false;
-    keycardPickedUp = false; // Reset the keycard flag
-
-    // Clear the inventory
+    keycardPickedUp = false;
+    gunPickedUp = false;
+    wrenchPickedUp = false;
     clearInventory();
 
-    // Start the game in the Cryogenic Chamber
     handleRoomEntry("Cryogenic Chamber");
 }
 
 function typeText(message, speed = 30) {  // Default speed set to 30
     const consolePanel = document.getElementById("console");
 
-    // Stop any ongoing typing
-    stopTyping();
+    // Internal function to stop ongoing typing
+    function stopTyping() {
+        typingInProgress = false; // Mark typing as stopped
+        typingTimeouts.forEach(clearTimeout); // Clear all active timeouts
+        typingTimeouts = []; // Reset timeouts array
+    }
 
-    // Create a text container to hold the dialogue separately from buttons
+    stopTyping(); // Stop any previous typing effect
+
     let textContainer = document.getElementById("text-container");
     if (!textContainer) {
         textContainer = document.createElement("div");
@@ -83,13 +102,6 @@ function typeText(message, speed = 30) {  // Default speed set to 30
     typeLine();
 }
 
-// Function to stop any ongoing typing
-function stopTyping() {
-    typingInProgress = false; // Mark typing as stopped
-    typingTimeouts.forEach(clearTimeout); // Clear all active timeouts
-    typingTimeouts = []; // Reset timeouts array
-}
-
 function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
@@ -98,58 +110,66 @@ function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
-            choices: ["Hallway One"]
+            choices: ["Hallway One"],
+            description: "[N0VA]: You awaken in the Cryogenic Chamber. The ship is eerily silent. Systems flicker weakly—something is wrong."
         },
         "Hallway One": {
             image: "images/room_Hallway.jpg",
-            choices: ["Med Bay", "Lab"]
+            choices: ["Med Bay", "Lab"],
+            description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
             choices: ["Hallway One"],
-            keycard: true // Add a flag to indicate the keycard should be displayed
+            keycard: true,
+            description: "[N0VA]: This is the Med Bay. Primary function: medical treatment and emergency care. Current status: compromised. Bloodstains indicate recent injury or conflict. Medical equipment is still operational, but some systems appear damaged. Proceed with caution—unknown variables present. A security keycard is present; retrieval is advised, as it may be critical for future access."
         },
         "Lab": {
             image: "images/room_Lab.jpg",
-            choices: ["Hallway One", "Hallway Two", "Hallway Three"]
-        },
-        "Hallway Two": {
-            image: "images/room_Hallway.jpg",
-            choices: ["Admin", "Cafeteria", "Lab"]
+            choices: ["Hallway One", "Cafeteria", "Hallway Two"],
+            description: "[N0VA]: This laboratory appears compromised. The containment unit has been forcibly opened. There are signs of struggle... blood. Whatever was inside is no longer here."
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Hallway Two"]
+            choices: ["Cafeteria"],
+            description: "[N0VA]: This is the Admin Control Room. Primary function: ship-wide system management and oversight. Status: heavily damaged. Multiple terminals are active but unstable—data corruption detected. Debris and signs of struggle indicate past conflict."
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
-            choices: ["Hallway Two"]
+            choices: ["Lab", "Admin"],
+            description: "[N0VA]: This is the Cafeteria, a designated crew dining area. Status: abandoned. Food trays and supplies are scattered—signs of a hasty departure. Terminal access available, but system integrity is unknown. No immediate threats detected, but caution is advised."
         },
-        "Hallway Three": {
+        "Hallway Two": {
             image: "images/room_Hallway.jpg",
-            choices: ["Lab", "Engine Left", "Engine Right", "Hallway Final"]
+            choices: ["Lab", "Engine Left", "Engine Right", "Hallway Final"],
+            description: "[N0VA]: This hallway extends deeper into the ship. Darkened corridors stretch ahead, offering little comfort."
         },
         "Engine Left": {
             image: "images/room_Engine1.jpg",
-            choices: ["Hallway Three"],
-            wrench: true // Add a flag to indicate the wrench should be displayed
+            choices: ["Hallway Two"],
+            wrench: true,
+            description: "[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard."
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
-            choices: ["Hallway Three"]
+            choices: ["Hallway Two"],
+            description: "[N0VA]: Engine Room sector—severe damage. Power systems failing. Tread carefully."
         },
         "Hallway Final": {
             image: "images/room_Hallway.jpg",
-            choices: ["Hallway Three", "Armory", "Escape Pods"]
+            choices: ["Hallway Two", "Armory", "Escape Pods"],
+            description: "[N0VA]: Final stretch before the escape pods. The air feels heavy—something isn’t right."
         },
         "Armory": {
             image: "images/room_Armory.jpg",
             choices: ["Hallway Final"],
-            gun: true // Add a flag to indicate the gun should be displayed
+            gun: true,
+            description: "[N0VA]: This is the Armory, the ship’s secured weapons storage. Here you’ll find essential firepower. A high-powered firearm has been left, your best chance at defending against the hostile threat onboard. Arm yourself and proceed with caution."
         },
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
-            choices: ["Hallway Final"]
+            choices: ["Hallway Final"],
+            description: "[N0VA]: This is the Escape Pod Bay, the ship’s last resort for evacuation. Multiple pods appear damaged or inoperable. Life support systems are failing, and time is limited. A functioning escape pod may still be accessible, but repairs might be necessary. If you have the required tools, proceed with caution and secure your exit."
         }
     };
 
@@ -157,48 +177,41 @@ function handleRoomEntry(roomName) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
-    if (roomName === "Cafeteria") {
-        typeText("[N0VA]: This is the Cafeteria, a designated crew dining area. Status: abandoned. Food trays and supplies are scattered—signs of a hasty departure. Terminal access available, but system integrity is unknown. No immediate threats detected, but caution is advised.");
+    // Play the door open sound when entering the room
+    playDoorOpenSound();
+    
+    // Check for a 10% chance to play the alien random noise
+    if (Math.random() < 0.1) {
+        playAlienRandomNoise();
     }
-    if (roomName === "Med Bay"){
-        typeText("[N0VA]: This is the Med Bay. Primary function: medical treatment and emergency care. Current status: compromised. Bloodstains indicate recent injury or conflict. Medical equipment is still operational, but some systems appear damaged. Proceed with caution—unknown variables present. A security keycard is present; retrieval is advised, as it may be critical for future access.")
+
+    // Display room description
+    typeText(roomData[roomName].description);
+
+    function playDoorOpenSound() {
+        // Create an audio element if not already created
+        let doorSound = new Audio('Audio/DoorOpen.mp3');
+        doorSound.play();
     }
-    if (roomName === "Admin"){
-        typeText("[N0VA]: This is the Admin Control Room. Primary function: ship-wide system management and oversight. Status: heavily damaged. Multiple terminals are active but unstable—data corruption detected. Debris and signs of struggle indicate past conflict.")
+
+
+    
+    function playAlienRandomNoise() {
+        // Create an audio element for the Alien Random Noise
+        let alienNoise = new Audio('Audio/AlienRandomNoise.mp3');
+        alienNoise.play();
     }
-    if (roomName === "Hallway One"){
-        typeText("[N0VA]: This is Hallway One. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Hallway Two"){   
-        typeText("[N0VA]: This is Hallway Two. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Hallway Three"){
-        typeText("[N0VA]: This is Hallway Three. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Hallway Final"){
-        typeText("[N0VA]: This is Hallway Final. Primary function: crew access and transport between sections. Status: compromised. Emergency lights are active, but visibility is limited. Debris and signs of struggle indicate past conflict. Proceed with caution—unknown variables present.")
-    }
-    if (roomName === "Engine Right"){
-        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard.")
-    }
-    if (roomName === "Engine Left"){   
-        typeText("[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard. A wrench is present; retrieval is advised, as it may be helpul in the future.")
-    }
-    if (roomName === "Lab"){
-        typeText("[N0VA]: This laboratory appears compromised. The containment unit has been forcibly opened. There are signs of struggle... blood. Whatever was inside is no longer here.")
-    }
-    if (roomName === "Armory"){
-        typeText("[N0VA]: This is the Armory, the ship’s secured weapons storage. Here you’ll find essential firepower. A high-powered firearm has been left, your best chance at defending against the hostile threat onboard. Arm yourself and proceed with caution.")
-    }
-        // Check if the Armory is locked
-    if (roomName === "Armory" && !isItemInInventory("Keycard")) {
+
+
+    // Check if the Armory is locked
+    if (roomName === "Armory" && !keycardPickedUp) {
         typeText("[System]: The Armory is locked. You need the keycard to enter.");
         console.log("[Debug]: Access to the Armory denied. Keycard not found in inventory.");
         return; // Prevent access to the Armory
     }
 
     // Check if the Escape Pods require the wrench
-    if (roomName === "Escape Pods" && !isItemInInventory("Wrench")) {
+    if (roomName === "Escape Pods" && !wrenchPickedUp) {
         typeText("[N0VA]: The escape pods are damaged. You need the wrench to repair them and escape.");
         console.log("[Debug]: Access to escape pods denied. Wrench not found in inventory.");
         return; // Prevent escape without the wrench
@@ -213,7 +226,6 @@ function handleRoomEntry(roomName) {
     if (roomName === "Lab" && !labEventTriggered) {
         console.log("[Event]: Lab event triggered!");
         labEvent();
-        labEventTriggered = true;
         return;
     }
 
@@ -224,42 +236,38 @@ function handleRoomEntry(roomName) {
     changeImage(roomInfo.image);
 
     // Show or hide the keycard image based on the room and whether it has been picked up
-    const keycardPanel = document.querySelector(".keycard-item-panel");
-    if (roomInfo.keycard && !keycardPickedUp) {
-        keycardPanel.style.display = "block"; // Show the keycard
-        console.log("Keycard panel is now visible.");
-    } else {
-        keycardPanel.style.display = "none"; // Hide the keycard
-        console.log("Keycard panel is hidden.");
-    }
-    
-    // Show or hide the wrench image based on the room and whether it has been picked up
-    const wrenchPanel = document.querySelector(".wrench-item-panel");
-    if (roomInfo.wrench && !wrenchPickedUp) {
-        wrenchPanel.style.display = "block"; // Show the wrench
-        console.log("Wrench panel is now visible.");
-    } else {
-        wrenchPanel.style.display = "none"; // Hide the wrench
-        console.log("Wrench panel is hidden.");
-    }
-    
-    // Show or hide the gun image
-    const gunPanel = document.querySelector(".gun-item-panel");
-    if (roomInfo.gun && !gunPickedUp) {
-        gunPanel.style.display = "block";
-        console.log("Gun panel is now visible.");
-    } else {
-        gunPanel.style.display = "none";
-        console.log("Gun panel is hidden.");
-    }
+    // When entering the room, ensure all item panels are checked for visibility
+const keycardPanel = document.querySelector(".keycard-item-panel");
+const wrenchPanel = document.querySelector(".wrench-item-panel");
+const gunPanel = document.querySelector(".gun-item-panel");
+
+// Handle keycard visibility
+if (roomInfo.keycard && !keycardPickedUp) {
+    keycardPanel.style.display = "block"; // Show keycard
+} else {
+    keycardPanel.style.display = "none"; // Hide keycard
+}
+
+// Handle wrench visibility
+if (roomInfo.wrench && !wrenchPickedUp) {
+    wrenchPanel.style.display = "block"; // Show wrench
+} else {
+    wrenchPanel.style.display = "none"; // Hide wrench
+}
+
+// Handle gun visibility
+if (roomInfo.gun && !gunPickedUp) {
+    gunPanel.style.display = "block"; // Show gun
+} else {
+    gunPanel.style.display = "none"; // Hide gun
+}
+
 
     // Create buttons for available choices
-    createChoiceButtons(roomInfo.choices, roomInfo.keycard && !keycardPickedUp, roomInfo.wrench && !wrenchPickedUp, roomInfo.gun && !gunPickedUp);
+    createButtons(roomInfo);
 }
 
 function labEvent() {
-    // Stop any ongoing typing and notify the player
-    stopTyping();
     typeText("[N0VA] Did you hear that? Hide now!", 15);
 
     const consolePanel = document.getElementById("console");
@@ -290,8 +298,6 @@ function labEvent() {
 
     // Start a timer that kills the player if they don't hide in 5 seconds
     let hideTimer = setTimeout(() => {
-        console.log("[DEBUG] Timer expired! Player failed to hide."); // Debugging log
-        typeText("[N0VA] Too slow! It's too late...", 15);
         changeImage("images/LabRoomImage_Death.png");
         playerDeath();
     }, 5000); // 5 seconds
@@ -302,11 +308,12 @@ function labEvent() {
 
         // Assign specific behavior based on choice
         button.addEventListener("click", () => {
-            console.log(`[DEBUG] Player selected: ${choice}`); // Debugging log
             clearTimeout(hideTimer); // Cancel the death timer
 
             if (choice === "Hide inside the medical closet.") {
                 labEventTriggered = true;
+                consolePanel.innerHTML = '';
+                typeText("[AI Companion] add some text here when you hide in the closet ")
                 handleRoomEntry("Lab");
             } else if (choice === "Hide under the desk") {
                 changeImage("images/LabRoomImage_Death.png");
@@ -331,22 +338,16 @@ function labEvent() {
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
 }
 
-
-function createChoiceButtons(choices, hasKeycard, hasWrench, hasGun) {
+function createButtons(roomInfo) {
     const consolePanel = document.getElementById("console");
 
-    if (!choices || choices.length === 0) {
-        playerDeath();
-        return;
-    }
-
-    // Remove any existing button container
+    // Remove existing button container
     let existingButtonContainer = document.getElementById("button-container");
     if (existingButtonContainer) {
         existingButtonContainer.remove();
     }
 
-    // Create a button container and position it at the bottom-left
+    // Create a new button container
     const buttonContainer = document.createElement("div");
     buttonContainer.id = "button-container";
     buttonContainer.style.position = "absolute";
@@ -357,102 +358,88 @@ function createChoiceButtons(choices, hasKeycard, hasWrench, hasGun) {
     buttonContainer.style.flexWrap = "wrap";
     buttonContainer.style.maxWidth = "100%";
 
-    // Create buttons for each room choice
-    choices.forEach(choice => {
+    // Function to create buttons dynamically
+    function createButton(label, onClick) {
         const button = document.createElement("button");
-        button.textContent = choice;
-
-        button.addEventListener('click', () => {
-            handleRoomEntry(choice);
-        });
-
-        // Apply styles for room buttons
+        button.textContent = label;
+        button.addEventListener("click", onClick);
         styleButton(button);
-
         buttonContainer.appendChild(button);
+        return button; // Return the button so we can remove it later
+    }
+
+    // Create movement buttons
+    roomInfo.choices.forEach(choice => {
+        createButton(choice, () => handleRoomEntry(choice));
     });
 
-    // Add a "Pickup Keycard" button if the room has a keycard and it hasn't been picked up
-    if (hasKeycard) {
-        const pickupButton = document.createElement("button");
-        pickupButton.textContent = "Pickup Keycard";
+    // Create item pickup buttons
+    const interactableItems = {
+        keycard: "Keycard",
+        wrench: "Wrench",
+        gun: "Gun"
+    };
 
-        pickupButton.addEventListener('click', () => {
-            console.log("[Debug]: Keycard picked up!");
+    Object.entries(interactableItems).forEach(([item, name]) => {
+        // Check if the item is in the room and hasn't been picked up yet
+        if (roomInfo[item]) {
+            let isPickedUp = false;
+    
+            // Set the flag based on the item type
+            if (item === 'keycard' && !keycardPickedUp) {
+                isPickedUp = true;
+            } else if (item === 'wrench' && !wrenchPickedUp) {
+                isPickedUp = true;
+            } else if (item === 'gun' && !gunPickedUp) {
+                isPickedUp = true;
+            }
+    
+            // If the item is available and hasn't been picked up, create a button
+            if (isPickedUp) {
+                const button = createButton(`Pickup ${name}`, () => {
+                    console.log(`[Debug]: ${name} picked up!`);  // Confirm button click
+                    document.querySelector(`.${item}-item-panel`).style.display = "none"; // Hide the item panel
+    
+                    // Set the appropriate flag based on the item
+                    if (item === 'keycard') {
+                        keycardPickedUp = true;
+                    } else if (item === 'wrench') {
+                        wrenchPickedUp = true;
+                    } else if (item === 'gun') {
+                        gunPickedUp = true;
+                    }
+    
+                    console.log(`${item}PickedUp: ${eval(`${item}PickedUp`)}`); // Log the flag to confirm it was set
+    
+                    // Add item to inventory
+                    manageInventory(`images/item_${name}.png`, name);
+    
+                    // Hide the pickup button
+                    button.style.display = "none"; // Hide the pickup button
+                });
+            }
+        }
+    });
+    
+    
+    
+    
 
-            // Hide the keycard image and the button
-            const keycardPanel = document.querySelector(".keycard-item-panel");
-            keycardPanel.style.display = "none";
-            pickupButton.style.display = "none";
-
-            // Add the keycard to the first empty inventory slot
-            addItemToInventory("images/item_Keycard.png", "Keycard");
-
-            // Set the flag to true to prevent the keycard from being picked up again
-            keycardPickedUp = true;
+    // Create interaction buttons (e.g., "Open Drawer")
+    if (roomInfo.interactions) {
+        Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
+            createButton(`Interact: ${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
+                typeText(interaction.description);
+                if (interaction.newImage) {
+                    changeImage(interaction.newImage);
+                }
+            });
         });
-
-        // Apply styles for the "Pickup Keycard" button
-        styleButton(pickupButton);
-
-        buttonContainer.appendChild(pickupButton);
     }
 
-    // Add a "Pickup Wrench" button if the room has a wrench and it hasn't been picked up
-    if (hasWrench) {
-        const pickupButton = document.createElement("button");
-        pickupButton.textContent = "Pickup Wrench";
-
-        pickupButton.addEventListener('click', () => {
-            console.log("[Debug]: Wrench picked up!");
-
-            // Hide the wrench image and the button
-            const wrenchPanel = document.querySelector(".wrench-item-panel");
-            wrenchPanel.style.display = "none";
-            pickupButton.style.display = "none";
-
-            // Add the wrench to the first empty inventory slot
-            addItemToInventory("images/item_Wrench.png", "Wrench");
-
-            // Set the flag to true to prevent the wrench from being picked up again
-            wrenchPickedUp = true;
-        });
-
-        // Apply styles for the "Pickup Wrench" button
-        styleButton(pickupButton);
-
-        buttonContainer.appendChild(pickupButton);
-    }
-
-    // Add a "Pickup Gun" button if the room has a gun and it hasn't been picked up
-    if (hasGun) {
-        const pickupButton = document.createElement("button");
-        pickupButton.textContent = "Pickup Gun";
-
-        pickupButton.addEventListener('click', () => {
-            console.log("[Debug]: Gun picked up!");
-
-            // Hide the gun image and the button
-            const gunPanel = document.querySelector(".gun-item-panel");
-            gunPanel.style.display = "none";
-            pickupButton.style.display = "none";
-
-            // Add the gun to the first empty inventory slot
-            addItemToInventory("images/item_Gun.png", "Gun");
-
-            // Set the flag to true to prevent the gun from being picked up again
-            gunPickedUp = true;
-        });
-
-        // Apply styles for the "Pickup Gun" button
-        styleButton(pickupButton);
-
-        buttonContainer.appendChild(pickupButton);
-    }
-
-    // Append the button container at the bottom-left of the console
+    // Append buttons to console panel
     consolePanel.appendChild(buttonContainer);
-    consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep the buttons visible
+    consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep buttons visible
 }
 
 // Helper function to apply button styles
@@ -472,6 +459,8 @@ function playerDeath() {
     // Play death sound
     let deathSound = new Audio("Audio/PlayerDeath.mp3");
     deathSound.play();
+
+    clearInventory();
 
     // Remove any existing button container
     let existingButtonContainer = document.getElementById("button-container");
@@ -498,7 +487,8 @@ function playerDeath() {
         button.textContent = "Restart";
 
         button.addEventListener("click", () => {
-            initializeGame(); // Restart the game
+            noOfDeaths++;
+            initializeGame(true); // Restart the game
         });
 
         // Styled for better appearance inside the console
@@ -525,58 +515,276 @@ function updateRoom(roomName) {
     document.getElementById("room-display").textContent = "Room: " + roomName;
 }
 
-async function connectToDatabase() {
+// Function to return to the game (reload the game page)
+function returnToGame() {
+    toggleEscapeMenu(); // Close the escape menu
+    window.location.href = "sp_play.html";  // Redirects to the game page
+}
 
+// Function to exit the game (or close the window)
+function exitGame() 
+{
+    location_name = document.getElementById("room-display").textContent
+    saveToDatabase(noOfDeaths, getTimePlayed(), rooms_explored, location_name, labEventTriggered);
+    //window.location.href = 'sp-gamehub.html'; // Redirect to previous screen
+}
+
+// Function to get the total time played in seconds
+function getTimePlayed() {
+    let elapsedTime = Math.floor((Date.now() - startTime) / 1000); // Convert ms to seconds
+    return elapsedTime;
+}
+
+// Event listener for the Escape key to open the menu
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        toggleEscapeMenu(); // Toggle the escape menu on Escape key press
+    }
+});
+
+function toggleEscapeMenu() {
+    const menu = document.getElementById('escapeMenu');
+    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+}
+
+function manageInventory(imageSrc, altText) {
+    const inventorySlots = document.querySelectorAll(".inventory-slot");
+
+    // Check if the item already exists in inventory
+    for (let slot of inventorySlots) {
+        if (slot.children.length > 0 && slot.children[0].alt === altText) {
+            console.log(`[System]: ${altText} is already in the inventory.`);
+            return; // Stop execution if item is already in inventory
+        }
+    }
+
+    // Add item if it's not already in the inventory
+    const itemImage = document.createElement("img");
+    itemImage.src = imageSrc;
+    itemImage.alt = altText;
+    itemImage.style.maxWidth = "100%";
+    itemImage.style.maxHeight = "100%";
+
+    for (let slot of inventorySlots) {
+        if (slot.children.length === 0) { // Check for an empty slot
+            slot.appendChild(itemImage);
+            console.log(`[System]: ${altText} added to inventory slot.`);
+            return;
+        }
+    }
+
+    console.log("[Error]: No empty inventory slots available.");
+}
+
+//Database Functions Below
+async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name, labEventTriggered) {
     console.log('Connecting to the database...');
 
-    let hostname = 'localhost';
-    let username = 'jrice27';
-    let password = 'rZk8FVrXNllcPl8Y';
-    let database = 'CSC1034_CW_13';
+    const loggedInID = sessionStorage.getItem('loggedInID');
+    if (!loggedInID) {
+        console.error('Error: No player ID found in session.');
+        return;
+    }
 
-    // Get the input value from the user
-    let input = document.getElementById('player-name').value; // Replace 'player-name' with the actual input field ID
+    let sanitizedInput = loggedInID.replace(/'/g, "\\'");
+    let sanitizedLocation = location_name ? location_name.replace(/^Room:\s*/, '').replace(/'/g, "\\'") : "Unknown Location";
 
-    // Sanitize the input to prevent SQL injection
-    let sanitizedInput = input.replace(/'/g, "\\'");
+    // Calculate time played
+    let currentTime = Date.now() / 1000;
+    let elapsedTime = currentTime - gameStartTime + lastSaveTime;
+    let hours = Math.floor(elapsedTime / 3600).toString().padStart(2, '0');
+    let minutes = Math.floor((elapsedTime % 3600) / 60).toString().padStart(2, '0');
+    let seconds = (elapsedTime % 60).toString().padStart(2, '0');
+    let formattedTime = `${hours}:${minutes}:${seconds}`;
 
-    // Create the query string
-    let query = `INSERT INTO player (player_name) VALUES ('${sanitizedInput}')`;
+    let labTriggeredValue = labEventTriggered ? 1 : 0;
 
-    // Prepare form data to send to the backend
+    try {
+        // Check if a save already exists
+        let checkQuery = `SELECT COUNT(*) AS saveExists FROM game_stats WHERE player_id = '${sanitizedInput}'`;
+        let checkData = new FormData();
+        checkData.append('hostname', 'localhost');
+        checkData.append('username', 'jrice27');
+        checkData.append('password', 'rZk8FVrXNllcPl8Y');
+        checkData.append('database', 'CSC1034_CW_13');
+        checkData.append('query', checkQuery);
+
+        let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: checkData });
+        let checkResult = await checkResponse.json();
+        let saveExists = checkResult.data && checkResult.data[0].saveExists > 0;
+
+        // Save or update game stats
+        let query = saveExists
+            ? `UPDATE game_stats SET deaths = ${noOfDeaths}, time_played = '${formattedTime}', rooms_explored = ${rooms_explored}, 
+                location_name = '${sanitizedLocation}', labEventTriggered = ${labTriggeredValue} WHERE player_id = '${sanitizedInput}'`
+            : `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered) 
+                VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue})`;
+
+        let formData = new FormData();
+        formData.append('hostname', 'localhost');
+        formData.append('username', 'jrice27');
+        formData.append('password', 'rZk8FVrXNllcPl8Y');
+        formData.append('database', 'CSC1034_CW_13');
+        formData.append('query', query);
+
+        let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formData });
+        let result = await response.json();
+
+        if (result.error) {
+            console.log(result.error.toString());
+        } else {
+            console.log("Game save successful!");
+        }
+
+        // Function to check if an item exists before inserting
+        async function addItemIfNotExists(itemID) {
+            // Ensure itemID is a valid number
+            if (!itemID || isNaN(itemID) || itemID <= 0) {
+                console.log(`Invalid item ID: ${itemID}, skipping insert.`);
+                return;
+            }
+
+            let itemCheckQuery = `SELECT COUNT(*) AS itemExists FROM player_inventory WHERE player_id = '${sanitizedInput}' AND item_id = ${itemID}`;
+            let itemCheckData = new FormData();
+            itemCheckData.append('hostname', 'localhost');
+            itemCheckData.append('username', 'jrice27');
+            itemCheckData.append('password', 'rZk8FVrXNllcPl8Y');
+            itemCheckData.append('database', 'CSC1034_CW_13');
+            itemCheckData.append('query', itemCheckQuery);
+
+            let itemCheckResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: itemCheckData });
+            let itemCheckResult = await itemCheckResponse.json();
+
+            if (itemCheckResult.data[0].itemExists == 0) {
+                let insertQuery = `INSERT INTO player_inventory (player_id, item_id) VALUES ('${sanitizedInput}', ${itemID})`;
+                let insertData = new FormData();
+                insertData.append('hostname', 'localhost');
+                insertData.append('username', 'jrice27');
+                insertData.append('password', 'rZk8FVrXNllcPl8Y');
+                insertData.append('database', 'CSC1034_CW_13');
+                insertData.append('query', insertQuery);
+
+                let insertResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: insertData });
+                let insertResult = await insertResponse.json();
+
+                if (insertResult.error) {
+                    console.log(`Error saving item ${itemID}:`, insertResult.error);
+                } else {
+                    console.log(`Item ${itemID} added to inventory.`);
+                }
+            } else {
+                console.log(`Item ${itemID} already exists, skipping insert.`);
+            }
+        }
+
+        // Insert only if the item does not exist
+        if (wrenchPickedUp) {
+            console.log("Attempting to add wrench (item 1) to inventory...");
+            await addItemIfNotExists(1);
+        }
+        if (keycardPickedUp) {
+            console.log("Attempting to add keycard (item 2) to inventory...");
+            await addItemIfNotExists(2);
+        }
+        if (gunPickedUp) {
+            console.log("Attempting to add gun (item 3) to inventory...");
+            await addItemIfNotExists(3);
+        }
+        
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function loadSave(playerID) {
+    console.log("[System]: Checking for saved game...");
+
+    let query = `SELECT deaths, time_played, rooms_explored, location_name, labEventTriggered FROM game_stats WHERE player_ID = '${playerID}'`;
+    let inventoryQuery = `SELECT item_id FROM player_inventory WHERE player_id = '${playerID}'`;
+
     let formData = new FormData();
-    formData.append('hostname', hostname);
-    formData.append('username', username);
-    formData.append('password', password);
-    formData.append('database', database);
+    formData.append('hostname', 'localhost');
+    formData.append('username', 'jrice27');
+    formData.append('password', 'rZk8FVrXNllcPl8Y');
+    formData.append('database', 'CSC1034_CW_13');
     formData.append('query', query);
 
     try {
         let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-        let response = await fetch(url, {
-            method: 'POST',
-            body: formData
-        });
-
+        let response = await fetch(url, { method: 'POST', body: formData });
         let result = await response.json();
 
-        // Get the results div and clear previous results
-        let resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '';
+        console.log("[Debug]: Game stats result", result); // Debugging line
 
         if (result.error) {
-            console.log(result.error.toString());
-            resultsDiv.innerHTML = `<p style="color:red;">${result.error}</p>`;
-        } else {
-            resultsDiv.innerHTML = `<p>${result.success ? 'Query executed successfully' : 'No data returned'}</p>`;
-            if (result.affected_rows !== undefined) {
-                resultsDiv.innerHTML += `<p>Affected Rows: ${result.affected_rows}</p>`;
-            }
+            console.error("[Error]:", result.error);
+            return false;
         }
+
+        if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+            let saveData = result.data[0];
+
+            // Convert the time_played from HH:MM:SS to seconds
+            let startTime = saveData.time_played || "00:00:00"; // Default if undefined
+            let [hours, minutes, seconds] = startTime.split(":").map(Number);
+
+            if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+                startTime = "00:00:00";
+                hours = 0;
+                minutes = 0;
+                seconds = 0;
+            }
+
+            lastSaveTime = hours * 3600 + minutes * 60 + seconds;
+            gameStartTime = Date.now() / 1000 - lastSaveTime;
+
+            noOfDeaths = saveData.deaths || 0;
+            rooms_explored = saveData.rooms_explored || 0;
+            location_name = saveData.location_name || "Cryogenic Chamber";
+
+            handleRoomEntry(location_name);
+            console.log(`Loaded save time: ${lastSaveTime} seconds`);
+
+            // Fetch inventory items
+            let inventoryFormData = new FormData();
+            inventoryFormData.append('hostname', 'localhost');
+            inventoryFormData.append('username', 'jrice27');
+            inventoryFormData.append('password', 'rZk8FVrXNllcPl8Y');
+            inventoryFormData.append('database', 'CSC1034_CW_13');
+            inventoryFormData.append('query', inventoryQuery);
+
+            let inventoryResponse = await fetch(url, { method: 'POST', body: inventoryFormData });
+            let inventoryResult = await inventoryResponse.json();
+
+            console.log("[Debug]: Inventory query result", inventoryResult); // Debugging line
+
+            if (inventoryResult.data && Array.isArray(inventoryResult.data)) {
+                inventoryResult.data.forEach(item => {
+                    console.log(`[Debug]: Found item with ID ${item.item_id}`);
+                    if (parseInt(item.item_id, 10) === 1) {
+                        manageInventory("images/item_Wrench.png", "Wrench");
+                        wrenchPickedUp = true;
+                    } else if (parseInt(item.item_id, 10) === 2) {
+                        manageInventory("images/item_Keycard.png", "Keycard");
+                        keycardPickedUp = true;
+                    } else if (parseInt(item.item_id, 10) === 3) {
+                        manageInventory("images/item_Gun.png", "Gun");
+                        gunPickedUp = true;
+                    }
+                });
+            } else {
+                console.log("[Debug]: No inventory data found for this player.");
+            }
+
+            return true;
+        }
+
+        console.log("[System]: No save data found.");
+        return false;
     } catch (error) {
-        console.error('Error:', error);
-        let resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = `<p style="color:red;">Unable to connect to the database. Please try again later.</p>`;
+        console.error("[Error]: Unable to connect to the database.", error);
+        return false;
     }
 }
 
@@ -644,46 +852,48 @@ async function fetchAndDisplayInventory() {
     }
 }
 
-function clearInventory() {
+async function clearInventory() {
     const inventorySlots = document.querySelectorAll(".inventory-slot");
     inventorySlots.forEach(slot => {
         slot.innerHTML = ""; // Remove all items from the inventory slots
     });
+
+    const loggedInID = sessionStorage.getItem('loggedInID');
+    if (!loggedInID) {
+        console.error('Error: No player ID found in session.');
+        return;
+    }
+
+    // Sanitize the logged-in player ID
+    let sanitizedInput = loggedInID.replace(/'/g, "\\'");
+
+    // Query to delete all items for the current player from the player_inventory table
+    let deleteQuery = `DELETE FROM player_inventory WHERE player_id = '${sanitizedInput}'`;
+
+    let formData = new FormData();
+    formData.append('hostname', 'localhost');
+    formData.append('username', 'jrice27');
+    formData.append('password', 'rZk8FVrXNllcPl8Y');
+    formData.append('database', 'CSC1034_CW_13');
+    formData.append('query', deleteQuery);
+
+    try {
+        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+        let response = await fetch(url, { method: 'POST', body: formData });
+        let result = await response.json();
+
+        if (result.error) {
+            console.error("[Error]:", result.error);
+        } else {
+            console.log("[System]: Inventory cleared in database.");
+        }
+    } catch (error) {
+        console.error("[Error]: Unable to connect to the database.", error);
+    }
+
     console.log("[System]: Inventory cleared.");
 }
 
-function addItemToInventory(imageSrc, altText) {
-    const inventorySlots = document.querySelectorAll(".inventory-slot");
-    const itemImage = document.createElement("img");
-    itemImage.src = imageSrc;
-    itemImage.alt = altText;
-    itemImage.style.maxWidth = "100%";
-    itemImage.style.maxHeight = "100%";
-
-    let addedToInventory = false;
-    for (let slot of inventorySlots) {
-        if (slot.children.length === 0) { // Check if the slot is empty
-            slot.appendChild(itemImage);
-            console.log(`[System]: ${altText} added to inventory slot.`);
-            addedToInventory = true;
-            break;
-        }
-    }
-
-    if (!addedToInventory) {
-        console.log("[Error]: No empty inventory slots available.");
-    }
-}
-
-function isItemInInventory(itemAltText) {
-    const inventorySlots = document.querySelectorAll(".inventory-slot");
-    for (let slot of inventorySlots) {
-        if (slot.children.length > 0 && slot.children[0].alt === itemAltText) {
-            return true; // Item is found in the inventory
-        }
-    }
-    return false; // Item is not in the inventory
-}
 
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;
@@ -693,4 +903,7 @@ window.typeText = typeText;
 window.updateAIImage = updateAIImage;
 window.updateRoom = updateRoom;
 window.handleRoomEntry = handleRoomEntry;
-window.createChoiceButtons = createChoiceButtons;
+window.createButtons = createButtons;
+// Set up event listeners for the buttons in the escape menu
+document.getElementById('returnButton').addEventListener('click', toggleEscapeMenu);
+document.getElementById('exitButton').addEventListener('click', exitGame);

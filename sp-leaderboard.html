@@ -3,9 +3,72 @@
     <head>
         <title>Stasis Protocol Game Statistics</title>
         <link href="sp-styles.css" type="text/css" rel="stylesheet">
+        <script>
+            async function fetchLeaderboard() {
+                console.log('Fetching leaderboard data...');
+                
+                let query = `SELECT player_name, deaths, time_played, rooms_explored, location_name FROM game_stats JOIN player ON game_stats.player_id = player.player_id ORDER BY rooms_explored DESC, time_played ASC`;
+                
+                let formData = new FormData();
+                formData.append('hostname', 'localhost');
+                formData.append('username', 'jrice27');
+                formData.append('password', 'rZk8FVrXNllcPl8Y');
+                formData.append('database', 'CSC1034_CW_13');
+                formData.append('query', query);
+                
+                try {
+                    let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    let result = await response.json();
+                    
+                    if (result.error) {
+                        console.error(result.error.toString());
+                        return;
+                    }
+                    
+                    const tableBody = document.querySelector('#leaderboard tbody');
+                    tableBody.innerHTML = '';
+                    
+                    result.data.forEach(player => {
+                        let row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${player.player_name}</td>
+                            <td>${player.deaths}</td>
+                            <td>${player.time_played}</td>
+                            <td>${player.rooms_explored}</td>
+                            <td>${player.location_name}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                    
+                    console.log('Leaderboard updated successfully.');
+                } catch (error) {
+                    console.error('Error fetching leaderboard data:', error);
+                }
+            }
+            
+            window.onload = fetchLeaderboard;
+        </script>
     </head>
     <body>
         <h1>Leaderboard</h1>
+        <table id="leaderboard">
+            <thead>
+                <tr>
+                    <th>Player Name</th>
+                    <th>Deaths</th>
+                    <th>Time Played</th>
+                    <th>Rooms Explored</th>
+                    <th>Current Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
         <nav>
             <a href="sp-mainmenu.html">Back to Main Menu</a>
         </nav>

@@ -373,7 +373,6 @@ nav a:hover {
     max-width: 190%;
     max-height: 190%;
 }
-
 /* AI Companion Panel (Bottom-Right) */
 .ai-companion-panel {
     position: absolute;
@@ -414,6 +413,50 @@ nav a:hover {
     height: 100%;
     object-fit: contain; /* Maintain aspect ratio */
 }
+/* Escape Menu Styles */
+#escapeMenu {
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0, 0, 0, 0.8); 
+    z-index: 9999; 
+    text-align: center; 
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white; 
+    font-family: monospace;
+}
+
+#escapeMenu .menu-content {
+    background: rgba(0, 0, 0, 0.7); /* Darker background to match the other panels */
+    color: rgb(0, 255, 0); /* Text color green like the others */
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px; /* Soft rounded corners */
+    width: 300px; /* Fixed width for a more box-like appearance */
+    margin: 0 auto; /* Center horizontally */
+    margin-top: 150px; /* Center vertically */
+    border: 2px solid rgb(0, 255, 0); /* Green border for consistency */
+}
+
+#escapeMenu button {
+    padding: 12px 24px;
+    margin: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    background-color: rgba(0, 255, 0, 0.2); /* Subtle green background */
+    border: 2px solid rgb(0, 255, 0); /* Matching green border */
+    color: rgb(0, 255, 0);
+    font-family: monospace;
+}
+
+#escapeMenu button:hover {
+    background-color: rgb(0, 255, 0); /* Full green on hover */
+    color: black;
+}
 
 /* Wrench Item Panel */
 .wrench-item-panel {
@@ -450,4 +493,51 @@ nav a:hover {
     width: 100%; /* Make the image fit the container */
     height: 100%;
     object-fit: contain; /* Maintain aspect ratio */
+}
+/* Styling the table to fit the Fallout Terminal Theme */
+table {
+    width: 90%; /* Adjust width to fit well on the screen */
+    margin: 0 auto; /* Center the table */
+    background-color: rgba(0, 0, 0, 0.8); /* Dark background */
+    border: 2px solid #33ff33; /* Green border */
+    border-radius: 10px; /* Rounded corners */
+    font-family: "Fixedsys Excelsior 3.01", monospace; /* Fallout-style font */
+    color: #33ff33; /* Green text */
+    text-shadow: 0 0 5px #33ff33; /* Green glow effect */
+    box-shadow: 0 0 10px #33ff33; /* Outer glow */
+    padding: 20px;
+    overflow: hidden;
+    table-layout: auto; /* Ensures table expands evenly */
+}
+
+th, td {
+    padding: 12px 20px;
+    text-align: center; /* Center align text */
+    font-size: 16px; /* Make text size readable */
+    border-bottom: 1px solid #33ff33; /* Green line between rows */
+}
+
+th {
+    text-transform: uppercase; /* Uppercase headings */
+    background-color: rgba(0, 0, 0, 0.9); /* Darker background for headers */
+    color: #33ff33; /* Green text for headers */
+    border-bottom: 2px solid #33ff33; /* Slightly thicker line for header */
+}
+
+tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.7); /* Slightly lighter background for alternate rows */
+}
+
+tr:nth-child(odd) {
+    background-color: rgba(0, 0, 0, 0.6); /* Darker background for odd rows */
+}
+
+tr:hover {
+    background-color: rgba(0, 255, 0, 0.2); /* Light green highlight on hover */
+    color: black; /* Change text color to black when hovering */
+}
+
+tbody {
+    max-height: 300px; /* Set a max height for body */
+    overflow-y: auto; /* Enable scroll when there are many rows */
 }

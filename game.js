@@ -9,6 +9,7 @@ let startTime = Date.now();  // Store the timestamp when the game starts
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 let gunPickedUp = false; // Global flag to track if the gun has been picked up
 let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
+let labUnlocked = false; // Flag to track if player has unlocked the lab in Admin.
 let gameStartTime = Date.now() / 1000;
 let lastSaveTime = 0;
 let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
@@ -47,6 +48,7 @@ async function initializeGame(restartGame = false) {
     keycardPickedUp = false;
     gunPickedUp = false;
     wrenchPickedUp = false;
+    labUnlocked = false;
     clearInventory();
 
     handleRoomEntry("Cryogenic Chamber");
@@ -212,15 +214,26 @@ function handleRoomEntry(roomName) {
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
             choices: ["Hallway Final"],
-            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit."
+            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit.",
+            interactions: {
+                "Repair Escape Pods": { 
+                    description: "[N0VA]: You use the wrench to repair the escape pods. The pods are now operational and ready for launch!",
+                    newImage: "images/EscapePods_Repaired.jpg"
+                }
+            }
         }
-    }
+    };
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
 
+    if (roomName === "Lab" && !labUnlocked) {
+        typeText("[N0VA]: The lab is locked. You should head to Admin and unlock it.");
+        return; // Prevent access to the Armory
+    }
+    
     if (roomName === "Lab" && !labEventTriggered) {
         labEventTriggered = true;
         labEvent();
@@ -230,7 +243,6 @@ function handleRoomEntry(roomName) {
     // Play the door open sound when entering the room
     playDoorOpenSound();
 
-    // Function for playing door open sound
     function playDoorOpenSound() {
         let doorSound = new Audio('Audio/DoorOpen.mp3');
         doorSound.play();
@@ -267,10 +279,9 @@ function handleRoomEntry(roomName) {
     changeImage(roomInfo.image);
 
     // Display the room description
-    typeText(roomInfo.description); // <-- This will write the room description
+    typeText(roomInfo.description);
 
     // Show or hide the keycard image based on the room and whether it has been picked up
-    // When entering the room, ensure all item panels are checked for visibility
     const keycardPanel = document.querySelector(".keycard-item-panel");
     const wrenchPanel = document.querySelector(".wrench-item-panel");
     const gunPanel = document.querySelector(".gun-item-panel");
@@ -296,11 +307,11 @@ function handleRoomEntry(roomName) {
         gunPanel.style.display = "none"; // Hide gun
     }
 
-    // Temporarily comment out resetRoomChangeFlag to see if it affects the button creation
-    // resetRoomChangeFlag();  // Comment this out for debugging
-
     // Create buttons for available choices
     createButtons(roomInfo);
+
+    // Add interaction for repairing escape pods if in Escape Pods room and wrench is picked up
+
 }
 
 function labEvent() {

@@ -494,42 +494,46 @@ nav a:hover {
     height: 100%;
     object-fit: contain; /* Maintain aspect ratio */
 }
+
+
 /* Styling the table to fit the Fallout Terminal Theme */
 table {
     width: 90%; /* Adjust width to fit well on the screen */
     margin: 0 auto; /* Center the table */
-    background-color: rgba(0, 0, 0, 0.8); /* Dark background */
+    background-color: transparent; /* Set transparent background for the table */
     border: 2px solid #33ff33; /* Green border */
     border-radius: 10px; /* Rounded corners */
     font-family: "Fixedsys Excelsior 3.01", monospace; /* Fallout-style font */
     color: #33ff33; /* Green text */
     text-shadow: 0 0 5px #33ff33; /* Green glow effect */
     box-shadow: 0 0 10px #33ff33; /* Outer glow */
-    padding: 20px;
-    overflow: hidden;
+    padding: 10px;
     table-layout: auto; /* Ensures table expands evenly */
+    overflow: hidden;
 }
 
+/* Table cell and header adjustments */
 th, td {
     padding: 12px 20px;
     text-align: center; /* Center align text */
     font-size: 16px; /* Make text size readable */
     border-bottom: 1px solid #33ff33; /* Green line between rows */
+    background-color: transparent; /* Transparent background for table cells */
 }
 
 th {
     text-transform: uppercase; /* Uppercase headings */
-    background-color: rgba(0, 0, 0, 0.9); /* Darker background for headers */
+    background-color: transparent; /* Fully transparent background for headers */
     color: #33ff33; /* Green text for headers */
     border-bottom: 2px solid #33ff33; /* Slightly thicker line for header */
 }
 
 tr:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.7); /* Slightly lighter background for alternate rows */
+    background-color: rgba(0, 0, 0, 0.2); /* Slightly transparent background for even rows */
 }
 
 tr:nth-child(odd) {
-    background-color: rgba(0, 0, 0, 0.6); /* Darker background for odd rows */
+    background-color: rgba(0, 0, 0, 0.1); /* Slightly transparent background for odd rows */
 }
 
 tr:hover {
@@ -537,10 +541,50 @@ tr:hover {
     color: black; /* Change text color to black when hovering */
 }
 
-tbody {
-    max-height: 300px; /* Set a max height for body */
-    overflow-y: auto; /* Enable scroll when there are many rows */
+/* Add a fixed height and scrollable body */
+.table-wrapper {
+    max-height: 400px; /* Set a maximum height for the scrollable body */
+    overflow-y: auto; /* Enable vertical scrolling */
 }
+
+tbody {
+    display: block;
+    max-height: 300px; /* Adjust body height */
+    overflow-y: scroll;
+}
+
+thead, tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+thead {
+    background-color: transparent; /* Fully transparent header background */
+}
+
+/* Customizing the scrollbar */
+::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2); /* Dark background for the scrollbar track */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #33ff33; /* Green color for the scrollbar */
+    border-radius: 10px; /* Rounded corners for the scrollbar thumb */
+    border: 2px solid rgba(0, 0, 0, 0.5); /* Dark border around the scrollbar thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #29cc29; /* Slightly darker green when hovering */
+}
+
+
+
+
 
 #toggle-music-button {
     position: absolute;

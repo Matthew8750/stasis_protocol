@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Achievements</title>
+        <link href="sp-styles.css" type="text/css" rel="stylesheet">
+        <script>
+            async function fetchAchievements() {
+                console.log('Fetching achievement data...');
+                
+                let query = `SELECT achievement_name, achievement_desc, achievement_image FROM achievements ORDER BY achievement_id DESC`;
+                
+                let formData = new FormData();
+                formData.append('hostname', 'localhost');
+                formData.append('username', 'jrice27');
+                formData.append('password', 'rZk8FVrXNllcPl8Y');
+                formData.append('database', 'CSC1034_CW_13');
+                formData.append('query', query);
+                
+                try {
+                    let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    let result = await response.json();
+                    
+                    if (result.error) {
+                        console.error(result.error.toString());
+                        return;
+                    }
+                    
+                    const tableBody = document.querySelector('#achievements tbody');
+                    tableBody.innerHTML = ''; // Clear existing data
+                    
+                    result.data.forEach(achievement => {
+                        let row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${achievement.achievement_name}</td>
+                            <td><img src="${achievement.achievement_image}" alt="${achievement.achievement_name}" width="50" height="50"></td>
+                            <td>${achievement.achievement_desc}</td>
+                            <td><img src="lock-placeholder.jpg" alt="Lock Symbol" width="20" height="20"></td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                    
+                    console.log('Achievements updated successfully.');
+                } catch (error) {
+                    console.error('Error fetching achievement data:', error);
+                }
+            }
+            
+            window.onload = fetchAchievements;
+        </script>
+    </head>
+    <body>
+        <h1>Achievements</h1>
+        <table id="achievements">
+            <thead>
+                <tr>
+                    <th>Achievement Name</th>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+
+        <nav>
+            <a href="sp-gamehub.html">Back to Main Menu</a>
+        </nav>
+
+        <div class="bezel-overlay"></div>
+    </body>
+</html>

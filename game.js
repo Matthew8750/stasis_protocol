@@ -212,9 +212,15 @@ function handleRoomEntry(roomName) {
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
             choices: ["Hallway Final"],
-            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit."
+            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit.",
+            interactions: {
+                "Repair Escape Pods": { 
+                    description: "[N0VA]: You use the wrench to repair the escape pods. The pods are now operational and ready for launch!",
+                    newImage: "images/EscapePods_Repaired.jpg"
+                }
+            }
         }
-    }
+    };
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
@@ -230,7 +236,6 @@ function handleRoomEntry(roomName) {
     // Play the door open sound when entering the room
     playDoorOpenSound();
 
-    // Function for playing door open sound
     function playDoorOpenSound() {
         let doorSound = new Audio('Audio/DoorOpen.mp3');
         doorSound.play();
@@ -267,10 +272,9 @@ function handleRoomEntry(roomName) {
     changeImage(roomInfo.image);
 
     // Display the room description
-    typeText(roomInfo.description); // <-- This will write the room description
+    typeText(roomInfo.description);
 
     // Show or hide the keycard image based on the room and whether it has been picked up
-    // When entering the room, ensure all item panels are checked for visibility
     const keycardPanel = document.querySelector(".keycard-item-panel");
     const wrenchPanel = document.querySelector(".wrench-item-panel");
     const gunPanel = document.querySelector(".gun-item-panel");
@@ -296,11 +300,11 @@ function handleRoomEntry(roomName) {
         gunPanel.style.display = "none"; // Hide gun
     }
 
-    // Temporarily comment out resetRoomChangeFlag to see if it affects the button creation
-    // resetRoomChangeFlag();  // Comment this out for debugging
-
     // Create buttons for available choices
     createButtons(roomInfo);
+
+    // Add interaction for repairing escape pods if in Escape Pods room and wrench is picked up
+
 }
 
 function labEvent() {

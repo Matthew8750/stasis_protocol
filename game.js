@@ -910,6 +910,32 @@ function toggleBackgroundMusic() {
     }
 }
 
+function toggleFontSize() {
+    const body = document.body;
+    const buttons = document.querySelectorAll("button"); // Select all buttons
+    const roomPanel = document.querySelector(".room-panel"); // Select the room panel
+    const currentFontSize = window.getComputedStyle(body).fontSize;
+
+    if (currentFontSize === "16px") { // Assuming the original font size is 16px
+        body.style.fontSize = "20px"; // Set to larger font size
+        buttons.forEach(button => {
+            button.style.fontSize = "18px"; // Increase button font size
+        });
+        roomPanel.style.fontSize = "16px"; // Increase room panel font size for larger mode
+        console.log("[System]: Font size increased.");
+    } else {
+        body.style.fontSize = "16px"; // Reset to original font size
+        buttons.forEach(button => {
+            button.style.fontSize = "14px"; // Reset button font size
+        });
+        roomPanel.style.fontSize = "14px"; // Reset room panel font size to default
+        console.log("[System]: Font size reset to original.");
+    }
+}
+
+// Add an event listener to the button
+document.getElementById("toggle-font-size-button").addEventListener("click", toggleFontSize);
+
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;
 window.initializeGame = initializeGame;

@@ -125,7 +125,7 @@ function handleRoomEntry(roomName) {
         },
         "Hallway One": {
             image: "images/room_Hallway.jpg",
-            choices: ["Med Bay", "Lab"],
+            choices: ["Med Bay", "Lab", "Admin"],
             description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
             
         },
@@ -158,7 +158,7 @@ function handleRoomEntry(roomName) {
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Cafeteria"],
+            choices: ["Hallway One"],
             description: "[N0VA]: This is the Admin Control Room. Multiple terminals are active but unstable—data corruption detected.",
             interactions: {
                 "Inspect Terminal": { 
@@ -214,15 +214,9 @@ function handleRoomEntry(roomName) {
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
             choices: ["Hallway Final"],
-            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit.",
-            interactions: {
-                "Repair Escape Pods": { 
-                    description: "[N0VA]: You use the wrench to repair the escape pods. The pods are now operational and ready for launch!",
-                    newImage: "images/EscapePods_Repaired.jpg"
-                }
-            }
+            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit."
         }
-    };
+    }
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
@@ -233,7 +227,7 @@ function handleRoomEntry(roomName) {
         typeText("[N0VA]: The lab is locked. You should head to Admin and unlock it.");
         return; // Prevent access to the Armory
     }
-    
+
     if (roomName === "Lab" && !labEventTriggered) {
         labEventTriggered = true;
         labEvent();
@@ -243,6 +237,7 @@ function handleRoomEntry(roomName) {
     // Play the door open sound when entering the room
     playDoorOpenSound();
 
+    // Function for playing door open sound
     function playDoorOpenSound() {
         let doorSound = new Audio('Audio/DoorOpen.mp3');
         doorSound.play();
@@ -279,9 +274,10 @@ function handleRoomEntry(roomName) {
     changeImage(roomInfo.image);
 
     // Display the room description
-    typeText(roomInfo.description);
+    typeText(roomInfo.description); // <-- This will write the room description
 
     // Show or hide the keycard image based on the room and whether it has been picked up
+    // When entering the room, ensure all item panels are checked for visibility
     const keycardPanel = document.querySelector(".keycard-item-panel");
     const wrenchPanel = document.querySelector(".wrench-item-panel");
     const gunPanel = document.querySelector(".gun-item-panel");
@@ -306,12 +302,116 @@ function handleRoomEntry(roomName) {
     } else {
         gunPanel.style.display = "none"; // Hide gun
     }
-
-    // Create buttons for available choices
     createButtons(roomInfo);
+    if (roomName === "Admin" && !labUnlocked) {
+        adminEvent();
+        console.log("unlock lab activated");
+    }
 
-    // Add interaction for repairing escape pods if in Escape Pods room and wrench is picked up
+}
 
+function createButton(label, onClick, container = document.getElementById("button-container")) {
+    if (!container) {
+        console.error("createButton error: container is undefined");
+        return;
+    }
+    
+    const button = document.createElement("button");
+    button.textContent = label;
+    button.addEventListener("click", onClick);
+    styleButton(button); // Apply styles here
+    container.appendChild(button);
+    return button;
+}
+
+function createButtons(roomInfo) {
+    const consolePanel = document.getElementById("console");
+
+    // Remove existing button container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+
+    // Create a new button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.id = "button-container";
+    buttonContainer.style.position = "absolute";
+    buttonContainer.style.bottom = "5px";
+    buttonContainer.style.left = "5px";
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "5px";
+    buttonContainer.style.flexWrap = "wrap";
+    buttonContainer.style.maxWidth = "100%";
+
+    // Create movement buttons
+    roomInfo.choices.forEach(choice => {
+        createButton(choice, () => handleRoomEntry(choice), buttonContainer);
+    });
+
+    // Create item pickup buttons
+    const interactableItems = {
+        keycard: "Keycard",
+        wrench: "Wrench",
+        gun: "Gun"
+    };
+
+    Object.entries(interactableItems).forEach(([item, name]) => {
+        if (roomInfo[item] && !window[`${item}PickedUp`]) {
+            createButton(`Pickup ${name}`, () => {
+                console.log(`[Debug]: ${name} picked up!`);  
+                document.querySelector(`.${item}-item-panel`).style.display = "none"; 
+
+                // Set item flag
+                window[`${item}PickedUp`] = true;
+
+                console.log(`${item}PickedUp: ${window[`${item}PickedUp`]}`);
+
+                // Add item to inventory
+                manageInventory(`images/item_${name}.png`, name);
+            }, buttonContainer);
+        }
+    });
+
+    // Append button container to the console
+    consolePanel.appendChild(buttonContainer);
+    consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep buttons visible
+
+    // Create interaction buttons (e.g., "Open Drawer")
+    if (roomInfo.interactions) {
+        Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
+            createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
+                typeText(interaction.description);
+
+                // Store the current room image before interacting with the drawer
+                const originalImage = roomInfo.image;
+
+                // If there's a new image for the interaction, display it
+                if (interaction.newImage) {
+                    changeImage(interaction.newImage);
+
+                    // Set a timeout to revert back to the original image after 5 seconds
+                    setTimeout(() => {
+                        // Check if the room has not changed and we are still in the same room
+                        if (!isRoomChanging && originalImage === roomInfo.image) {
+                            changeImage(originalImage);  // Revert to the original image
+                        }
+                    }, 5000);
+                }
+            }, buttonContainer);
+        });
+    }
+}
+
+// Helper function to apply button styles
+function styleButton(button) {
+    button.style.padding = "5px 10px";
+    button.style.backgroundColor = "black";
+    button.style.color = "rgb(0, 255, 0)";
+    button.style.border = "1px solid rgb(0, 255, 0)";
+    button.style.fontFamily = "monospace";
+    button.style.cursor = "pointer";
+    button.style.borderRadius = "4px";
 }
 
 function labEvent() {
@@ -385,142 +485,39 @@ function labEvent() {
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
 }
 
-function createButtons(roomInfo) {
+function adminEvent() {
+    // Get the console panel
     const consolePanel = document.getElementById("console");
-
-    // Remove existing button container
-    let existingButtonContainer = document.getElementById("button-container");
-    if (existingButtonContainer) {
-        existingButtonContainer.remove();
+    if (!consolePanel) {
+        console.error("[Error]: Console panel not found.");
+        return;
     }
 
-    // Create a new button container
-    const buttonContainer = document.createElement("div");
-    buttonContainer.id = "button-container";
-    buttonContainer.style.position = "absolute";
-    buttonContainer.style.bottom = "5px";
-    buttonContainer.style.left = "5px";
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.gap = "5px";
-    buttonContainer.style.flexWrap = "wrap";
-    buttonContainer.style.maxWidth = "100%";
+    // Get or create the button container
+    let buttonContainer = document.getElementById("button-container");
+    if (!buttonContainer) {
+        buttonContainer = document.createElement("div");
+        buttonContainer.id = "button-container";
+        buttonContainer.style.position = "absolute";
+        buttonContainer.style.bottom = "5px";
+        buttonContainer.style.left = "5px";
+        buttonContainer.style.display = "flex";
+        buttonContainer.style.gap = "5px";
+        buttonContainer.style.flexWrap = "wrap";
+        buttonContainer.style.maxWidth = "100%";
 
-    // Function to create buttons dynamically
-    function createButton(label, onClick) {
-        const button = document.createElement("button");
-        button.textContent = label;
-        button.addEventListener("click", onClick);
-        styleButton(button);
-        buttonContainer.appendChild(button);
-        return button; // Return the button so we can remove it later
+        consolePanel.appendChild(buttonContainer);
     }
 
-    // Create movement buttons
-    roomInfo.choices.forEach(choice => {
-        createButton(choice, () => handleRoomEntry(choice));
-    });
+    console.log("[Debug]: Button container found/created:", buttonContainer);
 
-    // Create item pickup buttons
-    const interactableItems = {
-        keycard: "Keycard",
-        wrench: "Wrench",
-        gun: "Gun"
-    };
-
-    Object.entries(interactableItems).forEach(([item, name]) => {
-        // Check if the item is in the room and hasn't been picked up yet
-        if (roomInfo[item]) {
-            let isPickedUp = false;
-    
-            // Set the flag based on the item type
-            if (item === 'keycard' && !keycardPickedUp) {
-                isPickedUp = true;
-            } else if (item === 'wrench' && !wrenchPickedUp) {
-                isPickedUp = true;
-            } else if (item === 'gun' && !gunPickedUp) {
-                isPickedUp = true;
-            }
-    
-            // If the item is available and hasn't been picked up, create a button
-            if (isPickedUp) {
-                const button = createButton(`Pickup ${name}`, () => {
-                    console.log(`[Debug]: ${name} picked up!`);  // Confirm button click
-                    document.querySelector(`.${item}-item-panel`).style.display = "none"; // Hide the item panel
-    
-                    // Set the appropriate flag based on the item
-                    if (item === 'keycard') {
-                        keycardPickedUp = true;
-                    } else if (item === 'wrench') {
-                        wrenchPickedUp = true;
-                    } else if (item === 'gun') {
-                        gunPickedUp = true;
-                    }
-    
-                    console.log(`${item}PickedUp: ${eval(`${item}PickedUp`)}`); // Log the flag to confirm it was set
-    
-                    // Add item to inventory
-                    manageInventory(`images/item_${name}.png`, name);
-    
-                    // Hide the pickup button
-                    button.style.display = "none"; // Hide the pickup button
-                });
-            }
-        }
-    });
-    
-   let isRoomChanging = false;  // Flag to track if the room is changing
-
-// Create interaction buttons (e.g., "Open Drawer")
-if (roomInfo.interactions) {
-    Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
-        createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
-            typeText(interaction.description);
-
-            // Store the current room image before interacting with the drawer
-            const originalImage = roomInfo.image;
-
-            // If there's a new image for the interaction, display it
-            if (interaction.newImage) {
-                changeImage(interaction.newImage);
-
-                // Set a timeout to revert back to the original image after 5 seconds
-                setTimeout(() => {
-                    // Check if the room has not changed and we are still in the same room
-                    if (!isRoomChanging && originalImage === roomInfo.image) {
-                        changeImage(originalImage);  // Revert to the original image
-                    }
-                }, 5000);
-            }
-        });
-    });
-}
-
-// Call this method when the room is about to change
-function handleRoomChange() {
-    isRoomChanging = true;  // Mark that the room is changing
-}
-
-// Call this method after the room has changed
-function resetRoomChangeFlag() {
-    isRoomChanging = false;  // Reset the flag after the room change is complete
-}
-
-
-
-    // Append buttons to console panel
-    consolePanel.appendChild(buttonContainer);
-    consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep buttons visible
-}
-
-// Helper function to apply button styles
-function styleButton(button) {
-    button.style.padding = "5px 10px";
-    button.style.backgroundColor = "black";
-    button.style.color = "rgb(0, 255, 0)";
-    button.style.border = "1px solid rgb(0, 255, 0)";
-    button.style.fontFamily = "monospace";
-    button.style.cursor = "pointer";
-    button.style.borderRadius = "4px";
+    // Create the "Unlock Lab" button
+    createButton("Unlock Lab", function () {
+        typeText("[System]: You have unlocked the Lab.");
+        console.log("[Debug]: Lab unlocked!");
+        labUnlocked = true;
+        this.remove();
+    }, buttonContainer);
 }
 
 function playerDeath() {
@@ -558,31 +555,24 @@ function playerDeath() {
 
         button.addEventListener("click", () => {
             noOfDeaths++;
-
-            // Retrieve player ID from sessionStorage
-            const playerID = sessionStorage.getItem("loggedInID");
-
-            console.log("Player ID:", playerID);
-            console.log("Number of Deaths:", noOfDeaths);
-
-            if (playerID && noOfDeaths > 0) {
-                unlockAchievement(playerID, 3); // Unlock 'That Hurt!' achievement
-            } else {
-                console.error("Player ID is missing, or no deaths recorded.");
-            }
-
             initializeGame(true); // Restart the game
         });
 
-        // Apply styles
-        styleButton(button);
+        // Styled for better appearance inside the console
+        button.style.padding = "5px 10px";
+        button.style.backgroundColor = "black";
+        button.style.color = "rgb(0, 255, 0)";
+        button.style.border = "1px solid rgb(0, 255, 0)";
+        button.style.fontFamily = "monospace";
+        button.style.cursor = "pointer";
+        button.style.borderRadius = "4px";
+
         buttonContainer.appendChild(button);
 
         // Append the button container at the bottom-left of the console
         consolePanel.appendChild(buttonContainer);
     }, 2000); // Delay adding the button to allow text to fully type out
 }
-
 
 function updateAIImage(newSrc) {
     document.getElementById("ai-companion").src = newSrc;
@@ -1065,71 +1055,3 @@ document.getElementById("settings-button").addEventListener("click", () => {
         settingsPanel.style.display = "none"; // Hide the panel
     }
 });
-
-
-
-async function unlockAchievement(playerID, achievementID) {
-    const queryCheck = `SELECT * FROM player_achievements WHERE player_id = ${playerID} AND achievement_id = ${achievementID}`;
-
-    let formDataCheck = new FormData();
-    formDataCheck.append('hostname', 'localhost');
-    formDataCheck.append('username', 'jrice27');
-    formDataCheck.append('password', 'rZk8FVrXNllcPl8Y');
-    formDataCheck.append('database', 'CSC1034_CW_13');
-    formDataCheck.append('query', queryCheck);
-
-    try {
-        let responseCheck = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataCheck });
-        let resultCheck = await responseCheck.json();
-
-        if (resultCheck.error) {
-            console.error(resultCheck.error.toString());
-            return;
-        }
-
-        // If no existing record, insert the achievement into player_achievements table
-        if (resultCheck.data.length === 0) {
-            const queryInsert = `INSERT INTO player_achievements (player_id, achievement_id, is_locked) VALUES (${playerID}, ${achievementID}, 1)`;
-            
-            let formDataInsert = new FormData();
-            formDataInsert.append('hostname', 'localhost');
-            formDataInsert.append('username', 'jrice27');
-            formDataInsert.append('password', 'rZk8FVrXNllcPl8Y');
-            formDataInsert.append('database', 'CSC1034_CW_13');
-            formDataInsert.append('query', queryInsert);
-
-            let responseInsert = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataInsert });
-            let resultInsert = await responseInsert.json();
-
-            if (resultInsert.error) {
-                console.error('Error inserting achievement:', resultInsert.error);
-                return;
-            }
-
-            console.log(`Achievement ${achievementID} inserted successfully.`);
-        }
-
-        // Now, update the achievement to unlocked
-        const queryUpdate = `UPDATE player_achievements SET is_locked = 0 WHERE player_id = ${playerID} AND achievement_id = ${achievementID}`;
-
-        let formDataUpdate = new FormData();
-        formDataUpdate.append('hostname', 'localhost');
-        formDataUpdate.append('username', 'jrice27');
-        formDataUpdate.append('password', 'rZk8FVrXNllcPl8Y');
-        formDataUpdate.append('database', 'CSC1034_CW_13');
-        formDataUpdate.append('query', queryUpdate);
-
-        let responseUpdate = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataUpdate });
-        let resultUpdate = await responseUpdate.json();
-
-        if (resultUpdate.error) {
-            console.error('Error updating achievement:', resultUpdate.error);
-            return;
-        }
-
-        console.log(`Achievement ${achievementID} unlocked successfully.`);
-    } catch (error) {
-        console.error('Error unlocking achievement:', error);
-    }
-}
-

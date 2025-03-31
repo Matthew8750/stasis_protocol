@@ -287,6 +287,8 @@ nav a:hover {
     border-radius: 6px;
     overflow-y: auto;
     white-space: pre-wrap;
+    font-size: 14px; /* Default font size matches the smaller version */
+    transition: font-size 0.3s ease; /* Smooth transition for font size changes */
 }
 
 .inventory {
@@ -609,20 +611,215 @@ thead {
     cursor: pointer; /* Change cursor to pointer */
 }
 
+#toggle-music-button {
+    background-color: rgba(0, 255, 0, 0.2); /* Subtle green background */
+    text-align: center; /* Center the text inside the button */
+    width: 200px; /* Set consistent width */
+    height: 50px; /* Set consistent height */
+    margin: -5px auto 0 auto; /* Move it slightly up and center horizontally */
+    transform: translateY(-5px); /* Fine-tune the vertical position */
+    border-radius: 6px; /* Rounded corners for consistency */
+    border: 2px solid rgb(0, 255, 0); /* Matching green border */
+    color: rgb(0, 255, 0); /* Green text */
+    font-family: monospace; /* Fallout-style font */
+    cursor: pointer; /* Change cursor to pointer */
+    display: flex; /* Use flexbox for alignment */
+    justify-content: center; /* Center text horizontally */
+    align-items: center; /* Center text vertically */
+}
+
+#toggle-music-button:hover {
+    background-color: rgb(0, 255, 0); /* Full green on hover */
+    color: black; /* Black text on hover */
+}
+
 #toggle-font-size-button {
     position: absolute;
-    top: 60px;
-    right: 10px;
+    top: 58%; /* Position it vertically in the middle of the screen */
+    left: 5%; /* Position it on the left side of the screen */
+    transform: translateY(-50%); /* Center the button vertically */
     z-index: 1000; /* Ensure it appears above other elements */
-    padding: 10px 20px;
-    background-color: black;
-    color: rgb(0, 255, 0);
-    border: 1px solid rgb(0, 255, 0);
+    width: 150px; /* Set a fixed width for the button */
+    height: 40px; /* Set a fixed height for the button */
+    padding: 5px 10px; /* Add padding for better appearance */
+    background-color: black; /* Button background color */
+    color: rgb(0, 255, 0); /* Green text color */
+    border: 1px solid rgb(0, 255, 0); /* Green border */
+    font-family: monospace; /* Fallout-style font */
+    cursor: pointer; /* Change cursor to pointer */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 14px; /* Default font size */
+    text-align: center; /* Center the text inside the button */
+    display: flex; /* Use flexbox for alignment */
+    justify-content: center; /* Center text horizontally */
+    align-items: center; /* Center text vertically */
+    box-sizing: border-box; /* Include padding and border in width/height */
+}
+
+#settings-button {
+    position: absolute;
+    top: 45vh; /* Align with the settings panel */
+    left: 6.5vw; /* Align with the settings panel */
+    z-index: 1000; /* Ensure it appears above other elements */
+    width: 50px; /* Set width for the button */
+    height: 50px; /* Set height for the button */
+    background-color: transparent; /* Make the background transparent */
+    background-image: url('images/icon_settings.png'); /* Set the default background image */
+    background-size: cover; /* Ensure the image covers the button */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Center the image */
+    border: none; /* Remove the border */
+    cursor: pointer; /* Change cursor to pointer */
+    filter: hue-rotate(90deg) brightness(1.5); /* Apply green tint to the icon */
+}
+
+#settings-panel {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* background: rgba(0, 0, 0, 0.8); */ /* Removed the dark background */
+    z-index: 9999; /* Ensure it appears above other elements */
+    text-align: center;
+    color: rgb(0, 255, 0); /* Green text */
     font-family: monospace;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 14px;
-    display: block; /* Ensure the button is displayed */
+}
+
+#settings-panel .menu-content {
+    background: rgba(0, 0, 0, 0.7); /* Darker background for the panel */
+    color: rgb(0, 255, 0); /* Green text */
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px; /* Rounded corners */
+    width: 250px; /* Reduce the width */
+    height: auto; /* Allow height to adjust dynamically */
+    min-height: 400px; /* Set a minimum height to make it taller */
+    margin: 0 auto; /* Center horizontally */
+    margin-top: 100px; /* Adjust vertical position */
+    border: 2px solid rgb(0, 255, 0); /* Green border */
+    display: flex; /* Use flexbox for layout */
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center items horizontally */
+    gap: 20px; /* Add spacing between the title and buttons */
+}
+
+#settings-panel .menu-content h2 {
+    font-size: 28px; /* Increase the font size */
+    margin-bottom: 20px; /* Add spacing below the title */
+    color: rgb(0, 255, 0); /* Ensure the title matches the green theme */
+    font-family: monospace; /* Keep the Fallout-style font */
+    text-align: center; /* Center the title */
+    text-transform: uppercase; /* Make the title uppercase for emphasis */
+}
+
+#settings-panel button {
+    width: 220px; /* Set consistent width for buttons */
+    height: 50px; /* Set consistent height for buttons */
+    font-size: 20px; /* Increase font size for better readability */
+    margin: 0; /* Remove extra margins */
+    border-radius: 6px; /* Rounded corners */
+    cursor: pointer; /* Change cursor to pointer */
+    background-color: rgba(0, 255, 0, 0.2); /* Subtle green background */
+    border: 2px solid rgb(0, 255, 0); /* Matching green border */
+    color: rgb(0, 255, 0); /* Green text */
+    font-family: monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#settings-panel button:hover {
+    background-color: rgb(0, 255, 0); /* Full green on hover */
+    color: black; /* Black text on hover */
+}
+
+#settings-panel.visible {
+    max-height: 400px; /* Expand the panel further when visible */
+    padding: 20px; /* Add padding when expanded */
+    opacity: 1; /* Fully opaque when visible */
+}
+
+#settingsPanel {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* Dark background */
+    z-index: 9999; /* Ensure it appears above other elements */
+    text-align: center;
+    color: rgb(0, 255, 0); /* Green text */
+    font-family: monospace;
+}
+
+#settingsPanel .menu-content {
+    background: rgba(0, 0, 0, 0.7); /* Darker background for the panel */
+    color: rgb(0, 255, 0); /* Green text */
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px; /* Rounded corners */
+    width: 300px; /* Fixed width */
+    margin: 0 auto; /* Center horizontally */
+    margin-top: 150px; /* Center vertically */
+    border: 2px solid rgb(0, 255, 0); /* Green border */
+}
+
+#settingsPanel button {
+    width: 220px; /* Increase the width of the buttons */
+    height: 60px; /* Increase the height of the buttons */
+    font-size: 18px; /* Increase font size for better readability */
+    padding: 10px; /* Add padding for better spacing */
+    margin: 15px auto; /* Center the buttons and add spacing */
+    border-radius: 8px; /* Slightly rounder corners */
+    cursor: pointer; /* Change cursor to pointer */
+    background-color: rgba(0, 255, 0, 0.2); /* Subtle green background */
+    border: 2px solid rgb(0, 255, 0); /* Matching green border */
+    color: rgb(0, 255, 0);
+    font-family: monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Allow positioning of the background image */
+}
+
+#settingsPanel button:hover {
+    background-color: rgb(0, 255, 0); /* Full green on hover */
+    color: black;
+}
+
+#toggle-music-button {
+    background-color: rgba(0, 255, 0, 0.2); /* Subtle green background */
+    background-image: url('images/music_unmute.png'); /* Default unmute image */
+    background-size: 40px 40px; /* Make the image smaller to fit the button */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center left 10px; /* Position the image inside the button */
+    text-align: left; /* Align text to the left of the button */
+    padding-left: 60px; /* Add space for the image */
+    width: 200px; /* Set consistent width */
+    height: 50px; /* Set consistent height */
+    margin: 10px auto 0 auto; /* Move it slightly up and center horizontally */
+    transform: translateY(-10px); /* Adjust position to align with the font size button */
+    top: 50vh;
+    left: 44.5vw;
+}
+
+#toggle-font-size-button {
+    background-color: rgba(0, 255, 0, 0.2); /* Subtle green background */
+    text-align: center; /* Center the text inside the button */
+    width: 200px; /* Set consistent width */
+    height: 50px; /* Set consistent height */
+    margin: 0 auto; /* Center the button horizontally */
+    top: 44vh;
+    left: 44.5vw;
+}
+
+#toggle-music-button:hover,
+#toggle-font-size-button:hover {
+    background-color: rgb(0, 255, 0); /* Full green on hover */
+    color: black; /* Black text on hover */
 }
 
 button {

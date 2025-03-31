@@ -107,6 +107,7 @@ function typeText(message, speed = 30) {  // Default speed set to 30
 function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
+
 function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
@@ -215,9 +216,14 @@ function handleRoomEntry(roomName) {
         }
     }
 
-
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
+        return;
+    }
+
+    if (roomName === "Lab" && !labEventTriggered) {
+        labEventTriggered = true;
+        labEvent();
         return;
     }
 
@@ -290,14 +296,11 @@ function handleRoomEntry(roomName) {
         gunPanel.style.display = "none"; // Hide gun
     }
 
+    // Temporarily comment out resetRoomChangeFlag to see if it affects the button creation
+    // resetRoomChangeFlag();  // Comment this out for debugging
+
     // Create buttons for available choices
     createButtons(roomInfo);
-}
-
-// Function for playing alien random noise
-function playAlienRandomNoise() {
-    let alienNoise = new Audio('Audio/AlienRandomNoise.mp3');
-    alienNoise.play();
 }
 
 function labEvent() {

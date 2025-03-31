@@ -107,7 +107,6 @@ function typeText(message, speed = 30) {  // Default speed set to 30
 function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
-
 function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
@@ -216,19 +215,19 @@ function handleRoomEntry(roomName) {
         }
     }
 
+
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
 
-    
     // Play the door open sound when entering the room
     playDoorOpenSound();
 
     // Function for playing door open sound
     function playDoorOpenSound() {
-    let doorSound = new Audio('Audio/DoorOpen.mp3');
-    doorSound.play();
+        let doorSound = new Audio('Audio/DoorOpen.mp3');
+        doorSound.play();
     }
 
     // Check for a 10% chance to play the alien random noise
@@ -255,18 +254,14 @@ function handleRoomEntry(roomName) {
     // Log room entry (Debugging)
     console.log(`[Debug]: Entered ${roomName}...`);
 
-    // If entering Lab and event hasn't triggered, call labEvent
-    if (roomName === "Lab" && !labEventTriggered) {
-        console.log("[Event]: Lab event triggered!");
-        labEvent();
-        return;
-    }
-
     // Update room display
     document.getElementById("room-display").textContent = `Room: ${roomName}`;
 
     // Change the room image
     changeImage(roomInfo.image);
+
+    // Display the room description
+    typeText(roomInfo.description); // <-- This will write the room description
 
     // Show or hide the keycard image based on the room and whether it has been picked up
     // When entering the room, ensure all item panels are checked for visibility
@@ -459,24 +454,43 @@ function createButtons(roomInfo) {
         }
     });
     
-    
-    // Create interaction buttons (e.g., "Open Drawer")
+   let isRoomChanging = false;  // Flag to track if the room is changing
+
+// Create interaction buttons (e.g., "Open Drawer")
 if (roomInfo.interactions) {
     Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
         createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
             typeText(interaction.description);
 
+            // Store the current room image before interacting with the drawer
+            const originalImage = roomInfo.image;
+
+            // If there's a new image for the interaction, display it
             if (interaction.newImage) {
                 changeImage(interaction.newImage);
 
-                // Revert to the original room image after 3 seconds
+                // Set a timeout to revert back to the original image after 5 seconds
                 setTimeout(() => {
-                    changeImage(roomInfo.image);
+                    // Check if the room has not changed and we are still in the same room
+                    if (!isRoomChanging && originalImage === roomInfo.image) {
+                        changeImage(originalImage);  // Revert to the original image
+                    }
                 }, 5000);
             }
         });
     });
 }
+
+// Call this method when the room is about to change
+function handleRoomChange() {
+    isRoomChanging = true;  // Mark that the room is changing
+}
+
+// Call this method after the room has changed
+function resetRoomChangeFlag() {
+    isRoomChanging = false;  // Reset the flag after the room change is complete
+}
+
 
 
     // Append buttons to console panel

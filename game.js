@@ -9,7 +9,6 @@ let startTime = Date.now();  // Store the timestamp when the game starts
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 let gunPickedUp = false; // Global flag to track if the gun has been picked up
 let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
-let labUnlocked = false; // Flag to track if player has unlocked the lab in Admin.
 let gameStartTime = Date.now() / 1000;
 let lastSaveTime = 0;
 let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
@@ -48,7 +47,6 @@ async function initializeGame(restartGame = false) {
     keycardPickedUp = false;
     gunPickedUp = false;
     wrenchPickedUp = false;
-    labUnlocked = false;
     clearInventory();
 
     handleRoomEntry("Cryogenic Chamber");
@@ -125,7 +123,7 @@ function handleRoomEntry(roomName) {
         },
         "Hallway One": {
             image: "images/room_Hallway.jpg",
-            choices: ["Med Bay", "Lab", "Admin"],
+            choices: ["Med Bay", "Lab"],
             description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
             
         },
@@ -158,7 +156,7 @@ function handleRoomEntry(roomName) {
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Hallway One"],
+            choices: ["Cafeteria"],
             description: "[N0VA]: This is the Admin Control Room. Multiple terminals are active but unstable—data corruption detected.",
             interactions: {
                 "Inspect Terminal": { 
@@ -214,18 +212,19 @@ function handleRoomEntry(roomName) {
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
             choices: ["Hallway Final"],
-            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit."
+            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit.",
+            interactions: {
+                "Repair Escape Pods": { 
+                    description: "[N0VA]: You use the wrench to repair the escape pods. The pods are now operational and ready for launch!",
+                    newImage: "images/EscapePods_Repaired.jpg"
+                }
+            }
         }
-    }
+    };
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
-    }
-
-    if (roomName === "Lab" && !labUnlocked) {
-        typeText("[N0VA]: The lab is locked. You should head to Admin and unlock it.");
-        return; // Prevent access to the Armory
     }
 
     if (roomName === "Lab" && !labEventTriggered) {
@@ -237,7 +236,6 @@ function handleRoomEntry(roomName) {
     // Play the door open sound when entering the room
     playDoorOpenSound();
 
-    // Function for playing door open sound
     function playDoorOpenSound() {
         let doorSound = new Audio('Audio/DoorOpen.mp3');
         doorSound.play();
@@ -274,10 +272,9 @@ function handleRoomEntry(roomName) {
     changeImage(roomInfo.image);
 
     // Display the room description
-    typeText(roomInfo.description); // <-- This will write the room description
+    typeText(roomInfo.description);
 
     // Show or hide the keycard image based on the room and whether it has been picked up
-    // When entering the room, ensure all item panels are checked for visibility
     const keycardPanel = document.querySelector(".keycard-item-panel");
     const wrenchPanel = document.querySelector(".wrench-item-panel");
     const gunPanel = document.querySelector(".gun-item-panel");
@@ -302,116 +299,12 @@ function handleRoomEntry(roomName) {
     } else {
         gunPanel.style.display = "none"; // Hide gun
     }
+
+    // Create buttons for available choices
     createButtons(roomInfo);
-    if (roomName === "Admin" && !labUnlocked) {
-        adminEvent();
-        console.log("unlock lab activated");
-    }
 
-}
+    // Add interaction for repairing escape pods if in Escape Pods room and wrench is picked up
 
-function createButton(label, onClick, container = document.getElementById("button-container")) {
-    if (!container) {
-        console.error("createButton error: container is undefined");
-        return;
-    }
-    
-    const button = document.createElement("button");
-    button.textContent = label;
-    button.addEventListener("click", onClick);
-    styleButton(button); // Apply styles here
-    container.appendChild(button);
-    return button;
-}
-
-function createButtons(roomInfo) {
-    const consolePanel = document.getElementById("console");
-
-    // Remove existing button container
-    let existingButtonContainer = document.getElementById("button-container");
-    if (existingButtonContainer) {
-        existingButtonContainer.remove();
-    }
-
-    // Create a new button container
-    const buttonContainer = document.createElement("div");
-    buttonContainer.id = "button-container";
-    buttonContainer.style.position = "absolute";
-    buttonContainer.style.bottom = "5px";
-    buttonContainer.style.left = "5px";
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.gap = "5px";
-    buttonContainer.style.flexWrap = "wrap";
-    buttonContainer.style.maxWidth = "100%";
-
-    // Create movement buttons
-    roomInfo.choices.forEach(choice => {
-        createButton(choice, () => handleRoomEntry(choice), buttonContainer);
-    });
-
-    // Create item pickup buttons
-    const interactableItems = {
-        keycard: "Keycard",
-        wrench: "Wrench",
-        gun: "Gun"
-    };
-
-    Object.entries(interactableItems).forEach(([item, name]) => {
-        if (roomInfo[item] && !window[`${item}PickedUp`]) {
-            createButton(`Pickup ${name}`, () => {
-                console.log(`[Debug]: ${name} picked up!`);  
-                document.querySelector(`.${item}-item-panel`).style.display = "none"; 
-
-                // Set item flag
-                window[`${item}PickedUp`] = true;
-
-                console.log(`${item}PickedUp: ${window[`${item}PickedUp`]}`);
-
-                // Add item to inventory
-                manageInventory(`images/item_${name}.png`, name);
-            }, buttonContainer);
-        }
-    });
-
-    // Append button container to the console
-    consolePanel.appendChild(buttonContainer);
-    consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep buttons visible
-
-    // Create interaction buttons (e.g., "Open Drawer")
-    if (roomInfo.interactions) {
-        Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
-            createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
-                typeText(interaction.description);
-
-                // Store the current room image before interacting with the drawer
-                const originalImage = roomInfo.image;
-
-                // If there's a new image for the interaction, display it
-                if (interaction.newImage) {
-                    changeImage(interaction.newImage);
-
-                    // Set a timeout to revert back to the original image after 5 seconds
-                    setTimeout(() => {
-                        // Check if the room has not changed and we are still in the same room
-                        if (!isRoomChanging && originalImage === roomInfo.image) {
-                            changeImage(originalImage);  // Revert to the original image
-                        }
-                    }, 5000);
-                }
-            }, buttonContainer);
-        });
-    }
-}
-
-// Helper function to apply button styles
-function styleButton(button) {
-    button.style.padding = "5px 10px";
-    button.style.backgroundColor = "black";
-    button.style.color = "rgb(0, 255, 0)";
-    button.style.border = "1px solid rgb(0, 255, 0)";
-    button.style.fontFamily = "monospace";
-    button.style.cursor = "pointer";
-    button.style.borderRadius = "4px";
 }
 
 function labEvent() {
@@ -485,39 +378,142 @@ function labEvent() {
     consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll
 }
 
-function adminEvent() {
-    // Get the console panel
+function createButtons(roomInfo) {
     const consolePanel = document.getElementById("console");
-    if (!consolePanel) {
-        console.error("[Error]: Console panel not found.");
-        return;
+
+    // Remove existing button container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
     }
 
-    // Get or create the button container
-    let buttonContainer = document.getElementById("button-container");
-    if (!buttonContainer) {
-        buttonContainer = document.createElement("div");
-        buttonContainer.id = "button-container";
-        buttonContainer.style.position = "absolute";
-        buttonContainer.style.bottom = "5px";
-        buttonContainer.style.left = "5px";
-        buttonContainer.style.display = "flex";
-        buttonContainer.style.gap = "5px";
-        buttonContainer.style.flexWrap = "wrap";
-        buttonContainer.style.maxWidth = "100%";
+    // Create a new button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.id = "button-container";
+    buttonContainer.style.position = "absolute";
+    buttonContainer.style.bottom = "5px";
+    buttonContainer.style.left = "5px";
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "5px";
+    buttonContainer.style.flexWrap = "wrap";
+    buttonContainer.style.maxWidth = "100%";
 
-        consolePanel.appendChild(buttonContainer);
+    // Function to create buttons dynamically
+    function createButton(label, onClick) {
+        const button = document.createElement("button");
+        button.textContent = label;
+        button.addEventListener("click", onClick);
+        styleButton(button);
+        buttonContainer.appendChild(button);
+        return button; // Return the button so we can remove it later
     }
 
-    console.log("[Debug]: Button container found/created:", buttonContainer);
+    // Create movement buttons
+    roomInfo.choices.forEach(choice => {
+        createButton(choice, () => handleRoomEntry(choice));
+    });
 
-    // Create the "Unlock Lab" button
-    createButton("Unlock Lab", function () {
-        typeText("[System]: You have unlocked the Lab.");
-        console.log("[Debug]: Lab unlocked!");
-        labUnlocked = true;
-        this.remove();
-    }, buttonContainer);
+    // Create item pickup buttons
+    const interactableItems = {
+        keycard: "Keycard",
+        wrench: "Wrench",
+        gun: "Gun"
+    };
+
+    Object.entries(interactableItems).forEach(([item, name]) => {
+        // Check if the item is in the room and hasn't been picked up yet
+        if (roomInfo[item]) {
+            let isPickedUp = false;
+    
+            // Set the flag based on the item type
+            if (item === 'keycard' && !keycardPickedUp) {
+                isPickedUp = true;
+            } else if (item === 'wrench' && !wrenchPickedUp) {
+                isPickedUp = true;
+            } else if (item === 'gun' && !gunPickedUp) {
+                isPickedUp = true;
+            }
+    
+            // If the item is available and hasn't been picked up, create a button
+            if (isPickedUp) {
+                const button = createButton(`Pickup ${name}`, () => {
+                    console.log(`[Debug]: ${name} picked up!`);  // Confirm button click
+                    document.querySelector(`.${item}-item-panel`).style.display = "none"; // Hide the item panel
+    
+                    // Set the appropriate flag based on the item
+                    if (item === 'keycard') {
+                        keycardPickedUp = true;
+                    } else if (item === 'wrench') {
+                        wrenchPickedUp = true;
+                    } else if (item === 'gun') {
+                        gunPickedUp = true;
+                    }
+    
+                    console.log(`${item}PickedUp: ${eval(`${item}PickedUp`)}`); // Log the flag to confirm it was set
+    
+                    // Add item to inventory
+                    manageInventory(`images/item_${name}.png`, name);
+    
+                    // Hide the pickup button
+                    button.style.display = "none"; // Hide the pickup button
+                });
+            }
+        }
+    });
+    
+   let isRoomChanging = false;  // Flag to track if the room is changing
+
+// Create interaction buttons (e.g., "Open Drawer")
+if (roomInfo.interactions) {
+    Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
+        createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
+            typeText(interaction.description);
+
+            // Store the current room image before interacting with the drawer
+            const originalImage = roomInfo.image;
+
+            // If there's a new image for the interaction, display it
+            if (interaction.newImage) {
+                changeImage(interaction.newImage);
+
+                // Set a timeout to revert back to the original image after 5 seconds
+                setTimeout(() => {
+                    // Check if the room has not changed and we are still in the same room
+                    if (!isRoomChanging && originalImage === roomInfo.image) {
+                        changeImage(originalImage);  // Revert to the original image
+                    }
+                }, 5000);
+            }
+        });
+    });
+}
+
+// Call this method when the room is about to change
+function handleRoomChange() {
+    isRoomChanging = true;  // Mark that the room is changing
+}
+
+// Call this method after the room has changed
+function resetRoomChangeFlag() {
+    isRoomChanging = false;  // Reset the flag after the room change is complete
+}
+
+
+
+    // Append buttons to console panel
+    consolePanel.appendChild(buttonContainer);
+    consolePanel.scrollTop = consolePanel.scrollHeight; // Auto-scroll to keep buttons visible
+}
+
+// Helper function to apply button styles
+function styleButton(button) {
+    button.style.padding = "5px 10px";
+    button.style.backgroundColor = "black";
+    button.style.color = "rgb(0, 255, 0)";
+    button.style.border = "1px solid rgb(0, 255, 0)";
+    button.style.fontFamily = "monospace";
+    button.style.cursor = "pointer";
+    button.style.borderRadius = "4px";
 }
 
 function playerDeath() {

@@ -10,7 +10,7 @@
         <p id="welcomeMessage"></p> <!-- This will display the logged-in user -->
 
         <nav>
-            <a href="sp-game.html" onclick="unlockStartGameAchievement()">Play Game</a>
+            <a href="sp-game.html">Play Game</a>
             <a href="sp-playerstats.html">My Game Stats</a> <!-- Link to individual player statistics -->
             <a href="sp-achievements.html">Achievements</a> <!-- Link to individual player statistics -->
             <a href="#" onclick="logout()">Log Out</a> <!-- Log out link -->
@@ -19,69 +19,49 @@
         <div class="bezel-overlay"></div>
 
         <script>
-            async function retrievePlayerID() {
-                const username = sessionStorage.getItem('loggedInUser');
+            // Retrieve the logged-in user
+    async function retrievePlayerID() {
+    // Retrieve the logged-in user
+    const username = sessionStorage.getItem('loggedInUser');
 
-                if (!username) {
-                    window.location.href = 'sp-mainmenu.html';
-                    return;
-                }
-
+    // Retrieve the id
+    const getID = new FormData();
+    getID.append('hostname', 'localhost');
+    getID.append('username', 'jrice27');
+    getID.append('password', 'rZk8FVrXNllcPl8Y');
+    getID.append('database', 'CSC1034_CW_13');
+    getID.append('query', `SELECT player_ID FROM player WHERE player_name = '${username}'`);
+            if (username) {
                 document.getElementById('welcomeMessage').innerText = `Welcome, ${username}!`;
-
-                let getID = new FormData();
-                getID.append('hostname', 'localhost');
-                getID.append('username', 'jrice27');
-                getID.append('password', 'rZk8FVrXNllcPl8Y');
-                getID.append('database', 'CSC1034_CW_13');
-                getID.append('query', `SELECT player_ID FROM player WHERE player_name = '${username}'`);
-
-                try {
-                    let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: getID });
-                    let checkResult = await checkResponse.json();
-                    const playerID = checkResult.data[0].player_ID;
-
-                    // Store the player ID in sessionStorage
-                    sessionStorage.setItem('loggedInID', playerID);
-                } catch (error) {
-                    console.error('Error retrieving player ID:', error);
-                }
+            } else {
+                // If no user is logged in, send them back to the main menu
+                window.location.href = 'sp-mainmenu.html';
             }
 
-            async function unlockStartGameAchievement() {
-                const playerID = sessionStorage.getItem('loggedInID');
-                if (!playerID) return;
+    try {
+        let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: getID });
+        let checkResult = await checkResponse.json();
+        const playerID = checkResult.data[0].player_ID;
 
-                // Unlock achievement with ID (replace X with the actual ID)
-                const achievementID = 5;  
-                unlockAchievement(playerID, achievementID);
-            }
+        // Store the player ID in sessionStorage
+        sessionStorage.setItem('loggedInID', playerID);
 
-            async function unlockAchievement(playerID, achievementID) {
-                let unlockData = new FormData();
-                unlockData.append('hostname', 'localhost');
-                unlockData.append('username', 'jrice27');
-                unlockData.append('password', 'rZk8FVrXNllcPl8Y');
-                unlockData.append('database', 'CSC1034_CW_13');
-                unlockData.append('query', `INSERT INTO player_achievements (player_id, achievement_id, is_locked) 
-                                            VALUES (${playerID}, ${achievementID}, FALSE) 
-                                            ON DUPLICATE KEY UPDATE is_locked = FALSE`);
+        if (username) {
+            document.getElementById('welcomeMessage').innerText = `Welcome, ${username}!`;
+        } else {
+            // If no user is logged in, send them back to the main menu
+            window.location.href = 'sp_menu.html';
+        }
+    } catch (error) {
+        console.error('Error retrieving player ID:', error);
+    }
+}
 
-                try {
-                    await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: unlockData });
-                    console.log(`Achievement ${achievementID} unlocked for Player ${playerID}`);
-                } catch (error) {
-                    console.error('Error unlocking achievement:', error);
-                }
-            }
-
+retrievePlayerID(); // Call the async function to run it
             function logout() {
-                sessionStorage.removeItem('loggedInUser'); 
-                sessionStorage.removeItem('loggedInID'); 
-                window.location.href = 'sp-mainmenu.html'; 
+                sessionStorage.removeItem('loggedInUser'); // Clear user data
+                window.location.href = 'sp-mainmenu.html'; // Redirect to menu
             }
-
-            retrievePlayerID(); 
         </script>
     </body>
 </html>

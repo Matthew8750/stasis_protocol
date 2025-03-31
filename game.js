@@ -547,24 +547,31 @@ function playerDeath() {
 
         button.addEventListener("click", () => {
             noOfDeaths++;
+
+            // Retrieve player ID from sessionStorage
+            const playerID = sessionStorage.getItem("loggedInID");
+
+            console.log("Player ID:", playerID);
+            console.log("Number of Deaths:", noOfDeaths);
+
+            if (playerID && noOfDeaths > 0) {
+                unlockAchievement(playerID, 3); // Unlock 'That Hurt!' achievement
+            } else {
+                console.error("Player ID is missing, or no deaths recorded.");
+            }
+
             initializeGame(true); // Restart the game
         });
 
-        // Styled for better appearance inside the console
-        button.style.padding = "5px 10px";
-        button.style.backgroundColor = "black";
-        button.style.color = "rgb(0, 255, 0)";
-        button.style.border = "1px solid rgb(0, 255, 0)";
-        button.style.fontFamily = "monospace";
-        button.style.cursor = "pointer";
-        button.style.borderRadius = "4px";
-
+        // Apply styles
+        styleButton(button);
         buttonContainer.appendChild(button);
 
         // Append the button container at the bottom-left of the console
         consolePanel.appendChild(buttonContainer);
     }, 2000); // Delay adding the button to allow text to fully type out
 }
+
 
 function updateAIImage(newSrc) {
     document.getElementById("ai-companion").src = newSrc;
@@ -1047,3 +1054,71 @@ document.getElementById("settings-button").addEventListener("click", () => {
         settingsPanel.style.display = "none"; // Hide the panel
     }
 });
+
+
+
+async function unlockAchievement(playerID, achievementID) {
+    const queryCheck = `SELECT * FROM player_achievements WHERE player_id = ${playerID} AND achievement_id = ${achievementID}`;
+
+    let formDataCheck = new FormData();
+    formDataCheck.append('hostname', 'localhost');
+    formDataCheck.append('username', 'jrice27');
+    formDataCheck.append('password', 'rZk8FVrXNllcPl8Y');
+    formDataCheck.append('database', 'CSC1034_CW_13');
+    formDataCheck.append('query', queryCheck);
+
+    try {
+        let responseCheck = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataCheck });
+        let resultCheck = await responseCheck.json();
+
+        if (resultCheck.error) {
+            console.error(resultCheck.error.toString());
+            return;
+        }
+
+        // If no existing record, insert the achievement into player_achievements table
+        if (resultCheck.data.length === 0) {
+            const queryInsert = `INSERT INTO player_achievements (player_id, achievement_id, is_locked) VALUES (${playerID}, ${achievementID}, 1)`;
+            
+            let formDataInsert = new FormData();
+            formDataInsert.append('hostname', 'localhost');
+            formDataInsert.append('username', 'jrice27');
+            formDataInsert.append('password', 'rZk8FVrXNllcPl8Y');
+            formDataInsert.append('database', 'CSC1034_CW_13');
+            formDataInsert.append('query', queryInsert);
+
+            let responseInsert = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataInsert });
+            let resultInsert = await responseInsert.json();
+
+            if (resultInsert.error) {
+                console.error('Error inserting achievement:', resultInsert.error);
+                return;
+            }
+
+            console.log(`Achievement ${achievementID} inserted successfully.`);
+        }
+
+        // Now, update the achievement to unlocked
+        const queryUpdate = `UPDATE player_achievements SET is_locked = 0 WHERE player_id = ${playerID} AND achievement_id = ${achievementID}`;
+
+        let formDataUpdate = new FormData();
+        formDataUpdate.append('hostname', 'localhost');
+        formDataUpdate.append('username', 'jrice27');
+        formDataUpdate.append('password', 'rZk8FVrXNllcPl8Y');
+        formDataUpdate.append('database', 'CSC1034_CW_13');
+        formDataUpdate.append('query', queryUpdate);
+
+        let responseUpdate = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataUpdate });
+        let resultUpdate = await responseUpdate.json();
+
+        if (resultUpdate.error) {
+            console.error('Error updating achievement:', resultUpdate.error);
+            return;
+        }
+
+        console.log(`Achievement ${achievementID} unlocked successfully.`);
+    } catch (error) {
+        console.error('Error unlocking achievement:', error);
+    }
+}
+

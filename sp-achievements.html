@@ -8,19 +8,23 @@
                 console.log('Fetching achievement data...');
                 
                 // Retrieve the logged-in player ID from sessionStorage
-                const playerID = sessionStorage.getItem('loggedInID');
+                let playerID = sessionStorage.getItem('loggedInID');
                 
                 if (!playerID) {
                     console.error('Player ID not found. User may not be logged in.');
                     return;
                 }
 
+                // Convert to integer to prevent SQL issues
+                playerID = parseInt(playerID, 10);
+                
                 let query = `SELECT a.achievement_name, a.achievement_desc, a.achievement_image, 
-                             IFNULL(pa.is_locked, TRUE) AS is_locked
-                             FROM achievements a
-                             LEFT JOIN player_achievements pa ON a.achievement_id = pa.achievement_id 
-                             AND pa.player_id = ${playerID}
-                             ORDER BY a.achievement_id DESC`;
+                                    COALESCE(pa.is_locked, 1) AS is_locked
+                            FROM achievements a
+                            LEFT JOIN player_achievements pa 
+                            ON a.achievement_id = pa.achievement_id 
+                            AND pa.player_id = ${playerID}
+                            ORDER BY pa.is_locked DESC, a.achievement_id DESC`; // Sort unlocked first
 
                 let formData = new FormData();
                 formData.append('hostname', 'localhost');
@@ -47,8 +51,7 @@
                     
                     result.data.forEach(achievement => {
                         let row = document.createElement('tr');
-                        // Check if the achievement is unlocked
-                        let locked = achievement.is_locked;
+                        let locked = parseInt(achievement.is_locked, 10); // Ensure it's a number
 
                         row.innerHTML = `
                             <td>${achievement.achievement_name}</td>
@@ -65,8 +68,9 @@
                     console.error('Error fetching achievement data:', error);
                 }
             }
-            
+
             window.onload = fetchAchievements;
+
         </script>
     </head>
     <body>

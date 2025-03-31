@@ -541,3 +541,19 @@ tbody {
     max-height: 300px; /* Set a max height for body */
     overflow-y: auto; /* Enable scroll when there are many rows */
 }
+
+#toggle-music-button {
+    position: absolute;
+    top: 50vh;
+    left: 6vw;
+    z-index: 1000; /* Ensure it appears above other elements */
+    width: 50px; /* Set width for the button */
+    height: 50px; /* Set height for the button */
+    background-color: transparent; /* Make the background transparent */
+    background-image: url('images/music_unmute.png'); /* Set the default background image */
+    background-size: cover; /* Ensure the image covers the button */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Center the image */
+    border: none; /* Remove the border */
+    cursor: pointer; /* Change cursor to pointer */
+}

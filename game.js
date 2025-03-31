@@ -11,6 +11,9 @@ let gunPickedUp = false; // Global flag to track if the gun has been picked up
 let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
 let gameStartTime = Date.now() / 1000;
 let lastSaveTime = 0;
+let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
+backgroundMusic.loop = true;
+let isMusicPlaying = true; // Track whether the music is playing
 /*
 Current Bugs: 
 
@@ -18,9 +21,6 @@ Current Bugs:
 
 async function initializeGame(restartGame = false) {
     console.log("[System]: Initializing game...");
-
-    let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
-    backgroundMusic.loop = true;
 
     document.addEventListener("click", function () {
         backgroundMusic.play().catch((error) => {
@@ -899,6 +899,47 @@ async function clearInventory() {
     console.log("[System]: Inventory cleared.");
 }
 
+function toggleBackgroundMusic() {
+    const toggleButton = document.getElementById("toggle-music-button");
+
+    if (backgroundMusic.muted) {
+        backgroundMusic.muted = false; // Unmute the music
+        console.log("[System]: Background music unmuted.");
+        toggleButton.style.backgroundImage = "url('images/music_unmute.png')"; // Set unmute icon
+        console.log("Background image set to: images/music_unmute.png");
+    } else {
+        backgroundMusic.muted = true; // Mute the music
+        console.log("[System]: Background music muted.");
+        toggleButton.style.backgroundImage = "url('images/music_mute.png')"; // Set mute icon
+        console.log("Background image set to: images/music_mute.png");
+    }
+}
+
+function toggleFontSize() {
+    const body = document.body;
+    const buttons = document.querySelectorAll("button"); // Select all buttons
+    const roomPanel = document.querySelector(".room-panel"); // Select the room panel
+    const currentFontSize = window.getComputedStyle(body).fontSize;
+
+    if (currentFontSize === "16px") { // Assuming the original font size is 16px
+        body.style.fontSize = "20px"; // Set to larger font size
+        buttons.forEach(button => {
+            button.style.fontSize = "18px"; // Increase button font size
+        });
+        roomPanel.style.fontSize = "16px"; // Increase room panel font size for larger mode
+        console.log("[System]: Font size increased.");
+    } else {
+        body.style.fontSize = "16px"; // Reset to original font size
+        buttons.forEach(button => {
+            button.style.fontSize = "14px"; // Reset button font size
+        });
+        roomPanel.style.fontSize = "14px"; // Reset room panel font size to default
+        console.log("[System]: Font size reset to original.");
+    }
+}
+
+// Add an event listener to the button
+document.getElementById("toggle-font-size-button").addEventListener("click", toggleFontSize);
 
 // Expose functions to global scope
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;
@@ -912,3 +953,9 @@ window.createButtons = createButtons;
 // Set up event listeners for the buttons in the escape menu
 document.getElementById('returnButton').addEventListener('click', toggleEscapeMenu);
 document.getElementById('exitButton').addEventListener('click', exitGame);
+document.getElementById("toggle-music-button").addEventListener("click", toggleBackgroundMusic);
+
+document.addEventListener("DOMContentLoaded", () => {
+    const toggleButton = document.getElementById("toggle-music-button");
+    toggleButton.style.backgroundImage = "url('images/music_unmute.png')"; // Set the default background image
+});

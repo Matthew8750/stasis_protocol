@@ -17,6 +17,8 @@ let lastSaveTime = 0;
 let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
 backgroundMusic.loop = true;
 let isMusicPlaying = true;
+let spacebarPresses = 0;
+let cafeteriaEventTriggered = false;
 
 // ==========================
 // 2. Utility Functions
@@ -336,6 +338,13 @@ function handleRoomEntry(roomName) {
         return;
     }
 
+    if (roomName === "Cafeteria" && !cafeteriaEventTriggered) {
+        cafeteriaEventTriggered = true;
+        cafeteriaEvent();
+        return;
+    }
+
+
     playDoorOpenSound();
 
     function playDoorOpenSound() {
@@ -557,6 +566,46 @@ function labEvent() {
 
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight;
+}
+
+function cafeteriaEvent() {
+    changeImage("images/room_Hallway.jpg");
+    typeText("[N0VA] RUN! Get out of the Cafeteria! Rapidly tap the spacebar to escape!", 15);
+
+    // Remove any Existing Button Container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+
+    // Reset Spacebar Presses
+    spacebarPresses = 0;
+
+    // Add event listener for spacebar presses
+    document.addEventListener("keydown", countSpacebarPresses);
+
+    // Start a timer that kills the player if they dont tap the spacebar 5 times in 10 seconds
+    hideTimer = setTimeout(() => {
+        changeImage("images/Cafeteria_Death.png");
+        playerDeath();
+        document.removeEventListener("keydown", countSpacebarPresses);
+    } , 10000); // 10 seconds
+}
+
+function countSpacebarPresses(event) {
+    if (event.code === "Space") {
+        spacebarPresses++;
+        console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times.`);
+
+        if (spacebarPresses >= 5) {
+            clearTimeout(hideTimer); // Cancel the death timer
+            typeText("[N0VA] You managed to escape the Cafeteria!");
+            document.removeEventListener("keydown", countSpacebarPresses);
+            setTimeout(() => {
+                handleRoomEntry("Hallway Two");
+            }, 2000);
+        }
+    }
 }
 
 // ==========================

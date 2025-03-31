@@ -17,6 +17,8 @@ let isMusicPlaying = true; // Track whether the music is playing
 /*
 Current Bugs: 
 
+On new player save, after error is displayed you cant click show or hide password button
+
 */
 
 async function initializeGame(restartGame = false) {
@@ -113,7 +115,7 @@ function handleRoomEntry(roomName) {
             choices: ["Hallway One"],
             description: "[N0VA]: You awaken in the Cryogenic Chamber. The ship is eerily silent. Systems flicker weakly—something is wrong.",
             interactions: {
-                "Inspect stasis pods.": { 
+                "Inspect Stasis Pods": { 
                     description: "add text here",
                     newImage: "images/placeholder.jpg"
                 }
@@ -123,22 +125,45 @@ function handleRoomEntry(roomName) {
             image: "images/room_Hallway.jpg",
             choices: ["Med Bay", "Lab"],
             description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
+            
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
             choices: ["Hallway One"],
             keycard: true,
-            description: "[N0VA]: This is the Med Bay. A security keycard is present; retrieval is advised."
+            description: "[N0VA]: This is the Med Bay. A security keycard is present; retrieval is advised.",
+            interactions: {
+                "Open Drawers": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                },
+                "Inspect Blood": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Lab": {
             image: "images/room_Lab.jpg",
             choices: ["Hallway One", "Cafeteria", "Hallway Two"],
-            description: "[N0VA]: The containment unit has been forcibly opened. Whatever was inside is no longer here."
+            description: "[N0VA]: The containment unit has been forcibly opened. Whatever was inside is no longer here.",
+            interactions: {
+                "Inspect Containment Chamber": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Admin": {
             image: "images/room_Admin.jpg",
             choices: ["Cafeteria"],
-            description: "[N0VA]: This is the Admin Control Room. Multiple terminals are active but unstable—data corruption detected."
+            description: "[N0VA]: This is the Admin Control Room. Multiple terminals are active but unstable—data corruption detected.",
+            interactions: {
+                "Inspect Terminal": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
@@ -154,13 +179,25 @@ function handleRoomEntry(roomName) {
             image: "images/room_Engine1.jpg",
             choices: ["Hallway Two"],
             wrench: true,
-            description: "[N0VA]: The engine room is heavily damaged. A wrench is present—this tool is essential for repairing the escape pods."
+            description: "[N0VA]: The engine room is heavily damaged. A wrench is present—this tool is essential for repairing the escape pods.",
+            interactions: {
+                "Inspect the Engine": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
             choices: ["Hallway Two"],
-            description: "[N0VA]: Engine Room sector—severe damage. Power systems failing."
-        },
+            description: "[N0VA]: Engine Room sector—severe damage. Power systems failing.",
+            interactions: {
+                "Inspect the Engine": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+        }
+    },
         "Hallway Final": {
             image: "images/room_Hallway.jpg",
             choices: ["Hallway Two", "Armory", "Escape Pods"],
@@ -177,7 +214,7 @@ function handleRoomEntry(roomName) {
             choices: ["Hallway Final"],
             description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit."
         }
-    };
+    }
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
@@ -426,7 +463,7 @@ function createButtons(roomInfo) {
     // Create interaction buttons (e.g., "Open Drawer")
 if (roomInfo.interactions) {
     Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
-        createButton(`Interact: ${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
+        createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
             typeText(interaction.description);
 
             if (interaction.newImage) {
@@ -435,7 +472,7 @@ if (roomInfo.interactions) {
                 // Revert to the original room image after 3 seconds
                 setTimeout(() => {
                     changeImage(roomInfo.image);
-                }, 3000);
+                }, 5000);
             }
         });
     });

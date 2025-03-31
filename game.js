@@ -17,7 +17,6 @@ let lastSaveTime = 0;
 let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
 backgroundMusic.loop = true;
 let isMusicPlaying = true;
-let spacebarPresses = 0;
 
 // ==========================
 // 2. Utility Functions
@@ -337,12 +336,6 @@ function handleRoomEntry(roomName) {
         return;
     }
 
-    if (roomName === "Cafeteria" && !cafeteriaEventTriggered) {
-        cafeteriaEventTriggered = true;
-        cafeteriaEvent();
-        return;
-    }
-
     playDoorOpenSound();
 
     function playDoorOpenSound() {
@@ -565,44 +558,6 @@ function labEvent() {
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
-
-function cafeteriaEvent() {
-    typeText("[N0VA] What is that? Quick! Get out of the Cafeteria! Rapidly tap the spacebar now!", 15);
-    changeImage("images/room_Cafeteria.jpg");
-
-    // Remove any existing button container
-    let existingButtonContainer = document.getElementById("button-container");
-    if (existingButtonContainer) {
-        existingButtonContainer.remove();
-    }
-
-    // Reset Spacebar presses
-    spacebarPresses = 0;
-
-    // Add Event Listener for Spacebar
-    document.addEventListener("keydown", countSpacebarPresses);
-
-        // Start a Timer that kills the Player if they don't tap the spacebar 5 times in 10 seconds
-        hideTimer = setTimeout(() => {
-            changeImage("images/Cafeteria_Death.png");
-            playerDeath();
-            document.removeEventListener("keydown", countSpacebarPresses);
-    } , 10000); // 10 seconds
-}
-
-function countSpacebarPresses(event) {
-    if (event.code === "Space") {
-        spacebarPresses++;
-        console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times`);
-
-        if (spacebarPresses >= 5) {
-            clearTimeout(hideTimer); // Cancel the death timer
-            typeText("[N0VA] You escaped the Cafeteria! Now, where to next?");
-            handleRoomEntry("Lab"); // Change to Lab
-            document.removeEventListener("keydown", countSpacebarPresses);
-        }
-    }
-} 
 
 // ==========================
 // 5. Inventory Management

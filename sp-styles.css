@@ -585,7 +585,10 @@ thead {
 ::-webkit-scrollbar-thumb:hover {
     background-color: #29cc29; /* Slightly darker green when hovering */
 }
-
+/* Grey out images if locked */
+.locked {
+    filter: grayscale(100%) opacity(50%); /* Grey out image */
+}
 
 
 

@@ -9,6 +9,7 @@ let startTime = Date.now();  // Store the timestamp when the game starts
 let wrenchPickedUp = false; // Global flag to track if the wrench has been picked up
 let gunPickedUp = false; // Global flag to track if the gun has been picked up
 let keycardPickedUp = false; // Global flag to track if the keycard has been picked up
+let labUnlocked = false; // Flag to track if player has unlocked the lab in Admin.
 let gameStartTime = Date.now() / 1000;
 let lastSaveTime = 0;
 let backgroundMusic = new Audio("Audio/StasisProtocolBgMusic.mp3");
@@ -47,6 +48,7 @@ async function initializeGame(restartGame = false) {
     keycardPickedUp = false;
     gunPickedUp = false;
     wrenchPickedUp = false;
+    labUnlocked = false;
     clearInventory();
 
     handleRoomEntry("Cryogenic Chamber");
@@ -245,6 +247,11 @@ function handleRoomEntry(roomName) {
     if (roomName === "Armory" && !keycardPickedUp) {
         typeText("[System]: The Armory is locked. You need the keycard to enter.");
         console.log("[Debug]: Access to the Armory denied. Keycard not found in inventory.");
+        return; // Prevent access to the Armory
+    }
+
+    if (roomName === "Lab" && !labUnlocked) {
+        typeText("[N0VA]: The lab is locked. You should head to Admin and unlock it.");
         return; // Prevent access to the Armory
     }
 

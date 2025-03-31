@@ -17,6 +17,8 @@ let isMusicPlaying = true; // Track whether the music is playing
 /*
 Current Bugs: 
 
+On new player save, after error is displayed you cant click show or hide password button
+
 */
 
 async function initializeGame(restartGame = false) {
@@ -111,97 +113,128 @@ function handleRoomEntry(roomName) {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
             choices: ["Hallway One"],
-            description: "[N0VA]: You awaken in the Cryogenic Chamber. The ship is eerily silent. Systems flicker weakly—something is wrong."
+            description: "[N0VA]: You awaken in the Cryogenic Chamber. The ship is eerily silent. Systems flicker weakly—something is wrong.",
+            interactions: {
+                "Inspect Stasis Pods": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Hallway One": {
             image: "images/room_Hallway.jpg",
             choices: ["Med Bay", "Lab"],
             description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
+            
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
             choices: ["Hallway One"],
             keycard: true,
-            description: "[N0VA]: This is the Med Bay. Primary function: medical treatment and emergency care. Current status: compromised. Bloodstains indicate recent injury or conflict. Medical equipment is still operational, but some systems appear damaged. Proceed with caution—unknown variables present. A security keycard is present; retrieval is advised, as it may be critical for future access."
+            description: "[N0VA]: This is the Med Bay. A security keycard is present; retrieval is advised.",
+            interactions: {
+                "Open Drawers": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                },
+                "Inspect Blood": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Lab": {
             image: "images/room_Lab.jpg",
             choices: ["Hallway One", "Cafeteria", "Hallway Two"],
-            description: "[N0VA]: This laboratory appears compromised. The containment unit has been forcibly opened. There are signs of struggle... blood. Whatever was inside is no longer here."
+            description: "[N0VA]: The containment unit has been forcibly opened. Whatever was inside is no longer here.",
+            interactions: {
+                "Inspect Containment Chamber": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Admin": {
             image: "images/room_Admin.jpg",
             choices: ["Cafeteria"],
-            description: "[N0VA]: This is the Admin Control Room. Primary function: ship-wide system management and oversight. Status: heavily damaged. Multiple terminals are active but unstable—data corruption detected. Debris and signs of struggle indicate past conflict."
+            description: "[N0VA]: This is the Admin Control Room. Multiple terminals are active but unstable—data corruption detected.",
+            interactions: {
+                "Inspect Terminal": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
             choices: ["Lab", "Admin"],
-            description: "[N0VA]: This is the Cafeteria, a designated crew dining area. Status: abandoned. Food trays and supplies are scattered—signs of a hasty departure. Terminal access available, but system integrity is unknown. No immediate threats detected, but caution is advised."
+            description: "[N0VA]: The Cafeteria is abandoned. Food trays and supplies are scattered—signs of a hasty departure."
         },
         "Hallway Two": {
             image: "images/room_Hallway.jpg",
             choices: ["Lab", "Engine Left", "Engine Right", "Hallway Final"],
-            description: "[N0VA]: This hallway extends deeper into the ship. Darkened corridors stretch ahead, offering little comfort."
+            description: "[N0VA]: Darkened corridors stretch ahead, offering little comfort."
         },
         "Engine Left": {
             image: "images/room_Engine1.jpg",
             choices: ["Hallway Two"],
             wrench: true,
-            description: "[N0VA]: This is the Engine Room, the heart of the ship’s propulsion system. Status: heavily damaged. Power fluctuations detected, and structural integrity is compromised. A wrench is present—this tool is essential for repairing the escape pods. Proceed with caution; unstable machinery may pose a hazard."
+            description: "[N0VA]: The engine room is heavily damaged. A wrench is present—this tool is essential for repairing the escape pods.",
+            interactions: {
+                "Inspect the Engine": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+            }
         },
         "Engine Right": {
             image: "images/room_Engine2.jpg",
             choices: ["Hallway Two"],
-            description: "[N0VA]: Engine Room sector—severe damage. Power systems failing. Tread carefully."
-        },
+            description: "[N0VA]: Engine Room sector—severe damage. Power systems failing.",
+            interactions: {
+                "Inspect the Engine": { 
+                    description: "add text here",
+                    newImage: "images/placeholder.jpg"
+                }
+        }
+    },
         "Hallway Final": {
             image: "images/room_Hallway.jpg",
             choices: ["Hallway Two", "Armory", "Escape Pods"],
-            description: "[N0VA]: Final stretch before the escape pods. The air feels heavy—something isn’t right."
+            description: "[N0VA]: The air feels heavy—something isn’t right."
         },
         "Armory": {
             image: "images/room_Armory.jpg",
             choices: ["Hallway Final"],
             gun: true,
-            description: "[N0VA]: This is the Armory, the ship’s secured weapons storage. Here you’ll find essential firepower. A high-powered firearm has been left, your best chance at defending against the hostile threat onboard. Arm yourself and proceed with caution."
+            description: "[N0VA]: A high-powered firearm has been left, your best chance at defending against the hostile threat onboard."
         },
         "Escape Pods": {
             image: "images/room_EscapePod.jpg",
             choices: ["Hallway Final"],
-            description: "[N0VA]: This is the Escape Pod Bay, the ship’s last resort for evacuation. Multiple pods appear damaged or inoperable. Life support systems are failing, and time is limited. A functioning escape pod may still be accessible, but repairs might be necessary. If you have the required tools, proceed with caution and secure your exit."
+            description: "[N0VA]: The Escape Pod Bay. Some pods appear damaged. If you have the required tools, secure your exit."
         }
-    };
+    }
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
         return;
     }
+
+    
     // Play the door open sound when entering the room
     playDoorOpenSound();
-    
+
+    // Function for playing door open sound
+    function playDoorOpenSound() {
+    let doorSound = new Audio('Audio/DoorOpen.mp3');
+    doorSound.play();
+    }
+
     // Check for a 10% chance to play the alien random noise
     if (Math.random() < 0.1) {
         playAlienRandomNoise();
     }
-
-    // Display room description
-    typeText(roomData[roomName].description);
-
-    function playDoorOpenSound() {
-        // Create an audio element if not already created
-        let doorSound = new Audio('Audio/DoorOpen.mp3');
-        doorSound.play();
-    }
-
-
-    
-    function playAlienRandomNoise() {
-        // Create an audio element for the Alien Random Noise
-        let alienNoise = new Audio('Audio/AlienRandomNoise.mp3');
-        alienNoise.play();
-    }
-
 
     // Check if the Armory is locked
     if (roomName === "Armory" && !keycardPickedUp) {
@@ -237,34 +270,39 @@ function handleRoomEntry(roomName) {
 
     // Show or hide the keycard image based on the room and whether it has been picked up
     // When entering the room, ensure all item panels are checked for visibility
-const keycardPanel = document.querySelector(".keycard-item-panel");
-const wrenchPanel = document.querySelector(".wrench-item-panel");
-const gunPanel = document.querySelector(".gun-item-panel");
+    const keycardPanel = document.querySelector(".keycard-item-panel");
+    const wrenchPanel = document.querySelector(".wrench-item-panel");
+    const gunPanel = document.querySelector(".gun-item-panel");
 
-// Handle keycard visibility
-if (roomInfo.keycard && !keycardPickedUp) {
-    keycardPanel.style.display = "block"; // Show keycard
-} else {
-    keycardPanel.style.display = "none"; // Hide keycard
-}
+    // Handle keycard visibility
+    if (roomInfo.keycard && !keycardPickedUp) {
+        keycardPanel.style.display = "block"; // Show keycard
+    } else {
+        keycardPanel.style.display = "none"; // Hide keycard
+    }
 
-// Handle wrench visibility
-if (roomInfo.wrench && !wrenchPickedUp) {
-    wrenchPanel.style.display = "block"; // Show wrench
-} else {
-    wrenchPanel.style.display = "none"; // Hide wrench
-}
+    // Handle wrench visibility
+    if (roomInfo.wrench && !wrenchPickedUp) {
+        wrenchPanel.style.display = "block"; // Show wrench
+    } else {
+        wrenchPanel.style.display = "none"; // Hide wrench
+    }
 
-// Handle gun visibility
-if (roomInfo.gun && !gunPickedUp) {
-    gunPanel.style.display = "block"; // Show gun
-} else {
-    gunPanel.style.display = "none"; // Hide gun
-}
-
+    // Handle gun visibility
+    if (roomInfo.gun && !gunPickedUp) {
+        gunPanel.style.display = "block"; // Show gun
+    } else {
+        gunPanel.style.display = "none"; // Hide gun
+    }
 
     // Create buttons for available choices
     createButtons(roomInfo);
+}
+
+// Function for playing alien random noise
+function playAlienRandomNoise() {
+    let alienNoise = new Audio('Audio/AlienRandomNoise.mp3');
+    alienNoise.play();
 }
 
 function labEvent() {
@@ -422,20 +460,24 @@ function createButtons(roomInfo) {
     });
     
     
-    
-    
-
     // Create interaction buttons (e.g., "Open Drawer")
-    if (roomInfo.interactions) {
-        Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
-            createButton(`Interact: ${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
-                typeText(interaction.description);
-                if (interaction.newImage) {
-                    changeImage(interaction.newImage);
-                }
-            });
+if (roomInfo.interactions) {
+    Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
+        createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
+            typeText(interaction.description);
+
+            if (interaction.newImage) {
+                changeImage(interaction.newImage);
+
+                // Revert to the original room image after 3 seconds
+                setTimeout(() => {
+                    changeImage(roomInfo.image);
+                }, 5000);
+            }
         });
-    }
+    });
+}
+
 
     // Append buttons to console panel
     consolePanel.appendChild(buttonContainer);

@@ -19,17 +19,93 @@ backgroundMusic.loop = true;
 let isMusicPlaying = true;
 let spacebarPresses = 0;
 let cafeteriaEventTriggered = false;
+window.initializeGame = initializeGame;
+
+import {
+    typingTimeouts,
+    typingInProgress,
+    labEventTriggered,
+    noOfDeaths,
+    time_played,
+    rooms_explored,
+    location_name,
+    startTime,
+    wrenchPickedUp,
+    gunPickedUp,
+    keycardPickedUp,
+    labUnlocked,
+    gameStartTime,
+    lastSaveTime,
+    backgroundMusic,
+    isMusicPlaying,
+    setTypingTimeouts,
+    setTypingInProgress,
+    setLabEventTriggered,
+    setNoOfDeaths,
+    setTimePlayed,
+    setRoomsExplored,
+    setLocationName,
+    setStartTime,
+    setWrenchPickedUp,
+    setGunPickedUp,
+    setKeycardPickedUp,
+    setLabUnlocked,
+    setGameStartTime,
+    setLastSaveTime,
+    setIsMusicPlaying
+} from './globals.js';
+
+import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory } from './saveManager.js';
+import { toggleBackgroundMusic } from './audio.js';
+import { labEvent } from './events.js';
 
 // ==========================
 // 2. Utility Functions
 // ==========================
-function typeText(message, speed = 30) {
+
+// ==========================
+// 3. Game Initialization
+// ==========================
+async function initializeGame(restartGame = false) {
+    console.log("[System]: Initializing game...");
+
+    document.addEventListener("click", function () {
+        backgroundMusic.play().catch((error) => {
+            console.error("[Error]: Unable to play audio.", error);
+        });
+    });
+
+    const loggedInID = sessionStorage.getItem("loggedInID");
+
+    if (!restartGame && loggedInID) {
+        let saveExists = await loadSave(loggedInID);
+        if (saveExists) {
+            console.log("[System]: Save loaded successfully.");
+            return; // Prevents starting a new game
+        }
+    }
+
+    console.log("[System]: Starting a new game...");
+
+
+    labEventTriggered = false;
+    keycardPickedUp = false;
+    gunPickedUp = false;
+    wrenchPickedUp = false;
+    clearInventory();
+
+    handleRoomEntry("Cryogenic Chamber");
+    console.log("[System]: chamber entrered.");
+}
+
+export function typeText(message, speed = 30) {
+    console.log("[Debug]: Typing message:", message);
     const consolePanel = document.getElementById("console");
 
     function stopTyping() {
-        typingInProgress = false;
+        setTypingInProgress(false);
         typingTimeouts.forEach(clearTimeout);
-        typingTimeouts = [];
+        setTypingTimeouts([]);
     }
 
     stopTyping();
@@ -40,9 +116,9 @@ function typeText(message, speed = 30) {
         textContainer.id = "text-container";
         consolePanel.insertBefore(textContainer, consolePanel.firstChild);
     }
-    
+
     textContainer.innerHTML = "";
-    typingInProgress = true;
+    setTypingInProgress(true);
 
     let cleanMessage = message.split("\n");
 
@@ -66,15 +142,15 @@ function typeText(message, speed = 30) {
 
             typeCharacter();
         } else {
-            typingInProgress = false;
+            setTypingInProgress(false);
             consolePanel.scrollTop = consolePanel.scrollHeight;
         }
     }
 
-    typeLine();
+    typeLine(); // Corrected function call
 }
 
-function changeImage(newSrc) {
+export function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
 
@@ -88,132 +164,62 @@ function styleButton(button) {
     button.style.borderRadius = "4px";
 }
 
-// ==========================
-// 3. Game Initialization
-// ==========================
-async function initializeGame(restartGame = false) {
-    console.log("[System]: Initializing game...");
-
-    document.addEventListener("click", function () {
-        backgroundMusic.play().catch((error) => {
-            console.error("[Error]: Unable to play audio.", error);
-        });
-    });
-
-    const loggedInID = sessionStorage.getItem("loggedInID");
-
-    if (!restartGame && loggedInID) {
-        let saveExists = await loadSave(loggedInID);
-        if (saveExists) {
-            console.log("[System]: Save loaded successfully.");
-            return;
-        }
-    }
-
-    console.log("[System]: Starting a new game...");
-
-    labEventTriggered = false;
-    keycardPickedUp = false;
-    gunPickedUp = false;
-    wrenchPickedUp = false;
-    clearInventory();
-
-    handleRoomEntry("Cryogenic Chamber");
+function updateAIImage(newSrc) {
+    document.getElementById("ai-companion").src = newSrc;
 }
 
-async function loadSave(playerID) {
-    console.log("[System]: Checking for saved game...");
+function updateRoom(roomName) {
+    document.getElementById("room-display").textContent = "Room: " + roomName;
+}
 
-    let query = `SELECT deaths, time_played, rooms_explored, location_name, labEventTriggered FROM game_stats WHERE player_ID = '${playerID}'`;
-    let inventoryQuery = `SELECT item_id FROM player_inventory WHERE player_id = '${playerID}'`;
+function toggleEscapeMenu() {
+    const menu = document.getElementById('escapeMenu');
+    if (!menu) {
+        console.error("[Error]: Escape menu element not found.");
+        return;
+    }
+    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+}
 
-    let formData = new FormData();
-    formData.append('hostname', 'localhost');
-    formData.append('username', 'jrice27');
-    formData.append('password', 'rZk8FVrXNllcPl8Y');
-    formData.append('database', 'CSC1034_CW_13');
-    formData.append('query', query);
+function toggleSettingsPanel() {
+    const settingsPanel = document.getElementById("settingsPanel");
+    if (settingsPanel.style.display === "none" || settingsPanel.style.display === "") {
+        settingsPanel.style.display = "block";
+    } else {
+        settingsPanel.style.display = "none";
+    }
+}
 
-    try {
-        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-        let response = await fetch(url, { method: 'POST', body: formData });
-        let result = await response.json();
+function toggleFontSize() {
+    const body = document.body;
+    const buttons = document.querySelectorAll("button");
+    const roomPanel = document.querySelector(".room-panel");
+    const consolePanel = document.querySelector(".console-panel");
+    const currentFontSize = window.getComputedStyle(body).fontSize;
 
-        console.log("[Debug]: Game stats result", result);
-
-        if (result.error) {
-            console.error("[Error]:", result.error);
-            return false;
-        }
-
-        if (result.data && Array.isArray(result.data) && result.data.length > 0) {
-            let saveData = result.data[0];
-
-            let startTime = saveData.time_played || "00:00:00";
-            let [hours, minutes, seconds] = startTime.split(":").map(Number);
-
-            if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
-                startTime = "00:00:00";
-                hours = 0;
-                minutes = 0;
-                seconds = 0;
-            }
-
-            lastSaveTime = hours * 3600 + minutes * 60 + seconds;
-            gameStartTime = Date.now() / 1000 - lastSaveTime;
-
-            noOfDeaths = saveData.deaths || 0;
-            rooms_explored = saveData.rooms_explored || 0;
-            location_name = saveData.location_name || "Cryogenic Chamber";
-
-            handleRoomEntry(location_name);
-            console.log(`Loaded save time: ${lastSaveTime} seconds`);
-
-            let inventoryFormData = new FormData();
-            inventoryFormData.append('hostname', 'localhost');
-            inventoryFormData.append('username', 'jrice27');
-            inventoryFormData.append('password', 'rZk8FVrXNllcPl8Y');
-            inventoryFormData.append('database', 'CSC1034_CW_13');
-            inventoryFormData.append('query', inventoryQuery);
-
-            let inventoryResponse = await fetch(url, { method: 'POST', body: inventoryFormData });
-            let inventoryResult = await inventoryResponse.json();
-
-            console.log("[Debug]: Inventory query result", inventoryResult);
-
-            if (inventoryResult.data && Array.isArray(inventoryResult.data)) {
-                inventoryResult.data.forEach(item => {
-                    console.log(`[Debug]: Found item with ID ${item.item_id}`);
-                    if (parseInt(item.item_id, 10) === 1) {
-                        manageInventory("images/item_Wrench.png", "Wrench");
-                        wrenchPickedUp = true;
-                    } else if (parseInt(item.item_id, 10) === 2) {
-                        manageInventory("images/item_Keycard.png", "Keycard");
-                        keycardPickedUp = true;
-                    } else if (parseInt(item.item_id, 10) === 3) {
-                        manageInventory("images/item_Gun.png", "Gun");
-                        gunPickedUp = true;
-                    }
-                });
-            } else {
-                console.log("[Debug]: No inventory data found for this player.");
-            }
-
-            return true;
-        }
-
-        console.log("[System]: No save data found.");
-        return false;
-    } catch (error) {
-        console.error("[Error]: Unable to connect to the database.", error);
-        return false;
+    if (currentFontSize === "16px") {
+        body.style.fontSize = "20px";
+        buttons.forEach(button => {
+            button.style.fontSize = "18px";
+        });
+        roomPanel.style.fontSize = "16px";
+        consolePanel.style.fontSize = "16px";
+        console.log("[System]: Font size increased.");
+    } else {
+        body.style.fontSize = "16px";
+        buttons.forEach(button => {
+            button.style.fontSize = "14px";
+        });
+        roomPanel.style.fontSize = "14px";
+        consolePanel.style.fontSize = "14px";
+        console.log("[System]: Font size reset to original.");
     }
 }
 
 // ==========================
 // 4. Room Management
 // ==========================
-function handleRoomEntry(roomName) {
+export function handleRoomEntry(roomName) {
     const roomData = {
         "Cryogenic Chamber": {
             image: "images/room_Chamber.jpg",
@@ -230,7 +236,6 @@ function handleRoomEntry(roomName) {
             image: "images/room_Hallway.jpg",
             choices: ["Med Bay", "Lab"],
             description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
-            
         },
         "Med Bay": {
             image: "images/room_MedBay.jpg",
@@ -301,8 +306,8 @@ function handleRoomEntry(roomName) {
                     description: "add text here",
                     newImage: "images/placeholder.jpg"
                 }
-        }
-    },
+            }
+        },
         "Hallway Final": {
             image: "images/room_Hallway.jpg",
             choices: ["Hallway Two", "Armory", "Escape Pods"],
@@ -326,6 +331,7 @@ function handleRoomEntry(roomName) {
             }
         }
     };
+    console.log("[Debug]: Room data loaded.");
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
@@ -333,8 +339,9 @@ function handleRoomEntry(roomName) {
     }
 
     if (roomName === "Lab" && !labEventTriggered) {
-        labEventTriggered = true;
-        labEvent();
+        setLabEventTriggered(true);
+        labEvent(); // Call the imported labEvent function
+        console.log("[Debug]: Lab event triggered.");
         return;
     }
 
@@ -350,10 +357,6 @@ function handleRoomEntry(roomName) {
     function playDoorOpenSound() {
         let doorSound = new Audio('Audio/DoorOpen.mp3');
         doorSound.play();
-    }
-
-    if (Math.random() < 0.1) {
-        playAlienRandomNoise();
     }
 
     if (roomName === "Armory" && !keycardPickedUp) {
@@ -458,11 +461,11 @@ function createButtons(roomInfo) {
                     document.querySelector(`.${item}-item-panel`).style.display = "none";
     
                     if (item === 'keycard') {
-                        keycardPickedUp = true;
+                        setKeycardPickedUp(true);
                     } else if (item === 'wrench') {
-                        wrenchPickedUp = true;
+                        setWrenchPickedUp(true);
                     } else if (item === 'gun') {
-                        gunPickedUp = true;
+                        setGunPickedUp(true);
                     }
     
                     console.log(`${item}PickedUp: ${eval(`${item}PickedUp`)}`);
@@ -475,143 +478,43 @@ function createButtons(roomInfo) {
         }
     });
     
-   let isRoomChanging = false;
+    let isRoomChanging = false;
 
-if (roomInfo.interactions) {
-    Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
-        createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
-            typeText(interaction.description);
+    if (roomInfo.interactions) {
+        Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
+            createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
+                typeText(interaction.description);
 
-            const originalImage = roomInfo.image;
+                const originalImage = roomInfo.image;
 
-            if (interaction.newImage) {
-                changeImage(interaction.newImage);
+                if (interaction.newImage) {
+                    changeImage(interaction.newImage);
 
-                setTimeout(() => {
-                    if (!isRoomChanging && originalImage === roomInfo.image) {
-                        changeImage(originalImage);
-                    }
-                }, 5000);
-            }
+                    setTimeout(() => {
+                        if (!isRoomChanging && originalImage === roomInfo.image) {
+                            changeImage(originalImage);
+                        }
+                    }, 5000);
+                }
+            });
         });
-    });
-}
+    }
 
-function handleRoomChange() {
-    isRoomChanging = true;
-}
+    function handleRoomChange() {
+        isRoomChanging = true;
+    }
 
-function resetRoomChangeFlag() {
-    isRoomChanging = false;
-}
+    function resetRoomChangeFlag() {
+        isRoomChanging = false;
+    }
 
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
-
-function labEvent() {
-    typeText("[N0VA] Did you hear that? Hide now!", 15);
-
-    const consolePanel = document.getElementById("console");
-    const choices = ["Hide inside the medical closet.", "Hide under the desk"];
-    changeImage("images/room_Lab.jpg");
-
-    if (!choices || choices.length === 0) {
-        playerDeath();
-        return;
-    }
-
-    let existingButtonContainer = document.getElementById("button-container");
-    if (existingButtonContainer) {
-        existingButtonContainer.remove();
-    }
-
-    const buttonContainer = document.createElement("div");
-    buttonContainer.id = "button-container";
-    buttonContainer.style.position = "absolute";
-    buttonContainer.style.bottom = "5px";
-    buttonContainer.style.left = "5px";
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.gap = "5px";
-    buttonContainer.style.flexWrap = "wrap";
-    buttonContainer.style.maxWidth = "100%";
-
-    let hideTimer = setTimeout(() => {
-        changeImage("images/LabRoomImage_Death.png");
-        playerDeath();
-    }, 5000);
-
-    choices.forEach(choice => {
-        const button = document.createElement("button");
-        button.textContent = choice;
-
-        button.addEventListener("click", () => {
-            clearTimeout(hideTimer);
-
-            if (choice === "Hide inside the medical closet.") {
-                labEventTriggered = true;
-                consolePanel.innerHTML = '';
-                typeText("[AI Companion] add some text here when you hide in the closet ")
-                handleRoomEntry("Lab");
-            } else if (choice === "Hide under the desk") {
-                changeImage("images/LabRoomImage_Death.png");
-                playerDeath();
-            }
-        });
-
-        styleButton(button);
-
-        buttonContainer.appendChild(button);
-    });
-
-    consolePanel.appendChild(buttonContainer);
-    consolePanel.scrollTop = consolePanel.scrollHeight;
-}
-
-function cafeteriaEvent() {
-    changeImage("images/room_Hallway.jpg");
-    typeText("[N0VA] RUN! Get out of the Cafeteria! Rapidly tap the spacebar to escape!", 15);
-
-    // Remove any Existing Button Container
-    let existingButtonContainer = document.getElementById("button-container");
-    if (existingButtonContainer) {
-        existingButtonContainer.remove();
-    }
-
-    // Reset Spacebar Presses
-    spacebarPresses = 0;
-
-    // Add event listener for spacebar presses
-    document.addEventListener("keydown", countSpacebarPresses);
-
-    // Start a timer that kills the player if they dont tap the spacebar 5 times in 10 seconds
-    hideTimer = setTimeout(() => {
-        changeImage("images/Cafeteria_Death.png");
-        playerDeath();
-        document.removeEventListener("keydown", countSpacebarPresses);
-    } , 10000); // 10 seconds
-}
-
-function countSpacebarPresses(event) {
-    if (event.code === "Space") {
-        spacebarPresses++;
-        console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times.`);
-
-        if (spacebarPresses >= 5) {
-            clearTimeout(hideTimer); // Cancel the death timer
-            typeText("[N0VA] You managed to escape the Cafeteria!");
-            document.removeEventListener("keydown", countSpacebarPresses);
-            setTimeout(() => {
-                handleRoomEntry("Hallway Two");
-            }, 2000);
-        }
-    }
-}
-
 // ==========================
 // 5. Inventory Management
 // ==========================
-function manageInventory(imageSrc, altText) {
+export function manageInventory(imageSrc, altText) {
     const inventorySlots = document.querySelectorAll(".inventory-slot");
 
     for (let slot of inventorySlots) {
@@ -638,240 +541,28 @@ function manageInventory(imageSrc, altText) {
     console.log("[Error]: No empty inventory slots available.");
 }
 
-async function clearInventory() {
-    const inventorySlots = document.querySelectorAll(".inventory-slot");
-    inventorySlots.forEach(slot => {
-        slot.innerHTML = "";
-    });
-
-    const loggedInID = sessionStorage.getItem('loggedInID');
-    if (!loggedInID) {
-        console.error('Error: No player ID found in session.');
-        return;
-    }
-
-    let sanitizedInput = loggedInID.replace(/'/g, "\\'");
-
-    let deleteQuery = `DELETE FROM player_inventory WHERE player_id = '${sanitizedInput}'`;
-
-    let formData = new FormData();
-    formData.append('hostname', 'localhost');
-    formData.append('username', 'jrice27');
-    formData.append('password', 'rZk8FVrXNllcPl8Y');
-    formData.append('database', 'CSC1034_CW_13');
-    formData.append('query', deleteQuery);
-
-    try {
-        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-        let response = await fetch(url, { method: 'POST', body: formData });
-        let result = await response.json();
-
-        if (result.error) {
-            console.error("[Error]:", result.error);
-        } else {
-            console.log("[System]: Inventory cleared in database.");
-        }
-    } catch (error) {
-        console.error("[Error]: Unable to connect to the database.", error);
-    }
-
-    console.log("[System]: Inventory cleared.");
-}
-
-async function fetchAndDisplayInventory() {
-    console.log('Fetching inventory items from the database...');
-
-    let hostname = 'localhost';
-    let username = 'jrice27';
-    let password = 'rZk8FVrXNllcPl8Y';
-    let database = 'CSC1034_CW_13';
-
-    let query = `SELECT item_name, item_image FROM player_inventory`;
-
-    let formData = new FormData();
-    formData.append('hostname', hostname);
-    formData.append('username', username);
-    formData.append('password', password);
-    formData.append('database', database);
-    formData.append('query', query);
-
-    try {
-        let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
-        let response = await fetch(url, {
-            method: 'POST',
-            body: formData
-        });
-
-        let result = await response.json();
-
-        if (result.error) {
-            console.error(result.error.toString());
-            console.log(`[Error]: ${result.error}`);
-            return;
-        }
-
-        const inventoryContainer = document.querySelector('.inventory');
-        inventoryContainer.innerHTML = '';
-
-        result.data.forEach(item => {
-            const slot = document.createElement('div');
-            slot.classList.add('inventory-slot');
-
-            const img = document.createElement('img');
-            img.src = item.item_image;
-            img.alt = item.item_name;
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '100%';
-
-            slot.appendChild(img);
-
-            inventoryContainer.appendChild(slot);
-        });
-
-        console.log(`[System]: Inventory updated with ${result.data.length} items.`);
-    } catch (error) {
-        console.error('Error:', error);
-        console.log('[Error]: Unable to fetch inventory items. Please try again later.');
-    }
-}
-
 // ==========================
-// 6. Database Operations
-// ==========================
-async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name, labEventTriggered) {
-    console.log('Connecting to the database...');
-
-    const loggedInID = sessionStorage.getItem('loggedInID');
-    if (!loggedInID) {
-        console.error('Error: No player ID found in session.');
-        return;
-    }
-
-    let sanitizedInput = loggedInID.replace(/'/g, "\\'");
-    let sanitizedLocation = location_name ? location_name.replace(/^Room:\s*/, '').replace(/'/g, "\\'") : "Unknown Location";
-
-    let currentTime = Date.now() / 1000;
-    let elapsedTime = currentTime - gameStartTime + lastSaveTime;
-    let hours = Math.floor(elapsedTime / 3600).toString().padStart(2, '0');
-    let minutes = Math.floor((elapsedTime % 3600) / 60).toString().padStart(2, '0');
-    let seconds = (elapsedTime % 60).toString().padStart(2, '0');
-    let formattedTime = `${hours}:${minutes}:${seconds}`;
-
-    let labTriggeredValue = labEventTriggered ? 1 : 0;
-
-    try {
-        let checkQuery = `SELECT COUNT(*) AS saveExists FROM game_stats WHERE player_id = '${sanitizedInput}'`;
-        let checkData = new FormData();
-        checkData.append('hostname', 'localhost');
-        checkData.append('username', 'jrice27');
-        checkData.append('password', 'rZk8FVrXNllcPl8Y');
-        checkData.append('database', 'CSC1034_CW_13');
-        checkData.append('query', checkQuery);
-
-        let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: checkData });
-        let checkResult = await checkResponse.json();
-        let saveExists = checkResult.data && checkResult.data[0].saveExists > 0;
-
-        let query = saveExists
-            ? `UPDATE game_stats SET deaths = ${noOfDeaths}, time_played = '${formattedTime}', rooms_explored = ${rooms_explored}, 
-                location_name = '${sanitizedLocation}', labEventTriggered = ${labTriggeredValue} WHERE player_id = '${sanitizedInput}'`
-            : `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered) 
-                VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue})`;
-
-        let formData = new FormData();
-        formData.append('hostname', 'localhost');
-        formData.append('username', 'jrice27');
-        formData.append('password', 'rZk8FVrXNllcPl8Y');
-        formData.append('database', 'CSC1034_CW_13');
-        formData.append('query', query);
-
-        let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formData });
-        let result = await response.json();
-
-        if (result.error) {
-            console.log(result.error.toString());
-        } else {
-            console.log("Game save successful!");
-        }
-
-        async function addItemIfNotExists(itemID) {
-            if (!itemID || isNaN(itemID) || itemID <= 0) {
-                console.log(`Invalid item ID: ${itemID}, skipping insert.`);
-                return;
-            }
-
-            let itemCheckQuery = `SELECT COUNT(*) AS itemExists FROM player_inventory WHERE player_id = '${sanitizedInput}' AND item_id = ${itemID}`;
-            let itemCheckData = new FormData();
-            itemCheckData.append('hostname', 'localhost');
-            itemCheckData.append('username', 'jrice27');
-            itemCheckData.append('password', 'rZk8FVrXNllcPl8Y');
-            itemCheckData.append('database', 'CSC1034_CW_13');
-            itemCheckData.append('query', itemCheckQuery);
-
-            let itemCheckResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: itemCheckData });
-            let itemCheckResult = await itemCheckResponse.json();
-
-            if (itemCheckResult.data[0].itemExists == 0) {
-                let insertQuery = `INSERT INTO player_inventory (player_id, item_id) VALUES ('${sanitizedInput}', ${itemID})`;
-                let insertData = new FormData();
-                insertData.append('hostname', 'localhost');
-                insertData.append('username', 'jrice27');
-                insertData.append('password', 'rZk8FVrXNllcPl8Y');
-                insertData.append('database', 'CSC1034_CW_13');
-                insertData.append('query', insertQuery);
-
-                let insertResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: insertData });
-                let insertResult = await insertResponse.json();
-
-                if (insertResult.error) {
-                    console.log(`Error saving item ${itemID}:`, insertResult.error);
-                } else {
-                    console.log(`Item ${itemID} added to inventory.`);
-                }
-            } else {
-                console.log(`Item ${itemID} already exists, skipping insert.`);
-            }
-        }
-
-        if (wrenchPickedUp) {
-            console.log("Attempting to add wrench (item 1) to inventory...");
-            await addItemIfNotExists(1);
-        }
-        if (keycardPickedUp) {
-            console.log("Attempting to add keycard (item 2) to inventory...");
-            await addItemIfNotExists(2);
-        }
-        if (gunPickedUp) {
-            console.log("Attempting to add gun (item 3) to inventory...");
-            await addItemIfNotExists(3);
-        }
-        
-
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-// ==========================
-// 7. Event Listeners
+// 6. Event Listeners
 // ==========================
 document.addEventListener('keydown', function(event) {
     if (event.key === "Escape") {
+        console.log("[Debug]: Escape key pressed.");
         toggleEscapeMenu();
     }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const toggleButton = document.getElementById("toggle-music-button");
-    toggleButton.style.backgroundImage = "url('images/music_unmute.png')"; // Set the default background image
 });
 
 document.getElementById("settings-button").addEventListener("click", toggleSettingsPanel);
 document.getElementById("toggle-music-button").addEventListener("click", toggleBackgroundMusic);
 document.getElementById("toggle-font-size-button").addEventListener("click", toggleFontSize);
+document.addEventListener("DOMContentLoaded", () => {
+    initializeGame();
+});
+
+document.getElementById('returnButton').addEventListener('click', toggleEscapeMenu);
+document.getElementById('exitButton').addEventListener('click', exitGame);
 
 // ==========================
-// 8. Expose Functions to Global Scope
+// 7. Expose Functions to Global Scope
 // ==========================
 window.fetchAndDisplayInventory = fetchAndDisplayInventory;
 window.initializeGame = initializeGame;
@@ -882,7 +573,7 @@ window.updateRoom = updateRoom;
 window.handleRoomEntry = handleRoomEntry;
 window.createButtons = createButtons;
 
-function playerDeath() {
+export function playerDeath() {
     typeText("You died...");
 
     let deathSound = new Audio("Audio/PlayerDeath.mp3");
@@ -912,7 +603,7 @@ function playerDeath() {
         button.textContent = "Restart";
 
         button.addEventListener("click", () => {
-            noOfDeaths++;
+            setNoOfDeaths(noOfDeaths + 1);
             initializeGame(true);
         });
 
@@ -924,81 +615,20 @@ function playerDeath() {
     }, 2000);
 }
 
-function updateAIImage(newSrc) {
-    document.getElementById("ai-companion").src = newSrc;
-}
-
-function updateRoom(roomName) {
-    document.getElementById("room-display").textContent = "Room: " + roomName;
-}
-
 function returnToGame() {
     toggleEscapeMenu();
     window.location.href = "sp_play.html";
 }
 
-function exitGame() 
-{
-    location_name = document.getElementById("room-display").textContent
-    saveToDatabase(noOfDeaths, getTimePlayed(), rooms_explored, location_name, labEventTriggered);
+function exitGame() {
+    const currentRoom = document.getElementById("room-display").textContent;
+    setLocationName(currentRoom); // Use the setter function to update location_name
+    saveToDatabase(noOfDeaths, getTimePlayed(), rooms_explored, currentRoom, labEventTriggered);
 }
 
 function getTimePlayed() {
     let elapsedTime = Math.floor((Date.now() - startTime) / 1000);
     return elapsedTime;
-}
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === "Escape") {
-        toggleEscapeMenu();
-    }
-});
-
-function toggleEscapeMenu() {
-    const menu = document.getElementById('escapeMenu');
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-}
-
-function toggleBackgroundMusic() {
-    const toggleButton = document.getElementById("toggle-music-button");
-
-    if (backgroundMusic.muted) {
-        backgroundMusic.muted = false;
-        console.log("[System]: Background music unmuted.");
-        toggleButton.style.backgroundImage = "url('images/music_unmute.png')";
-        console.log("Background image set to: images/music_unmute.png");
-    } else {
-        backgroundMusic.muted = true;
-        console.log("[System]: Background music muted.");
-        toggleButton.style.backgroundImage = "url('images/music_mute.png')";
-        console.log("Background image set to: images/music_mute.png");
-    }
-}
-
-function toggleFontSize() {
-    const body = document.body;
-    const buttons = document.querySelectorAll("button");
-    const roomPanel = document.querySelector(".room-panel");
-    const consolePanel = document.querySelector(".console-panel");
-    const currentFontSize = window.getComputedStyle(body).fontSize;
-
-    if (currentFontSize === "16px") {
-        body.style.fontSize = "20px";
-        buttons.forEach(button => {
-            button.style.fontSize = "18px";
-        });
-        roomPanel.style.fontSize = "16px";
-        consolePanel.style.fontSize = "16px";
-        console.log("[System]: Font size increased.");
-    } else {
-        body.style.fontSize = "16px";
-        buttons.forEach(button => {
-            button.style.fontSize = "14px";
-        });
-        roomPanel.style.fontSize = "14px";
-        consolePanel.style.fontSize = "14px";
-        console.log("[System]: Font size reset to original.");
-    }
 }
 
 document.getElementById("toggle-font-size-button").addEventListener("click", toggleFontSize);
@@ -1026,15 +656,6 @@ document.getElementById("settings-button").addEventListener("click", () => {
     settingsPanel.classList.toggle("visible");
 });
 
-function toggleSettingsPanel() {
-    const settingsPanel = document.getElementById("settingsPanel");
-    if (settingsPanel.style.display === "none" || settingsPanel.style.display === "") {
-        settingsPanel.style.display = "block";
-    } else {
-        settingsPanel.style.display = "none";
-    }
-}
-
 document.getElementById("settings-button").addEventListener("click", toggleSettingsPanel);
 
 document.getElementById("toggle-music-button").addEventListener("click", toggleBackgroundMusic);
@@ -1048,3 +669,5 @@ document.getElementById("settings-button").addEventListener("click", () => {
         settingsPanel.style.display = "none";
     }
 });
+window.initializeGame = initializeGame;
+

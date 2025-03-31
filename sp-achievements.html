@@ -7,8 +7,21 @@
             async function fetchAchievements() {
                 console.log('Fetching achievement data...');
                 
-                let query = `SELECT achievement_name, achievement_desc, achievement_image FROM achievements ORDER BY achievement_id DESC`;
+                // Retrieve the logged-in player ID from sessionStorage
+                const playerID = sessionStorage.getItem('loggedInID');
                 
+                if (!playerID) {
+                    console.error('Player ID not found. User may not be logged in.');
+                    return;
+                }
+
+                let query = `SELECT a.achievement_name, a.achievement_desc, a.achievement_image, 
+                             IFNULL(pa.is_locked, TRUE) AS is_locked
+                             FROM achievements a
+                             LEFT JOIN player_achievements pa ON a.achievement_id = pa.achievement_id 
+                             AND pa.player_id = ${playerID}
+                             ORDER BY a.achievement_id DESC`;
+
                 let formData = new FormData();
                 formData.append('hostname', 'localhost');
                 formData.append('username', 'jrice27');
@@ -34,11 +47,15 @@
                     
                     result.data.forEach(achievement => {
                         let row = document.createElement('tr');
+                        // Check if the achievement is unlocked
+                        let locked = achievement.is_locked;
+
                         row.innerHTML = `
                             <td>${achievement.achievement_name}</td>
-                            <td><img src="${achievement.achievement_image}" alt="${achievement.achievement_name}" width="50" height="50"></td>
                             <td>${achievement.achievement_desc}</td>
-                            <td><img src="lock-placeholder.jpg" alt="Lock Symbol" width="20" height="20"></td>
+                            <td>
+                                <img src="${achievement.achievement_image}" alt="${achievement.achievement_name}" width="50" height="50" class="${locked ? 'locked' : ''}">
+                            </td>
                         `;
                         tableBody.appendChild(row);
                     });
@@ -55,14 +72,6 @@
     <body>
         <h1>Achievements</h1>
         <table id="achievements">
-            <thead>
-                <tr>
-                    <th>Achievement Name</th>
-                    <th>Image</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
             <tbody>
                 <!-- Data will be populated here -->
             </tbody>
@@ -75,3 +84,4 @@
         <div class="bezel-overlay"></div>
     </body>
 </html>
+

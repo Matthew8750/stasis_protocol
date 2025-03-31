@@ -970,6 +970,7 @@ function toggleFontSize() {
     const body = document.body;
     const buttons = document.querySelectorAll("button"); // Select all buttons
     const roomPanel = document.querySelector(".room-panel"); // Select the room panel
+    const consolePanel = document.querySelector(".console-panel"); // Select the console panel
     const currentFontSize = window.getComputedStyle(body).fontSize;
 
     if (currentFontSize === "16px") { // Assuming the original font size is 16px
@@ -978,6 +979,7 @@ function toggleFontSize() {
             button.style.fontSize = "18px"; // Increase button font size
         });
         roomPanel.style.fontSize = "16px"; // Increase room panel font size for larger mode
+        consolePanel.style.fontSize = "16px"; // Increase console panel font size for larger mode
         console.log("[System]: Font size increased.");
     } else {
         body.style.fontSize = "16px"; // Reset to original font size
@@ -985,6 +987,7 @@ function toggleFontSize() {
             button.style.fontSize = "14px"; // Reset button font size
         });
         roomPanel.style.fontSize = "14px"; // Reset room panel font size to default
+        consolePanel.style.fontSize = "14px"; // Reset console panel font size to default
         console.log("[System]: Font size reset to original.");
     }
 }
@@ -1009,4 +1012,35 @@ document.getElementById("toggle-music-button").addEventListener("click", toggleB
 document.addEventListener("DOMContentLoaded", () => {
     const toggleButton = document.getElementById("toggle-music-button");
     toggleButton.style.backgroundImage = "url('images/music_unmute.png')"; // Set the default background image
+});
+
+document.getElementById("settings-button").addEventListener("click", () => {
+    const settingsPanel = document.getElementById("settings-panel");
+    settingsPanel.classList.toggle("visible"); // Toggle the "visible" class
+});
+
+// Toggle the visibility of the settings panel
+function toggleSettingsPanel() {
+    const settingsPanel = document.getElementById("settingsPanel");
+    if (settingsPanel.style.display === "none" || settingsPanel.style.display === "") {
+        settingsPanel.style.display = "block"; // Show the panel
+    } else {
+        settingsPanel.style.display = "none"; // Hide the panel
+    }
+}
+
+// Add event listener to the settings button
+document.getElementById("settings-button").addEventListener("click", toggleSettingsPanel);
+
+// Add event listeners for the buttons inside the settings panel
+document.getElementById("toggle-music-button").addEventListener("click", toggleBackgroundMusic);
+document.getElementById("toggle-font-size-button").addEventListener("click", toggleFontSize);
+
+document.getElementById("settings-button").addEventListener("click", () => {
+    const settingsPanel = document.getElementById("settings-panel");
+    if (settingsPanel.style.display === "none" || settingsPanel.style.display === "") {
+        settingsPanel.style.display = "block"; // Show the panel
+    } else {
+        settingsPanel.style.display = "none"; // Hide the panel
+    }
 });

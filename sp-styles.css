@@ -23,6 +23,8 @@ body {
     border-radius: 100px;
     box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 0, 0, 0.8);
     box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9);
+    font-size: 16px; /* Default font size */
+    transition: font-size 0.3s ease; /* Smooth transition for font size */
 }
 
 .bezel-overlay {
@@ -350,6 +352,8 @@ nav a:hover {
     align-items: center;
     text-align: center;
     white-space: nowrap;
+    font-size: 14px; /* Default font size matches the smaller version */
+    transition: font-size 0.3s ease; /* Smooth transition for font size changes */
 }
 
 /* Map Panel (Top-Right) */
@@ -588,8 +592,8 @@ thead {
 
 #toggle-music-button {
     position: absolute;
-    top: 50vh;
-    left: 6vw;
+    top: 45vh;
+    left: 6.5vw;
     z-index: 1000; /* Ensure it appears above other elements */
     width: 50px; /* Set width for the button */
     height: 50px; /* Set height for the button */
@@ -600,4 +604,29 @@ thead {
     background-position: center; /* Center the image */
     border: none; /* Remove the border */
     cursor: pointer; /* Change cursor to pointer */
+}
+
+#toggle-font-size-button {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    z-index: 1000; /* Ensure it appears above other elements */
+    padding: 10px 20px;
+    background-color: black;
+    color: rgb(0, 255, 0);
+    border: 1px solid rgb(0, 255, 0);
+    font-family: monospace;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    display: block; /* Ensure the button is displayed */
+}
+
+button {
+    font-size: 14px; /* Default font size for buttons */
+    transition: transform 0.1s ease, font-size 0.3s ease; /* Smooth transition for scaling and font size */
+}
+
+button:active {
+    transform: scale(1.1); /* Scale the button to 110% of its size when pressed */
 }

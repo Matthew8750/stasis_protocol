@@ -2,15 +2,14 @@
 <html> 
     <head>
         <title>Stasis Protocol</title>
-        <link rel="icon" href="favicon.ico" type="images\icon_Player.png">
         <link href="sp-styles.css" type="text/css" rel="stylesheet">
-        <script type="module" src="game.js" defer></script>
+        <script src="game.js" defer></script>
     </head>
-    <body>
+    <body onload="initializeGame()">
         <nav></nav>
 
         <div class="image-panel">
-            <img id="display-image" src="images/placeholder.jpg" alt="Room Image">
+            <img id="display-image" src="images\CryogenicChamberRoom.jpg" alt="Display">
         </div>
         
         <audio autoplay loop>
@@ -27,7 +26,7 @@
         </div>
 
         <div class="player-icon-panel">
-            <img id="player-icon" src="images/icon_Player.png" alt="Player Icon">
+            <img id="player-icon" src="images\icon_Player.png" alt="Player Icon">
         </div>
 
         <div class="room-panel" id="room-display">
@@ -35,7 +34,7 @@
         </div>
 
         <div class="map-panel">
-            <img id="map" src="images/map.png" alt="Map">
+            <img id="map" src="images\map.png" alt="Map">
         </div>
 
         <div id="results"></div>
@@ -59,17 +58,18 @@
         <div class="bezel-overlay"></div>
 
         <!-- Escape Menu Overlay -->
-        <div id="escapeMenu" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000;">
-            <button id="returnButton">Return to Game</button>
-            <button id="exitButton">Exit Game</button>
-        </div>
+        <div id="escapeMenu">
+            <div class="menu-content">
+                <h2>Escape Menu</h2>
+                <button id="returnButton">Return to Game</button>
+                <button id="exitButton">Exit Game</button>
             </div>
         </div>
         <div id="settings-panel">
             <div class="menu-content">
                 <h2>Settings</h2>
                 <button id="toggle-font-size-button">Toggle Font Size</button>
-                <button id="toggle-music-button">Music</button>
+                <button id="toggle-music-button">Mute Music</button>
             </div>
         </div>
         <button id="settings-button"></button>

@@ -728,9 +728,6 @@ thead {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 10px 0; /* Add vertical spacing between buttons */
-    width: 220px; /* Ensure consistent button width */
-    height: 50px; /* Ensure consistent button height */
 }
 
 #settings-panel button:hover {
@@ -832,11 +829,4 @@ button {
 
 button:active {
     transform: scale(1.1); /* Scale the button to 110% of its size when pressed */
-}
-
-#button-container {
-    display: flex;
-    flex-wrap: wrap; /* Allow buttons to wrap if they don't fit */
-    gap: 10px; /* Add spacing between buttons */
-    justify-content: center; /* Center the buttons */
 }

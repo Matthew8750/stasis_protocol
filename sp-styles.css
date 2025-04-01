@@ -660,7 +660,7 @@ thead {
     position: absolute;
     top: 45vh; /* Align with the settings panel */
     left: 6.5vw; /* Align with the settings panel */
-    z-index: 1000; /* Ensure it appears above other elements */
+    z-index: 9000; /* Ensure it appears above other elements */
     width: 50px; /* Set width for the button */
     height: 50px; /* Set height for the button */
     background-color: transparent; /* Make the background transparent */

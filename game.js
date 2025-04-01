@@ -1,7 +1,6 @@
 // ==========================
 // 1. Global Variables and Constants
 // ==========================
-window.initializeGame = initializeGame;
 
 import {
     typingTimeouts,
@@ -48,7 +47,7 @@ import { labEvent } from './events.js';
 // ==========================
 // 3. Game Initialization
 // ==========================
-async function initializeGame(restartGame = false) {
+export async function initializeGame(restartGame = false) {
     console.log("[System]: Initializing game...");
 
     document.addEventListener("click", function () {
@@ -198,6 +197,22 @@ function toggleFontSize() {
     }
 }
 
+function toggleBackgroundMusic() {
+    const toggleButton = document.getElementById("toggle-music-button");
+
+    if (backgroundMusic.muted) {
+        backgroundMusic.muted = false;
+        console.log("[System]: Background music unmuted.");
+        toggleButton.style.backgroundImage = "url('images/music_unmute.png')";
+        console.log("Background image set to: images/music_unmute.png");
+    } else {
+        backgroundMusic.muted = true;
+        console.log("[System]: Background music muted.");
+        toggleButton.style.backgroundImage = "url('images/music_mute.png')";
+        console.log("Background image set to: images/music_mute.png");
+    }
+}
+
 // ==========================
 // 4. Room Management
 // ==========================
@@ -314,6 +329,7 @@ export function handleRoomEntry(roomName) {
         }
     };
     console.log("[Debug]: Room data loaded.");
+    console.log(labEventTriggered);
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);

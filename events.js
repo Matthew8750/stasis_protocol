@@ -195,50 +195,91 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
 }
 
 export function cafeteriaEvent() {
- 
     typeText("[N0VA] What is that? Quick! Get out of the Cafeteria! Rapidly tap the spacebar now!", 15);
-    changeImage("images/room_Cafeteria.jpg");
- 
-    // Remove any existing button container
-    let existingButtonContainer = document.getElementById("button-container");
-    if (existingButtonContainer) {
-        existingButtonContainer.remove();
+
+    // Get the image-panel element
+    const imagePanel = document.querySelector(".image-panel");
+    if (!imagePanel) {
+        console.error("Image panel not found. Ensure the selector is correct.");
+        return;
     }
+
+    // Clear any existing content in the image-panel
+    imagePanel.innerHTML = "";
+
+    // Set the hallway background
+    imagePanel.style.backgroundImage = "url('images/room_Hallway.jpg')";
+    imagePanel.style.backgroundSize = "cover";
+    imagePanel.style.backgroundPosition = "center";
+    imagePanel.style.position = "absolute";
+    imagePanel.style.overflow = "hidden";
+
+    // Create door images
+    const doorLeft = document.createElement("img");
+    const doorRight = document.createElement("img");
+
+    doorLeft.src = "images/door_left.png";
+    doorRight.src = "images/door_right.png";
+
+    // Style the doors
+    doorLeft.style.position = "absolute";
+    doorRight.style.position = "absolute";
+
+    doorLeft.style.width = "50%";
+    doorRight.style.width = "50%";
+
+    doorLeft.style.height = "100%";
+    doorRight.style.height = "100%";
+
+    doorLeft.style.left = "50%"; // Start touching in the center
+    doorLeft.style.transform = "translateX(-100%)"; // Align to the left of the center
+    doorRight.style.left = "50%"; // Start touching in the center
+
+    // Append doors to the image-panel
+    imagePanel.appendChild(doorLeft);
+    imagePanel.appendChild(doorRight);
 
     // Reset Spacebar presses
-    spacebarPresses = 0;
- 
+    let spacebarPresses = 0;
+
     // Add Event Listener for Spacebar
     document.addEventListener("keydown", countSpacebarPresses);
- 
-        // Start a Timer that kills the Player if they don't tap the spacebar 5 times in 10 seconds
-        hideTimer = setTimeout(() => {
 
- 
+    // Start a Timer that kills the Player if they don't tap the spacebar 30 times in 10 seconds
+    const hideTimer = setTimeout(() => {
+        changeImage("images/Cafeteria_Death.png");
+        playerDeath();
+        document.removeEventListener("keydown", countSpacebarPresses);
+        doorLeft.remove();
+        doorRight.remove();
+    }, 10000); // 10 seconds
 
-            changeImage("images/Cafeteria_Death.png");
-            playerDeath();
-            document.removeEventListener("keydown", countSpacebarPresses);
-    } , 10000); // 10 seconds
-}
- 
-function countSpacebarPresses(event) {
- 
+    function countSpacebarPresses(event) {
+        if (event.code === "Space") {
+            spacebarPresses++;
+            console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times`);
 
-    if (event.code === "Space") 
-        {
- 
-        spacebarPresses++;
-        console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times`);
- 
-        if (spacebarPresses >= 30) {
-            clearTimeout(hideTimer); // Cancel the death timer
-            typeText("[N0VA] You escaped the Cafeteria! Now, where to next?");
-            handleRoomEntry("Lab"); // Change to Lab
-            document.removeEventListener("keydown", countSpacebarPresses);
+            // Move the doors apart with each spacebar press
+            const moveDistance = spacebarPresses * 5; // Each press moves the doors 5px further apart
+            doorLeft.style.transform = `translateX(calc(-100% - ${moveDistance}px))`;
+            doorRight.style.transform = `translateX(${moveDistance}px)`;
+
+            // Check if the player has pressed enough times to escape
+            if (spacebarPresses >= 30) {
+                clearTimeout(hideTimer); // Cancel the death timer
+                typeText("[N0VA] You escaped the Cafeteria! Now, where to next?");
+                document.removeEventListener("keydown", countSpacebarPresses);
+
+                // Reset the image-panel and send the player to the lab
+                setTimeout(() => {
+                    imagePanel.innerHTML = ""; // Clear the doors
+                    imagePanel.style.backgroundImage = "url('images/room_Lab.jpg')"; // Set the lab background
+                    handleRoomEntry("Lab"); // Send the player to the lab
+                }, 1000); // Add a slight delay for a smoother transition
+            }
         }
     }
-} 
+}
 
 export function shootAlien() {
     const consolePanel = document.getElementById("console");

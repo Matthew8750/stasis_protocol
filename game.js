@@ -37,7 +37,7 @@ import {
     setCafeteriaEventTriggered
 } from './globals.js';
 
-import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory } from './saveManager.js';
+import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory, unlockAchievement } from './saveManager.js';
 import { labEvent, startRepairEscapePodsMinigame } from './events.js';
 
 // ==========================

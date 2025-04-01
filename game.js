@@ -223,7 +223,7 @@ export function handleRoomEntry(roomName) {
             description: "[N0VA]: You awaken in the Cryogenic Chamber. The ship is eerily silent. Systems flicker weakly—something is wrong.",
             interactions: {
                 "Inspect Stasis Pods": { 
-                    description: "add text here",
+                    description: "Warning: Pod integrity compromised. Vital signs… nonexistent. The occupant didn’t make it. Frost clings to the glass, obscuring their face—still, unmoving. Whatever happened, it happened long ago.",
                     newImage: "images/placeholder.jpg"
                 }
             }
@@ -240,11 +240,11 @@ export function handleRoomEntry(roomName) {
             description: "[N0VA]: This is the Med Bay. A security keycard is present; retrieval is advised.",
             interactions: {
                 "Open Drawers": { 
-                    description: "add text here",
+                    description: "Drawer accessed… empty. Either supplies were taken, or they were never restocked. No usable items detected—let’s keep moving",
                     newImage: "images/placeholder.jpg"
                 },
                 "Inspect Blood": { 
-                    description: "add text here",
+                    description: "Blood detected… fresh analysis unavailable. No body present. This suggests either recent injury or… something was here. Stay alert.",
                     newImage: "images/placeholder.jpg"
                 }
             }
@@ -255,7 +255,7 @@ export function handleRoomEntry(roomName) {
             description: "[N0VA]: The containment unit has been forcibly opened. Whatever was inside is no longer here.",
             interactions: {
                 "Inspect Containment Chamber": { 
-                    description: "add text here",
+                    description: "Containment breach confirmed. The chamber was forcibly opened—internal locks overridden or destroyed. Whatever was inside… it’s no longer contained. We are not alone. Proceed with extreme caution.",
                     newImage: "images/placeholder.jpg"
                 }
             }
@@ -267,7 +267,7 @@ export function handleRoomEntry(roomName) {
             terminal: true,
             interactions: {
                 "Inspect Terminal": { 
-                    description: "add text here",
+                    description: "Attempting data retrieval… failed. System corruption is extensive. No useful information can be extracted. This terminal is beyond recovery.",
                     newImage: "images/placeholder.jpg"
                 }
             }
@@ -289,7 +289,7 @@ export function handleRoomEntry(roomName) {
             description: "[N0VA]: The engine room is heavily damaged. A wrench is present—this tool is essential for repairing the escape pods.",
             interactions: {
                 "Inspect the Engine": { 
-                    description: "add text here",
+                    description: "[N0VA]: The engine room is heavily damaged. A wrench is present—this tool is essential for repairing the escape pods.",
                     newImage: "images/placeholder.jpg"
                 }
             }
@@ -300,7 +300,7 @@ export function handleRoomEntry(roomName) {
             description: "[N0VA]: Engine Room sector—severe damage. Power systems failing.",
             interactions: {
                 "Inspect the Engine": { 
-                    description: "add text here",
+                    description: "Engine diagnostics running… Malfunctions detected. Core systems are failing, and structural integrity is compromised. If we don’t restore stability soon, this ship could break apart.",
                     newImage: "images/placeholder.jpg"
                 }
             }

@@ -6,18 +6,81 @@
 </head>
 <body>
     <h1><span>Global Statistics</span></h1>
-    <nav>
-        <a href="sp-mainmenu.html">Back to Main Menu</a>
-    </nav>
 
     <div id="stats">
         <p>Loading statistics...</p>
     </div>
 
+    <nav>
+        <a href="sp-mainmenu.html">Back to Main Menu</a>
+    </nav>
 
+    <script>
+        async function fetchGlobalStats() {
+            let query = `SELECT deaths, rooms_explored, TIME_TO_SEC(time_played) AS time_played FROM game_stats`;
+
+            let formData = new FormData();
+            formData.append('hostname', 'localhost');
+            formData.append('username', 'jrice27');
+            formData.append('password', 'rZk8FVrXNllcPl8Y');
+            formData.append('database', 'CSC1034_CW_13');
+            formData.append('query', query);
+
+            try {
+                let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                let data = await response.json();
+
+                // Log the data to check if it's in the correct format
+                console.log("Fetched Data: ", data);
+
+                if (data.error || !data.data || data.data.length === 0) {
+                    document.getElementById("stats").innerHTML = `<p style="color: red;">Error fetching data or no data returned.</p>`;
+                    return;
+                }
+
+                let totalDeaths = 0;
+                let totalRoomsExplored = 0;
+                let totalTimePlayed = 0;
+                let playerCount = data.data.length;  // Use data.data to access the array
+
+                // Calculate totals
+                data.data.forEach(player => {
+                    totalDeaths += parseInt(player.deaths, 10);  // Make sure the values are numbers
+                    totalRoomsExplored += parseInt(player.rooms_explored, 10);
+                    totalTimePlayed += parseInt(player.time_played, 10);
+                });
+
+                // Calculate averages
+                const avgDeaths = totalDeaths / playerCount;
+                const avgRoomsExplored = totalRoomsExplored / playerCount;
+                const avgTimePlayedInMinutes = totalTimePlayed / playerCount / 60; // Convert seconds to minutes
+                const avgTimePlayedInHours = Math.floor(avgTimePlayedInMinutes / 60); // Convert minutes to hours
+                const avgTimePlayedRemainingMinutes = Math.round(avgTimePlayedInMinutes % 60); // Remaining minutes
+
+                // Display averages in stats div
+                let statsDiv = document.getElementById("stats");
+
+                statsDiv.innerHTML = `
+                    <p><strong>Average Time Played:</strong> ${avgTimePlayedInHours} hours ${avgTimePlayedRemainingMinutes} minutes</p>
+                    <p><strong>Average Rooms Explored:</strong> ${avgRoomsExplored.toFixed(2)}</p>
+                    <p><strong>Average Deaths:</strong> ${avgDeaths.toFixed(2)}</p>
+                `;
+            } catch (error) {
+                document.getElementById("stats").innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Fetch stats on page load
+        fetchGlobalStats();
     </script>
 </body>
 </html>
+
+
 
 
 

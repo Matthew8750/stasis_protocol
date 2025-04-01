@@ -867,3 +867,24 @@ button:active {
     color: #33ff33;
     text-shadow: 0 0 5px #33ff33;
 }
+
+.console-button {
+    padding: 5px 10px;
+    background-color: black;
+    color: rgb(0, 255, 0);
+    border: 1px solid rgb(0, 255, 0);
+    font-family: monospace;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: transform 0.1s ease, font-size 0.3s ease;
+}
+
+.console-button:hover {
+    background-color: rgb(0, 255, 0);
+    color: black;
+}
+
+.console-button:active {
+    transform: scale(1.1);
+}

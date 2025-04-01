@@ -124,13 +124,16 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         leftWires.appendChild(wire);
     });
 
-    // Right wires
+    // Right wires (shuffled)
     const rightWires = document.createElement("div");
     rightWires.style.display = "flex";
     rightWires.style.flexDirection = "column";
     rightWires.style.gap = "10px";
 
-    colors.forEach(color => {
+    // Shuffle the colors array
+    const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
+
+    shuffledColors.forEach(color => {
         const target = document.createElement("div");
         target.textContent = color.toUpperCase();
         target.style.backgroundColor = color;
@@ -182,12 +185,7 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     // Add a cancel button
     const cancelButton = document.createElement("button");
     cancelButton.textContent = "Cancel";
-    cancelButton.style.marginTop = "20px";
-
-    // Apply the same style as other buttons
-    if (typeof styleButton === "function") {
-        styleButton(cancelButton);
-    }
+    cancelButton.classList.add("console-button"); // Add a class for consistent styling
 
     cancelButton.addEventListener("click", () => {
         document.body.removeChild(minigameContainer);

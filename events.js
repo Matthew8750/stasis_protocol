@@ -96,17 +96,23 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     // Create the wire matching area
     const wireContainer = document.createElement("div");
     wireContainer.style.display = "flex";
-    wireContainer.style.justifyContent = "space-between";
+    wireContainer.style.justifyContent = "space-between"; // Align left and right wires to opposite sides
     wireContainer.style.marginTop = "20px";
+    wireContainer.style.position = "relative"; // For positioning wires
+    wireContainer.style.width = "700px"; // Fixed width for alignment
+    wireContainer.style.height = "200px"; // Fixed height for alignment
 
     // Left wires
     const leftWires = document.createElement("div");
     leftWires.style.display = "flex";
     leftWires.style.flexDirection = "column";
     leftWires.style.gap = "10px";
+    leftWires.style.marginLeft = "70px"; // Increased margin to double the distance from the left border
 
     const colors = ["red", "blue", "green", "yellow"];
-    colors.forEach(color => {
+    const wireLines = []; // Store wire lines for later manipulation
+
+    colors.forEach((color, index) => {
         const wire = document.createElement("div");
         wire.textContent = color.toUpperCase();
         wire.style.backgroundColor = color;
@@ -119,6 +125,7 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         // Add drag event
         wire.addEventListener("dragstart", (e) => {
             e.dataTransfer.setData("color", color);
+            e.dataTransfer.setData("index", index); // Track the wire's index
         });
 
         leftWires.appendChild(wire);
@@ -129,11 +136,12 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     rightWires.style.display = "flex";
     rightWires.style.flexDirection = "column";
     rightWires.style.gap = "10px";
+    rightWires.style.marginLeft = "30px"; // Increased margin to push the right wires further to the right
 
     // Shuffle the colors array
     const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
 
-    shuffledColors.forEach(color => {
+    shuffledColors.forEach((color, index) => {
         const target = document.createElement("div");
         target.textContent = color.toUpperCase();
         target.style.backgroundColor = color;
@@ -150,10 +158,34 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         target.addEventListener("drop", (e) => {
             e.preventDefault();
             const draggedColor = e.dataTransfer.getData("color");
+            const draggedIndex = e.dataTransfer.getData("index");
+
             if (draggedColor === target.dataset.color) {
                 target.style.border = "2px solid lime";
                 target.textContent = "MATCHED!";
                 target.style.pointerEvents = "none"; // Prevent further interaction
+
+                // Draw a wire from the left to the right
+                const leftWire = leftWires.children[draggedIndex];
+                const wireLine = document.createElement("div");
+                wireLine.style.position = "absolute";
+                wireLine.style.backgroundColor = draggedColor;
+                wireLine.style.height = "4px"; // Increased thickness of the line
+                wireLine.style.width = `${Math.abs(target.offsetLeft - leftWire.offsetLeft - 10)}px`; // Adjusted to avoid overlap
+                wireLine.style.top = `${leftWire.offsetTop + leftWire.offsetHeight / 2}px`;
+                wireLine.style.left = `${leftWire.offsetLeft + leftWire.offsetWidth}px`;
+                wireLine.style.transformOrigin = "left center";
+                wireLine.style.transform = `rotate(${Math.atan2(
+                    target.offsetTop - leftWire.offsetTop,
+                    target.offsetLeft - leftWire.offsetLeft
+                )}rad)`;
+                wireLine.style.zIndex = "1"; // Set a lower z-index for the wire lines
+
+                // Ensure the right wires have a higher z-index
+                target.style.zIndex = "2";
+
+                wireContainer.appendChild(wireLine);
+
                 checkCompletion();
             } else {
                 target.style.border = "2px solid red";
@@ -342,33 +374,19 @@ export function shootAlien() {
     // Timer for death if the player doesn't shoot in time
     const deathTimer = setTimeout(() => {
         console.log("[N0VA]: You failed to shoot the alien in time!");
+        changeImage("images/Alien_Death.png");
         playerDeath();
         buttonContainer.remove(); // Clean up the button
     }, 3000); // Reduced time to 3 seconds
-
-    // Add shake effect to the image
-    function shakeImage() {
-        const imageElement = document.querySelector("#game-image"); // Replace with your image element's ID
-        if (imageElement) {
-            imageElement.classList.add("shake");
-            setTimeout(() => {
-                imageElement.classList.remove("shake");
-            }, 500); // Remove the class after 500ms (duration of the shake)
-        }
-    }
 
     // Event listener for the "Shoot" button
     shootButton.addEventListener("click", () => {
         presses++;
         console.log(`[Debug]: Alien shot ${presses} time(s)`);
 
-        // Trigger the shake effect on the image panel
-        shakeImagePanel();
-
         if (presses >= 3) {
             clearTimeout(deathTimer); // Cancel the death timer
             console.log("[N0VA]: You defeated the alien!");
-            changeImage("images/room_Hallway.jpg");
             typeText("[N0VA]: The alien is down. That was close!");
             buttonContainer.remove(); // Remove the button container
         } else {
@@ -380,28 +398,4 @@ export function shootAlien() {
     // Position the button randomly and add it to the container
     positionButtonRandomly();
     buttonContainer.appendChild(shootButton);
-}
-
-function shakeConsole() {
-    const consolePanel = document.getElementById("console"); // Replace with your console panel's ID
-    if (consolePanel) {
-        consolePanel.classList.add("shake"); // Add the shake class
-        setTimeout(() => {
-            consolePanel.classList.remove("shake"); // Remove the shake class after 500ms
-        }, 500); // Duration of the shake animation
-    } else {
-        console.error("Console panel not found. Ensure the selector is correct.");
-    }
-}
-
-function shakeImagePanel() {
-    const imagePanel = document.querySelector(".image-panel"); // Target the image-panel
-    if (imagePanel) {
-        imagePanel.classList.add("shake"); // Add the shake class
-        setTimeout(() => {
-            imagePanel.classList.remove("shake"); // Remove the shake class after 500ms
-        }, 500); // Duration of the shake animation
-    } else {
-        console.error("Image panel not found. Ensure the selector is correct.");
-    }
 }

@@ -3,9 +3,60 @@
     <head>
         <title>Player Statistics</title>
         <link href="sp-styles.css" type="text/css" rel="stylesheet">
+        <script>
+            async function fetchPlayerStats() {
+                console.log('Fetching player statistics...');
+                
+                const playerID = sessionStorage.getItem('loggedInID');
+                if (!playerID) {
+                    console.error('Player ID not found. User may not be logged in.');
+                    return;
+                }
+                
+                let query = `SELECT deaths, time_played, rooms_explored, location_name 
+                             FROM game_stats 
+                             WHERE player_id = ${playerID}`;
+                
+                let formData = new FormData();
+                formData.append('hostname', 'localhost');
+                formData.append('username', 'jrice27');
+                formData.append('password', 'rZk8FVrXNllcPl8Y');
+                formData.append('database', 'CSC1034_CW_13');
+                formData.append('query', query);
+                
+                try {
+                    let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    let result = await response.json();
+                    
+                    if (result.error) {
+                        console.error(result.error.toString());
+                        return;
+                    }
+                    
+                    const statsContainer = document.getElementById('stats');
+                    statsContainer.innerHTML = `
+                        <p><strong>Deaths:</strong> ${result.data[0].deaths}</p>
+                        <p><strong>Time Played:</strong> ${result.data[0].time_played}</p>
+                        <p><strong>Rooms Explored:</strong> ${result.data[0].rooms_explored}</p>
+                        <p><strong>Current Location:</strong> ${result.data[0].location_name}</p>
+                    `;
+                } catch (error) {
+                    console.error('Error fetching player statistics:', error);
+                }
+            }
+            
+            window.onload = fetchPlayerStats;
+        </script>
     </head>
     <body>
         <h1>Game Statistics</h1>
+        <div id="stats">
+            <p>Loading player stats...</p>
+        </div>
         <nav>
             <a href="sp-gamehub.html">Back to Main Menu</a>
         </nav>

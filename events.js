@@ -329,19 +329,33 @@ export function shootAlien() {
     // Timer for death if the player doesn't shoot in time
     const deathTimer = setTimeout(() => {
         console.log("[N0VA]: You failed to shoot the alien in time!");
-        changeImage("images/Alien_Death.png");
         playerDeath();
         buttonContainer.remove(); // Clean up the button
     }, 3000); // Reduced time to 3 seconds
+
+    // Add shake effect to the image
+    function shakeImage() {
+        const imageElement = document.querySelector("#game-image"); // Replace with your image element's ID
+        if (imageElement) {
+            imageElement.classList.add("shake");
+            setTimeout(() => {
+                imageElement.classList.remove("shake");
+            }, 500); // Remove the class after 500ms (duration of the shake)
+        }
+    }
 
     // Event listener for the "Shoot" button
     shootButton.addEventListener("click", () => {
         presses++;
         console.log(`[Debug]: Alien shot ${presses} time(s)`);
 
+        // Trigger the shake effect on the image panel
+        shakeImagePanel();
+
         if (presses >= 3) {
             clearTimeout(deathTimer); // Cancel the death timer
             console.log("[N0VA]: You defeated the alien!");
+            changeImage("images/room_Hallway.jpg");
             typeText("[N0VA]: The alien is down. That was close!");
             buttonContainer.remove(); // Remove the button container
         } else {
@@ -353,4 +367,28 @@ export function shootAlien() {
     // Position the button randomly and add it to the container
     positionButtonRandomly();
     buttonContainer.appendChild(shootButton);
+}
+
+function shakeConsole() {
+    const consolePanel = document.getElementById("console"); // Replace with your console panel's ID
+    if (consolePanel) {
+        consolePanel.classList.add("shake"); // Add the shake class
+        setTimeout(() => {
+            consolePanel.classList.remove("shake"); // Remove the shake class after 500ms
+        }, 500); // Duration of the shake animation
+    } else {
+        console.error("Console panel not found. Ensure the selector is correct.");
+    }
+}
+
+function shakeImagePanel() {
+    const imagePanel = document.querySelector(".image-panel"); // Target the image-panel
+    if (imagePanel) {
+        imagePanel.classList.add("shake"); // Add the shake class
+        setTimeout(() => {
+            imagePanel.classList.remove("shake"); // Remove the shake class after 500ms
+        }, 500); // Duration of the shake animation
+    } else {
+        console.error("Image panel not found. Ensure the selector is correct.");
+    }
 }

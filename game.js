@@ -378,6 +378,7 @@ export function handleRoomEntry(roomName) {
 
     if (roomName === "Hallway Final" && gunPickedUp) 
         {
+            changeImage("images/Kill_Alien.png");
             shootAlien();
             return;
         }

@@ -541,7 +541,7 @@ export function createButtons(roomInfo) {
             setLabUnlocked(true);
             typeText("[N0VA]: You have unlocked the Lab.");
             console.log("[Debug]: Lab unlocked!");
-        });
+        }, true); // Pass `true` to ensure the button is removed after clicking
     }
 
     consolePanel.appendChild(buttonContainer);

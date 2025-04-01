@@ -1,5 +1,5 @@
 import { setLabEventTriggered, setLabUnlocked } from './globals.js';
-import { typeText, changeImage, playerDeath, handleRoomEntry } from './game.js';
+import { typeText, changeImage, playerDeath, handleRoomEntry, styleButton } from './game.js';
 let spacebarPresses = 0; // Initialize spacebar presses
 let hideTimer; // Timer for death event
 
@@ -273,7 +273,6 @@ function countSpacebarPresses(event) {
 } 
 
 export function shootAlien() {
-
     const consolePanel = document.getElementById("console");
 
     // Remove any existing button container
@@ -288,51 +287,74 @@ export function shootAlien() {
     buttonContainer.style.position = "relative";
     buttonContainer.style.width = "100%";
     buttonContainer.style.height = "100%";
+    buttonContainer.style.overflow = "hidden"; // Prevent scrollbars
     consolePanel.appendChild(buttonContainer);
 
     // Create the "Shoot" button
     const shootButton = document.createElement("button");
     shootButton.textContent = "Shoot!";
     shootButton.style.position = "absolute";
-    shootButton.style.padding = "10px 20px";
-    shootButton.style.backgroundColor = "red";
-    shootButton.style.color = "white";
-    shootButton.style.border = "none";
-    shootButton.style.cursor = "pointer";
-    shootButton.style.fontFamily = "monospace";
-    shootButton.style.fontSize = "16px";
-    shootButton.style.borderRadius = "5px";
+    shootButton.style.width = "75px"; // Smaller width
+    shootButton.style.height = "40px"; // Smaller height
 
-    // Function to position the button in a random corner
-    function positionButtonRandomly() {
-        const corners = [
-            { top: "10px", left: "10px" }, // Top-left
-            { top: "10px", right: "10px" }, // Top-right
-            { bottom: "10px", left: "10px" }, // Bottom-left
-            { bottom: "10px", right: "10px" }, // Bottom-right
-        ];
-        const randomCorner = corners[Math.floor(Math.random() * corners.length)];
-        Object.assign(shootButton.style, randomCorner);
+    // Use the styleButton method to style the button
+    if (typeof styleButton === "function") {
+        styleButton(shootButton);
     }
 
-    // Position the button randomly
-    positionButtonRandomly();
+    // Function to position the button closer to the center
+    let lastCornerIndex = -1; // Track the last corner index
+    function positionButtonRandomly() {
+        const buttonWidth = 75; // Match the button's smaller width
+        const buttonHeight = 40; // Match the button's smaller height
+        const containerWidth = buttonContainer.offsetWidth;
+        const containerHeight = buttonContainer.offsetHeight;
 
-    // Add the button to the container
-    buttonContainer.appendChild(shootButton);
+        // Define positions closer to the center
+        const positions = [
+            { top: `${containerHeight * 0.25 - buttonHeight / 2}px`, left: `${containerWidth * 0.25 - buttonWidth / 2}px` }, // Top-left quadrant
+            { top: `${containerHeight * 0.25 - buttonHeight / 2}px`, left: `${containerWidth * 0.75 - buttonWidth / 2}px` }, // Top-right quadrant
+            { top: `${containerHeight * 0.75 - buttonHeight / 2}px`, left: `${containerWidth * 0.25 - buttonWidth / 2}px` }, // Bottom-left quadrant
+            { top: `${containerHeight * 0.75 - buttonHeight / 2}px`, left: `${containerWidth * 0.75 - buttonWidth / 2}px` }, // Bottom-right quadrant
+        ];
+
+        let randomCornerIndex;
+        do {
+            randomCornerIndex = Math.floor(Math.random() * positions.length);
+        } while (randomCornerIndex === lastCornerIndex); // Ensure a different position is chosen
+
+        lastCornerIndex = randomCornerIndex; // Update the last corner index
+        Object.assign(shootButton.style, positions[randomCornerIndex]);
+    }
+
+    // Track the number of successful presses
+    let presses = 0;
 
     // Timer for death if the player doesn't shoot in time
     const deathTimer = setTimeout(() => {
         console.log("[N0VA]: You failed to shoot the alien in time!");
-        changeImage("images/placeholder.png");
+        changeImage("images/Alien_Death.png");
         playerDeath();
         buttonContainer.remove(); // Clean up the button
-    }, 5000); // 5 seconds to shoot
+    }, 3000); // Reduced time to 3 seconds
 
     // Event listener for the "Shoot" button
     shootButton.addEventListener("click", () => {
-        clearTimeout(deathTimer); // Cancel the death timer
-        console.log("Shoot");
-        buttonContainer.remove(); // Remove the button
+        presses++;
+        console.log(`[Debug]: Alien shot ${presses} time(s)`);
+
+        if (presses >= 3) {
+            clearTimeout(deathTimer); // Cancel the death timer
+            console.log("[N0VA]: You defeated the alien!");
+            typeText("[N0VA]: The alien is down. That was close!");
+            buttonContainer.remove(); // Remove the button container
+        } else {
+            // Reposition the button for the next press
+            positionButtonRandomly();
+        }
     });
+
+    // Position the button randomly and add it to the container
+    positionButtonRandomly();
+    buttonContainer.appendChild(shootButton);
 }

@@ -183,6 +183,12 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     const cancelButton = document.createElement("button");
     cancelButton.textContent = "Cancel";
     cancelButton.style.marginTop = "20px";
+
+    // Apply the same style as other buttons
+    if (typeof styleButton === "function") {
+        styleButton(cancelButton);
+    }
+
     cancelButton.addEventListener("click", () => {
         document.body.removeChild(minigameContainer);
         onFailure();

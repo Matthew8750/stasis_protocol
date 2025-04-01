@@ -2,6 +2,7 @@
 export let typingTimeouts = [];
 export let typingInProgress = false;
 export let labEventTriggered = false;
+export let cafeteriaEventTriggered = false;
 export let noOfDeaths = 0;
 export let time_played = 0;
 export let rooms_explored = 0;
@@ -28,6 +29,10 @@ export function setTypingInProgress(status) {
 
 export function setLabEventTriggered(status) {
     labEventTriggered = status;
+}
+
+export function setCafeteriaEventTriggered(status) {
+    cafeteriaEventTriggered = status;
 }
 
 export function setNoOfDeaths(count) {

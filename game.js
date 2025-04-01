@@ -33,7 +33,8 @@ import {
     setLabUnlocked,
     setGameStartTime,
     setLastSaveTime,
-    setIsMusicPlaying
+    cafeteriaEventTriggered,
+    setCafeteriaEventTriggered
 } from './globals.js';
 
 import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory } from './saveManager.js';
@@ -348,6 +349,14 @@ export function handleRoomEntry(roomName) {
         console.log("[Debug]: Lab event triggered.");
         return;
     }
+
+    if (roomName === "Cafeteria" && !cafeteriaEventTriggered) {
+        setCafeteriaEventTriggered(true);
+        cafeteriaEvent();
+        return;
+    }
+ 
+
     playDoorOpenSound();
 
     function playDoorOpenSound() {
@@ -423,7 +432,10 @@ export function createButtons(roomInfo) {
     function createButton(label, onClick) {
         const button = document.createElement("button");
         button.textContent = label;
-        button.addEventListener("click", onClick);
+        button.addEventListener("click", () => {
+            onClick(); // Execute the button's action
+            button.remove(); // Remove the button after the action
+        });
         styleButton(button);
         buttonContainer.appendChild(button);
         return button;
@@ -526,14 +538,13 @@ export function createButtons(roomInfo) {
         createButton("Unlock Lab", () => {
             setLabUnlocked(true);
             typeText("[N0VA]: You have unlocked the Lab.");
+            console.log("[Debug]: Lab unlocked!");
         });
     }
 
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
-
-
 
 // ==========================
 // 5. Inventory Management

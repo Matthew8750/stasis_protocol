@@ -36,8 +36,7 @@ import {
     setIsMusicPlaying
 } from './globals.js';
 
-import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory, unlockAchievement} from './saveManager.js';
-import { toggleBackgroundMusic } from './audio.js';
+import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory, unlockAchievement } from './saveManager.js';
 import { labEvent } from './events.js';
 
 // ==========================
@@ -597,8 +596,10 @@ export function playerDeath() {
             setNoOfDeaths(noOfDeaths + 1);
 
             const playerID = sessionStorage.getItem("loggedInID");
+
             console.log("Player ID:", playerID);
             console.log("Number of Deaths:", noOfDeaths);
+
             if (playerID && noOfDeaths > 0) {
                 unlockAchievement(playerID, 3);
             } else {
@@ -670,4 +671,3 @@ document.getElementById("settings-button").addEventListener("click", () => {
         settingsPanel.style.display = "none";
     }
 });
-window.initializeGame = initializeGame;

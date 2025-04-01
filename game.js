@@ -38,7 +38,7 @@ import {
 } from './globals.js';
 
 import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory, unlockAchievement } from './saveManager.js';
-import { labEvent, startRepairEscapePodsMinigame, cafeteriaEvent } from './events.js';
+import { labEvent, startRepairEscapePodsMinigame, cafeteriaEvent, shootAlien } from './events.js';
 
 // ==========================
 // 2. Utility Functions
@@ -136,7 +136,7 @@ export function changeImage(newSrc) {
     document.getElementById("display-image").src = newSrc;
 }
 
-function styleButton(button) {
+export function styleButton(button) {
     button.style.padding = "5px 10px";
     button.style.backgroundColor = "black";
     button.style.color = "rgb(0, 255, 0)";
@@ -226,7 +226,7 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Inspect Stasis Pods": { 
                     description: "Warning: Pod integrity compromised. Vital signs… nonexistent. The occupant didn’t make it. Frost clings to the glass, obscuring their face—still, unmoving. Whatever happened, it happened long ago.",
-                    newImage: "images/placeholder.jpg"
+                    newImage: "images/Inspect_Cryo.png"
                 }
             }
         },
@@ -243,11 +243,11 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Open Drawers": { 
                     description: "Drawer accessed… empty. Either supplies were taken, or they were never restocked. No usable items detected—let’s keep moving",
-                    newImage: "images/placeholder.jpg"
+                    newImage: "images/Inspect_Drawer.png"
                 },
                 "Inspect Blood": { 
                     description: "Blood detected… fresh analysis unavailable. No body present. This suggests either recent injury or… something was here. Stay alert.",
-                    newImage: "images/placeholder.jpg"
+                    newImage: "images/Inspect_BloodStain.jpg"
                 }
             }
         },
@@ -375,6 +375,12 @@ export function handleRoomEntry(roomName) {
         console.log("[Debug]: Access to escape pods denied. Wrench not found in inventory.");
         return;
     }
+
+    if (roomName === "Hallway Final" && gunPickedUp) 
+        {
+            shootAlien();
+            return;
+        }
 
     const roomInfo = roomData[roomName];
 

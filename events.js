@@ -218,10 +218,6 @@ export function cafeteriaEvent() {
     } , 10000); // 10 seconds
 }
  
-
-
- 
-
 function countSpacebarPresses(event) {
  
 
@@ -239,3 +235,68 @@ function countSpacebarPresses(event) {
         }
     }
 } 
+
+export function shootAlien() {
+
+    const consolePanel = document.getElementById("console");
+
+    // Remove any existing button container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+
+    // Create a new button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.id = "button-container";
+    buttonContainer.style.position = "relative";
+    buttonContainer.style.width = "100%";
+    buttonContainer.style.height = "100%";
+    consolePanel.appendChild(buttonContainer);
+
+    // Create the "Shoot" button
+    const shootButton = document.createElement("button");
+    shootButton.textContent = "Shoot!";
+    shootButton.style.position = "absolute";
+    shootButton.style.padding = "10px 20px";
+    shootButton.style.backgroundColor = "red";
+    shootButton.style.color = "white";
+    shootButton.style.border = "none";
+    shootButton.style.cursor = "pointer";
+    shootButton.style.fontFamily = "monospace";
+    shootButton.style.fontSize = "16px";
+    shootButton.style.borderRadius = "5px";
+
+    // Function to position the button in a random corner
+    function positionButtonRandomly() {
+        const corners = [
+            { top: "10px", left: "10px" }, // Top-left
+            { top: "10px", right: "10px" }, // Top-right
+            { bottom: "10px", left: "10px" }, // Bottom-left
+            { bottom: "10px", right: "10px" }, // Bottom-right
+        ];
+        const randomCorner = corners[Math.floor(Math.random() * corners.length)];
+        Object.assign(shootButton.style, randomCorner);
+    }
+
+    // Position the button randomly
+    positionButtonRandomly();
+
+    // Add the button to the container
+    buttonContainer.appendChild(shootButton);
+
+    // Timer for death if the player doesn't shoot in time
+    const deathTimer = setTimeout(() => {
+        console.log("[N0VA]: You failed to shoot the alien in time!");
+        changeImage("images/placeholder.png");
+        playerDeath();
+        buttonContainer.remove(); // Clean up the button
+    }, 5000); // 5 seconds to shoot
+
+    // Event listener for the "Shoot" button
+    shootButton.addEventListener("click", () => {
+        clearTimeout(deathTimer); // Cancel the death timer
+        console.log("Shoot");
+        buttonContainer.remove(); // Remove the button
+    });
+}

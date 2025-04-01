@@ -429,12 +429,14 @@ export function createButtons(roomInfo) {
     buttonContainer.style.flexWrap = "wrap";
     buttonContainer.style.maxWidth = "100%";
 
-    function createButton(label, onClick) {
+    function createButton(label, onClick, shouldRemove = false) {
         const button = document.createElement("button");
         button.textContent = label;
         button.addEventListener("click", () => {
             onClick(); // Execute the button's action
-            button.remove(); // Remove the button after the action
+            if (shouldRemove) {
+                button.remove(); // Remove the button only if `shouldRemove` is true
+            }
         });
         styleButton(button);
         buttonContainer.appendChild(button);
@@ -487,7 +489,7 @@ export function createButtons(roomInfo) {
                     }
 
                     manageInventory(`images/item_${name}.png`, name);
-                });
+                }, true); // Pass `true` to ensure the button is removed after clicking
             }
         }
     });

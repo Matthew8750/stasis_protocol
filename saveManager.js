@@ -249,10 +249,12 @@ export async function loadSave(playerID) {
 
     try {
         let url = 'https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php';
+        console.log("[Debug]: Sending game stats query to database:", query);
+
         let response = await fetch(url, { method: 'POST', body: formData });
         let result = await response.json();
 
-        console.log("[Debug]: Game stats result", result);
+        console.log("[Debug]: Game stats query result:", result);
 
         if (result.error) {
             console.error("[Error]:", result.error);
@@ -261,11 +263,15 @@ export async function loadSave(playerID) {
 
         if (result.data && Array.isArray(result.data) && result.data.length > 0) {
             let saveData = result.data[0];
+            console.log("[Debug]: Retrieved save data:", saveData);
 
             let startTime = saveData.time_played || "00:00:00";
+            console.log("[Debug]: Retrieved time_played:", startTime);
+
             let [hours, minutes, seconds] = startTime.split(":").map(Number);
 
             if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+                console.warn("[Warning]: Invalid time_played format. Resetting to 00:00:00.");
                 startTime = "00:00:00";
                 hours = 0;
                 minutes = 0;
@@ -274,16 +280,27 @@ export async function loadSave(playerID) {
 
             // Use setter functions to update global variables
             setLastSaveTime(hours * 3600 + minutes * 60 + seconds);
-            setGameStartTime(Date.now() / 1000 - (hours * 3600 + minutes * 60 + seconds));
-            setNoOfDeaths(saveData.deaths || 0);
-            setRoomsExplored(saveData.rooms_explored || 0);
-            setLocationName(saveData.location_name || "Cryogenic Chamber");
-            setLabEventTriggered(!!saveData.labEventTriggered);
+            console.log("[Debug]: Set lastSaveTime to:", hours * 3600 + minutes * 60 + seconds);
 
-            console.log(`Loaded save time: ${hours * 3600 + minutes * 60 + seconds} seconds`);
-            console.log(`[Debug]: Loaded location name: ${saveData.location_name}`);
+            setGameStartTime(Date.now() / 1000 - (hours * 3600 + minutes * 60 + seconds));
+            console.log("[Debug]: Set gameStartTime to:", Date.now() / 1000 - (hours * 3600 + minutes * 60 + seconds));
+
+            setNoOfDeaths(saveData.deaths || 0);
+            console.log("[Debug]: Set noOfDeaths to:", saveData.deaths || 0);
+
+            setRoomsExplored(saveData.rooms_explored || 0);
+            console.log("[Debug]: Set rooms_explored to:", saveData.rooms_explored || 0);
+
+            setLocationName(saveData.location_name || "Cryogenic Chamber");
+            console.log("[Debug]: Set location_name to:", saveData.location_name || "Cryogenic Chamber");
+
+            // Explicitly check for 0 or 1
+            console.log("[Debug]: Raw labEventTriggered value and type:", saveData.labEventTriggered, typeof saveData.labEventTriggered);
+            setLabEventTriggered(saveData.labEventTriggered === 1 || saveData.labEventTriggered === "1");
+            console.log("[Debug]: Set labEventTriggered to:", saveData.labEventTriggered === 1 || saveData.labEventTriggered === "1");
 
             // Call handleRoomEntry to update the UI
+            console.log("[Debug]: Calling handleRoomEntry with room:", saveData.location_name || "Cryogenic Chamber");
             handleRoomEntry(saveData.location_name || "Cryogenic Chamber");
 
             // Fetch and process inventory data
@@ -294,10 +311,12 @@ export async function loadSave(playerID) {
             inventoryFormData.append('database', 'CSC1034_CW_13');
             inventoryFormData.append('query', inventoryQuery);
 
+            console.log("[Debug]: Sending inventory query to database:", inventoryQuery);
+
             let inventoryResponse = await fetch(url, { method: 'POST', body: inventoryFormData });
             let inventoryResult = await inventoryResponse.json();
 
-            console.log("[Debug]: Inventory query result", inventoryResult);
+            console.log("[Debug]: Inventory query result:", inventoryResult);
 
             if (inventoryResult.data && Array.isArray(inventoryResult.data)) {
                 inventoryResult.data.forEach(item => {
@@ -305,12 +324,15 @@ export async function loadSave(playerID) {
                     if (parseInt(item.item_id, 10) === 1) {
                         manageInventory("images/item_Wrench.png", "Wrench");
                         setWrenchPickedUp(true); // Use setter
+                        console.log("[Debug]: Wrench picked up.");
                     } else if (parseInt(item.item_id, 10) === 2) {
                         manageInventory("images/item_Keycard.png", "Keycard");
                         setKeycardPickedUp(true); // Use setter
+                        console.log("[Debug]: Keycard picked up.");
                     } else if (parseInt(item.item_id, 10) === 3) {
                         manageInventory("images/item_Gun.png", "Gun");
                         setGunPickedUp(true); // Use setter
+                        console.log("[Debug]: Gun picked up.");
                     }
                 });
             } else {
@@ -325,5 +347,70 @@ export async function loadSave(playerID) {
     } catch (error) {
         console.error("[Error]: Unable to connect to the database.", error);
         return false;
+    }
+}
+
+export async function unlockAchievement(playerID, achievementID) {
+    const queryCheck = `SELECT * FROM player_achievements WHERE player_id = ${playerID} AND achievement_id = ${achievementID}`;
+
+    let formDataCheck = new FormData();
+    formDataCheck.append('hostname', 'localhost');
+    formDataCheck.append('username', 'jrice27');
+    formDataCheck.append('password', 'rZk8FVrXNllcPl8Y');
+    formDataCheck.append('database', 'CSC1034_CW_13');
+    formDataCheck.append('query', queryCheck);
+
+    try {
+        let responseCheck = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataCheck });
+        let resultCheck = await responseCheck.json();
+
+        if (resultCheck.error) {
+            console.error(resultCheck.error.toString());
+            return;
+        }
+
+        // If no existing record, insert the achievement into player_achievements table
+        if (resultCheck.data.length === 0) {
+            const queryInsert = `INSERT INTO player_achievements (player_id, achievement_id, is_locked) VALUES (${playerID}, ${achievementID}, 1)`;
+            
+            let formDataInsert = new FormData();
+            formDataInsert.append('hostname', 'localhost');
+            formDataInsert.append('username', 'jrice27');
+            formDataInsert.append('password', 'rZk8FVrXNllcPl8Y');
+            formDataInsert.append('database', 'CSC1034_CW_13');
+            formDataInsert.append('query', queryInsert);
+
+            let responseInsert = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataInsert });
+            let resultInsert = await responseInsert.json();
+
+            if (resultInsert.error) {
+                console.error('Error inserting achievement:', resultInsert.error);
+                return;
+            }
+
+            console.log(`Achievement ${achievementID} inserted successfully.`);
+        }
+
+        // Now, update the achievement to unlocked
+        const queryUpdate = `UPDATE player_achievements SET is_locked = 0 WHERE player_id = ${playerID} AND achievement_id = ${achievementID}`;
+
+        let formDataUpdate = new FormData();
+        formDataUpdate.append('hostname', 'localhost');
+        formDataUpdate.append('username', 'jrice27');
+        formDataUpdate.append('password', 'rZk8FVrXNllcPl8Y');
+        formDataUpdate.append('database', 'CSC1034_CW_13');
+        formDataUpdate.append('query', queryUpdate);
+
+        let responseUpdate = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formDataUpdate });
+        let resultUpdate = await responseUpdate.json();
+
+        if (resultUpdate.error) {
+            console.error('Error updating achievement:', resultUpdate.error);
+            return;
+        }
+
+        console.log(`Achievement ${achievementID} unlocked successfully.`);
+    } catch (error) {
+        console.error('Error unlocking achievement:', error);
     }
 }

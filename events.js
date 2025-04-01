@@ -3,6 +3,7 @@ import { typeText, changeImage, playerDeath, handleRoomEntry } from './game.js';
 
 
 export function labEvent() {
+    console.log("labEvent triggered");
     typeText("[N0VA] Did you hear that? Hide now!", 15);
 
     const consolePanel = document.getElementById("console");
@@ -51,6 +52,14 @@ export function labEvent() {
                 playerDeath();
             }
         });
+
+        button.style.padding = "5px 10px";
+        button.style.backgroundColor = "black";
+        button.style.color = "rgb(0, 255, 0)";
+        button.style.border = "1px solid rgb(0, 255, 0)";
+        button.style.fontFamily = "monospace";
+        button.style.cursor = "pointer";
+        button.style.borderRadius = "4px";
 
         buttonContainer.appendChild(button);
     });

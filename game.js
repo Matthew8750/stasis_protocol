@@ -1,7 +1,6 @@
 // ==========================
 // 1. Global Variables and Constants
 // ==========================
-window.initializeGame = initializeGame;
 
 import {
     typingTimeouts,
@@ -47,7 +46,7 @@ import { labEvent, startRepairEscapePodsMinigame } from './events.js';
 // ==========================
 // 3. Game Initialization
 // ==========================
-async function initializeGame(restartGame = false) {
+export async function initializeGame(restartGame = false) {
     console.log("[System]: Initializing game...");
 
     document.addEventListener("click", function () {
@@ -329,6 +328,7 @@ export function handleRoomEntry(roomName) {
         }
     };
     console.log("[Debug]: Room data loaded.");
+    console.log(labEventTriggered);
 
     if (!roomData[roomName]) {
         console.log(`[Error]: Room "${roomName}" not found.`);
@@ -452,8 +452,16 @@ function createButtons(roomInfo) {
     
                     if (item === 'keycard') {
                         setKeycardPickedUp(true);
+                        const playerID = sessionStorage.getItem("loggedInID");
+                        if (wrenchPickedUp && keycardPickedUp) {
+                            unlockAchievement(playerID, 4); // Achievement ID 4
+                        }
                     } else if (item === 'wrench') {
                         setWrenchPickedUp(true);
+                        const playerID = sessionStorage.getItem("loggedInID");
+                        if (wrenchPickedUp && keycardPickedUp) {
+                            unlockAchievement(playerID, 4); // Achievement ID 4
+                        }
                     } else if (item === 'gun') {
                         setGunPickedUp(true);
                     }
@@ -614,6 +622,18 @@ export function playerDeath() {
 
         button.addEventListener("click", () => {
             setNoOfDeaths(noOfDeaths + 1);
+
+            const playerID = sessionStorage.getItem("loggedInID");
+
+            console.log("Player ID:", playerID);
+            console.log("Number of Deaths:", noOfDeaths);
+
+            if (playerID && noOfDeaths > 0) {
+                unlockAchievement(playerID, 3);
+            } else {
+                console.error("Player ID is missing, or no deaths recorded.");
+            }
+
             initializeGame(true);
         });
 
@@ -679,4 +699,3 @@ document.getElementById("settings-button").addEventListener("click", () => {
         settingsPanel.style.display = "none";
     }
 });
-window.initializeGame = initializeGame;

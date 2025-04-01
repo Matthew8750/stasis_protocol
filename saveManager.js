@@ -19,8 +19,7 @@ import {
     setGunPickedUp
 } from './globals.js';
 
-import { handleRoomEntry } from './game.js'; // Ensure this is imported
-import { manageInventory } from './game.js'; // Ensure this is imported
+import { handleRoomEntry, manageInventory } from './game.js'; // Ensure this is imported
 
 export async function clearInventory() {
     const inventorySlots = document.querySelectorAll(".inventory-slot");

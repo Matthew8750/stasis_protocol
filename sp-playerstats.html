@@ -38,7 +38,7 @@
                     }
                     
                     const statsContainer = document.getElementById('stats');
-                    statsContainer.innerHTML = `
+                    statsContainer.innerHTML = ` 
                         <p><strong>Deaths:</strong> ${result.data[0].deaths}</p>
                         <p><strong>Time Played:</strong> ${result.data[0].time_played}</p>
                         <p><strong>Rooms Explored:</strong> ${result.data[0].rooms_explored}</p>
@@ -53,13 +53,15 @@
         </script>
     </head>
     <body>
-        <h1>Game Statistics</h1>
-        <div id="stats">
+        <h1 class="stats-heading"><span>Player Statistics</span></h1>
+
+        <div id="stats" class="stats-box">
             <p>Loading player stats...</p>
         </div>
         <nav>
-            <a href="sp-gamehub.html">Back to Main Menu</a>
+            <a href="sp-gamehub.html" class="back-to-menu">Back to Main Menu</a>
         </nav>
         <div class="bezel-overlay"></div>
     </body>
 </html>
+

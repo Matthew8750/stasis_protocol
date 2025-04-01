@@ -5,18 +5,20 @@
     <link href="sp-styles.css" type="text/css" rel="stylesheet">
 </head>
 <body>
-    <h1><span>Global Statistics</span></h1>
+    <h1 class="stats-heading"><span>Global Statistics</span></h1>
 
-    <div id="stats">
+    <div id="stats" class="stats-box">
         <p>Loading statistics...</p>
     </div>
-
-    <nav>
-        <a href="sp-mainmenu.html">Back to Main Menu</a>
+    <nav> 
+        <a href="sp-mainmenu.html" class="back-to-menu">Back to Main Menu</a>  
     </nav>
 
+
+    <div class="bezel-overlay"></div>
+
     <script>
-        async function fetchGlobalStats() {
+       async function fetchGlobalStats() {
             let query = `SELECT deaths, rooms_explored, TIME_TO_SEC(time_played) AS time_played FROM game_stats`;
 
             let formData = new FormData();
@@ -34,7 +36,6 @@
 
                 let data = await response.json();
 
-                // Log the data to check if it's in the correct format
                 console.log("Fetched Data: ", data);
 
                 if (data.error || !data.data || data.data.length === 0) {
@@ -45,11 +46,11 @@
                 let totalDeaths = 0;
                 let totalRoomsExplored = 0;
                 let totalTimePlayed = 0;
-                let playerCount = data.data.length;  // Use data.data to access the array
+                let playerCount = data.data.length;
 
                 // Calculate totals
                 data.data.forEach(player => {
-                    totalDeaths += parseInt(player.deaths, 10);  // Make sure the values are numbers
+                    totalDeaths += parseInt(player.deaths, 10);
                     totalRoomsExplored += parseInt(player.rooms_explored, 10);
                     totalTimePlayed += parseInt(player.time_played, 10);
                 });
@@ -57,15 +58,13 @@
                 // Calculate averages
                 const avgDeaths = totalDeaths / playerCount;
                 const avgRoomsExplored = totalRoomsExplored / playerCount;
-                const avgTimePlayedInMinutes = totalTimePlayed / playerCount / 60; // Convert seconds to minutes
-                const avgTimePlayedInHours = Math.floor(avgTimePlayedInMinutes / 60); // Convert minutes to hours
-                const avgTimePlayedRemainingMinutes = Math.round(avgTimePlayedInMinutes % 60); // Remaining minutes
+                const avgTimePlayed = totalTimePlayed / playerCount / 3600; // Convert seconds to hours
 
                 // Display averages in stats div
                 let statsDiv = document.getElementById("stats");
 
                 statsDiv.innerHTML = `
-                    <p><strong>Average Time Played:</strong> ${avgTimePlayedInHours} hours ${avgTimePlayedRemainingMinutes} minutes</p>
+                    <p><strong>Average Time Played:</strong> ${avgTimePlayed.toFixed(2)} hours</p>
                     <p><strong>Average Rooms Explored:</strong> ${avgRoomsExplored.toFixed(2)}</p>
                     <p><strong>Average Deaths:</strong> ${avgDeaths.toFixed(2)}</p>
                 `;
@@ -79,7 +78,6 @@
     </script>
 </body>
 </html>
-
 
 
 

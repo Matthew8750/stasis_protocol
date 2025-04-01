@@ -840,3 +840,30 @@ button:active {
     gap: 10px; /* Add spacing between buttons */
     justify-content: center; /* Center the buttons */
 }
+
+/* Specific styling for the stats section */
+.stats-heading {
+    color: #33ff33;
+    text-shadow: 0 0 5px #33ff33;
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.stats-box {
+    background-color: transparent;
+    padding: 20px;
+    border: 2px solid #33ff33;
+    border-radius: 10px;
+    margin: 20px auto;
+    width: 60%;
+    box-shadow: 0 0 10px #33ff33;
+    color: #33ff33;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.stats-box p {
+    color: #33ff33;
+    text-shadow: 0 0 5px #33ff33;
+}

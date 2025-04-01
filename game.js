@@ -37,7 +37,7 @@ import {
 } from './globals.js';
 
 import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory } from './saveManager.js';
-import { labEvent, adminEvent } from './events.js';
+import { labEvent, startRepairEscapePodsMinigame } from './events.js';
 
 // ==========================
 // 2. Utility Functions
@@ -459,8 +459,16 @@ function createButtons(roomInfo) {
 
                     if (item === 'keycard') {
                         setKeycardPickedUp(true);
+                        const playerID = sessionStorage.getItem("loggedInID");
+                        if (wrenchPickedUp && keycardPickedUp) {
+                            unlockAchievement(playerID, 4); // Achievement ID 4
+                        }
                     } else if (item === 'wrench') {
                         setWrenchPickedUp(true);
+                        const playerID = sessionStorage.getItem("loggedInID");
+                        if (wrenchPickedUp && keycardPickedUp) {
+                            unlockAchievement(playerID, 4); // Achievement ID 4
+                        }
                     } else if (item === 'gun') {
                         setGunPickedUp(true);
                     }
@@ -475,16 +483,38 @@ function createButtons(roomInfo) {
     if (roomInfo.interactions) {
         Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
             createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
-                typeText(interaction.description);
+                if (key === "Repair Escape Pods") {
+                    if (wrenchPickedUp) {
+                        startRepairEscapePodsMinigame(
+                            () => {
+                                // Success callback
+                                typeText(interaction.description);
+                                changeImage(interaction.newImage);
+                                console.log("[System]: Escape pods repaired successfully!");
+                            },
+                            () => {
+                                // Failure callback
+                                typeText("[System]: You failed to repair the escape pods. Try again!");
+                                console.log("[System]: Mini-game canceled or failed.");
+                            }
+                        );
+                    } else {
+                        typeText("[System]: You need the wrench to repair the escape pods.");
+                    }
+                } else {
+                    typeText(interaction.description);
 
-                const originalImage = roomInfo.image;
+                    const originalImage = roomInfo.image;
 
-                if (interaction.newImage) {
-                    changeImage(interaction.newImage);
+                    if (interaction.newImage) {
+                        changeImage(interaction.newImage);
 
-                    setTimeout(() => {
-                        changeImage(originalImage);
-                    }, 5000);
+                        setTimeout(() => {
+                            if (!isRoomChanging && originalImage === roomInfo.image) {
+                                changeImage(originalImage);
+                            }
+                        }, 5000);
+                    }
                 }
             });
         });
@@ -595,6 +625,18 @@ export function playerDeath() {
 
         button.addEventListener("click", () => {
             setNoOfDeaths(noOfDeaths + 1);
+
+            const playerID = sessionStorage.getItem("loggedInID");
+
+            console.log("Player ID:", playerID);
+            console.log("Number of Deaths:", noOfDeaths);
+
+            if (playerID && noOfDeaths > 0) {
+                unlockAchievement(playerID, 3);
+            } else {
+                console.error("Player ID is missing, or no deaths recorded.");
+            }
+
             initializeGame(true);
         });
 
@@ -660,4 +702,3 @@ document.getElementById("settings-button").addEventListener("click", () => {
         settingsPanel.style.display = "none";
     }
 });
-window.initializeGame = initializeGame;

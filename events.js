@@ -96,17 +96,23 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     // Create the wire matching area
     const wireContainer = document.createElement("div");
     wireContainer.style.display = "flex";
-    wireContainer.style.justifyContent = "space-between";
+    wireContainer.style.justifyContent = "space-between"; // Ensure left and right wires are spaced apart
     wireContainer.style.marginTop = "20px";
+    wireContainer.style.position = "relative"; // For positioning wires
+    wireContainer.style.width = "600px"; // Increased width for better spacing
+    wireContainer.style.height = "200px"; // Fixed height for alignment
 
     // Left wires
     const leftWires = document.createElement("div");
     leftWires.style.display = "flex";
     leftWires.style.flexDirection = "column";
     leftWires.style.gap = "10px";
+    leftWires.style.marginLeft = "20px"; // Distance from the left border
 
     const colors = ["red", "blue", "green", "yellow"];
-    colors.forEach(color => {
+    const wireLines = []; // Store wire lines for later manipulation
+
+    colors.forEach((color, index) => {
         const wire = document.createElement("div");
         wire.textContent = color.toUpperCase();
         wire.style.backgroundColor = color;
@@ -119,6 +125,7 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         // Add drag event
         wire.addEventListener("dragstart", (e) => {
             e.dataTransfer.setData("color", color);
+            e.dataTransfer.setData("index", index); // Track the wire's index
         });
 
         leftWires.appendChild(wire);
@@ -129,11 +136,12 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     rightWires.style.display = "flex";
     rightWires.style.flexDirection = "column";
     rightWires.style.gap = "10px";
+    rightWires.style.marginRight = "20px"; // Distance from the right border
 
     // Shuffle the colors array
     const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
 
-    shuffledColors.forEach(color => {
+    shuffledColors.forEach((color, index) => {
         const target = document.createElement("div");
         target.textContent = color.toUpperCase();
         target.style.backgroundColor = color;
@@ -150,10 +158,18 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         target.addEventListener("drop", (e) => {
             e.preventDefault();
             const draggedColor = e.dataTransfer.getData("color");
+            const draggedIndex = e.dataTransfer.getData("index");
+
             if (draggedColor === target.dataset.color) {
                 target.style.border = "2px solid lime";
                 target.textContent = "MATCHED!";
                 target.style.pointerEvents = "none"; // Prevent further interaction
+
+                // Draw a wire from the left to the right
+                const wireLine = wireLines[draggedIndex];
+                wireLine.style.visibility = "visible";
+                wireLine.style.backgroundColor = draggedColor;
+
                 checkCompletion();
             } else {
                 target.style.border = "2px solid red";
@@ -164,6 +180,22 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         });
 
         rightWires.appendChild(target);
+    });
+
+    // Add wires (lines) between left and right wires
+    colors.forEach((color, index) => {
+        const wireLine = document.createElement("div");
+        wireLine.style.position = "absolute";
+        wireLine.style.width = "2px";
+        wireLine.style.height = "0"; // Initially no height
+        wireLine.style.backgroundColor = "transparent"; // Initially invisible
+        wireLine.style.left = "100px"; // Adjust based on left wire position
+        wireLine.style.top = `${index * 50 + 25}px`; // Align with left wire
+        wireLine.style.transformOrigin = "top left";
+        wireLine.style.visibility = "hidden"; // Hidden until matched
+
+        wireContainer.appendChild(wireLine);
+        wireLines.push(wireLine);
     });
 
     wireContainer.appendChild(leftWires);

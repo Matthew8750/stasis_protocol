@@ -72,6 +72,7 @@ export async function initializeGame(restartGame = false) {
     setKeycardPickedUp(false);
     setGunPickedUp(false);
     setWrenchPickedUp(false);
+    setLabUnlocked(false);
     clearInventory();
 
     handleRoomEntry("Cryogenic Chamber");
@@ -336,6 +337,11 @@ export function handleRoomEntry(roomName) {
         return;
     }
 
+    if (roomName === "Lab" && !labUnlocked) {
+        typeText("[N0VA]: The Lab is locked down. You should head to admin if you want to unlock it.");
+        return;
+    }
+
     if (roomName === "Lab" && !labEventTriggered) {
         setLabEventTriggered(true);
         labEvent(); // Call the imported labEvent function
@@ -358,11 +364,6 @@ export function handleRoomEntry(roomName) {
     if (roomName === "Escape Pods" && !wrenchPickedUp) {
         typeText("[N0VA]: The escape pods are damaged. You need the wrench to repair them and escape.");
         console.log("[Debug]: Access to escape pods denied. Wrench not found in inventory.");
-        return;
-    }
-
-    if (roomName === "Lab" && !labUnlocked) {
-        typeText("[N0VA]: The Lab is locked down. You should head to admin if you want to unlock it.");
         return;
     }
 
@@ -401,7 +402,7 @@ export function handleRoomEntry(roomName) {
     createButtons(roomInfo);
 }
 
-function createButtons(roomInfo) {
+export function createButtons(roomInfo) {
     const consolePanel = document.getElementById("console");
 
     let existingButtonContainer = document.getElementById("button-container");
@@ -531,6 +532,8 @@ function createButtons(roomInfo) {
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
+
+
 
 // ==========================
 // 5. Inventory Management

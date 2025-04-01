@@ -38,7 +38,7 @@ import {
 } from './globals.js';
 
 import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory } from './saveManager.js';
-import { labEvent } from './events.js';
+import { labEvent, startRepairEscapePodsMinigame } from './events.js';
 
 // ==========================
 // 2. Utility Functions
@@ -473,18 +473,38 @@ function createButtons(roomInfo) {
     if (roomInfo.interactions) {
         Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
             createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
-                typeText(interaction.description);
+                if (key === "Repair Escape Pods") {
+                    if (wrenchPickedUp) {
+                        startRepairEscapePodsMinigame(
+                            () => {
+                                // Success callback
+                                typeText(interaction.description);
+                                changeImage(interaction.newImage);
+                                console.log("[System]: Escape pods repaired successfully!");
+                            },
+                            () => {
+                                // Failure callback
+                                typeText("[System]: You failed to repair the escape pods. Try again!");
+                                console.log("[System]: Mini-game canceled or failed.");
+                            }
+                        );
+                    } else {
+                        typeText("[System]: You need the wrench to repair the escape pods.");
+                    }
+                } else {
+                    typeText(interaction.description);
 
-                const originalImage = roomInfo.image;
+                    const originalImage = roomInfo.image;
 
-                if (interaction.newImage) {
-                    changeImage(interaction.newImage);
+                    if (interaction.newImage) {
+                        changeImage(interaction.newImage);
 
-                    setTimeout(() => {
-                        if (!isRoomChanging && originalImage === roomInfo.image) {
-                            changeImage(originalImage);
-                        }
-                    }, 5000);
+                        setTimeout(() => {
+                            if (!isRoomChanging && originalImage === roomInfo.image) {
+                                changeImage(originalImage);
+                            }
+                        }, 5000);
+                    }
                 }
             });
         });

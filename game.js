@@ -452,8 +452,16 @@ function createButtons(roomInfo) {
     
                     if (item === 'keycard') {
                         setKeycardPickedUp(true);
+                        const playerID = sessionStorage.getItem("loggedInID");
+                        if (wrenchPickedUp && keycardPickedUp) {
+                            unlockAchievement(playerID, 4); // Achievement ID 4
+                        }
                     } else if (item === 'wrench') {
                         setWrenchPickedUp(true);
+                        const playerID = sessionStorage.getItem("loggedInID");
+                        if (wrenchPickedUp && keycardPickedUp) {
+                            unlockAchievement(playerID, 4); // Achievement ID 4
+                        }
                     } else if (item === 'gun') {
                         setGunPickedUp(true);
                     }

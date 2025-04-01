@@ -1,6 +1,22 @@
-import { setLabEventTriggered } from './globals.js';
+import { setLabEventTriggered, setLabUnlocked } from './globals.js';
 import { typeText, changeImage, playerDeath, handleRoomEntry } from './game.js';
 
+function createButton(text, onClick) {
+    const button = document.createElement("button");
+    button.textContent = text;
+
+    button.addEventListener("click", onClick);
+
+    button.style.padding = "5px 10px";
+    button.style.backgroundColor = "black";
+    button.style.color = "rgb(0, 255, 0)";
+    button.style.border = "1px solid rgb(0, 255, 0)";
+    button.style.fontFamily = "monospace";
+    button.style.cursor = "pointer";
+    button.style.borderRadius = "4px";
+
+    return button;
+}
 
 export function labEvent() {
     console.log("labEvent triggered");
@@ -36,10 +52,7 @@ export function labEvent() {
     }, 5000);
 
     choices.forEach(choice => {
-        const button = document.createElement("button");
-        button.textContent = choice;
-
-        button.addEventListener("click", () => {
+        const button = createButton(choice, () => {
             clearTimeout(hideTimer);
 
             if (choice === "Hide inside the medical closet.") {
@@ -53,17 +66,8 @@ export function labEvent() {
             }
         });
 
-        button.style.padding = "5px 10px";
-        button.style.backgroundColor = "black";
-        button.style.color = "rgb(0, 255, 0)";
-        button.style.border = "1px solid rgb(0, 255, 0)";
-        button.style.fontFamily = "monospace";
-        button.style.cursor = "pointer";
-        button.style.borderRadius = "4px";
-
         buttonContainer.appendChild(button);
     });
-
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }

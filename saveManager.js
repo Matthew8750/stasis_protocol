@@ -16,7 +16,8 @@ import {
     setLabEventTriggered,
     setWrenchPickedUp,
     setKeycardPickedUp,
-    setGunPickedUp
+    setGunPickedUp,
+    setLabUnlocked
 } from './globals.js';
 
 import { handleRoomEntry, manageInventory } from './game.js'; // Ensure this is imported
@@ -121,7 +122,7 @@ export async function fetchAndDisplayInventory() {
 // ==========================
 // 6. Database Operations
 // ==========================
-export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name, labEventTriggered) {
+export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name, labEventTriggered, labUnlocked) {
     console.log('Connecting to the database...');
 
     const loggedInID = sessionStorage.getItem('loggedInID');
@@ -141,6 +142,7 @@ export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, lo
     let formattedTime = `${hours}:${minutes}:${seconds}`;
 
     let labTriggeredValue = labEventTriggered ? 1 : 0;
+    let labUnlockedValue = labUnlocked ? 1 : 0; // Convert labUnlocked to a numeric value
 
     try {
         let checkQuery = `SELECT COUNT(*) AS saveExists FROM game_stats WHERE player_id = '${sanitizedInput}'`;
@@ -157,9 +159,9 @@ export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, lo
 
         let query = saveExists
             ? `UPDATE game_stats SET deaths = ${noOfDeaths}, time_played = '${formattedTime}', rooms_explored = ${rooms_explored}, 
-                location_name = '${sanitizedLocation}', labEventTriggered = ${labTriggeredValue} WHERE player_id = '${sanitizedInput}'`
-            : `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered) 
-                VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue})`;
+                location_name = '${sanitizedLocation}', labEventTriggered = ${labTriggeredValue}, labUnlocked = ${labUnlockedValue} WHERE player_id = '${sanitizedInput}'`
+            : `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered, labUnlocked) 
+                VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue}, ${labUnlockedValue})`;
 
         let formData = new FormData();
         formData.append('hostname', 'localhost');
@@ -237,7 +239,7 @@ export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, lo
 export async function loadSave(playerID) {
     console.log("[System]: Checking for saved game...");
 
-    let query = `SELECT deaths, time_played, rooms_explored, location_name, labEventTriggered FROM game_stats WHERE player_ID = '${playerID}'`;
+    let query = `SELECT deaths, time_played, rooms_explored, location_name, labEventTriggered, labUnlocked FROM game_stats WHERE player_ID = '${playerID}'`;
     let inventoryQuery = `SELECT item_id FROM player_inventory WHERE player_id = '${playerID}'`;
 
     let formData = new FormData();
@@ -298,6 +300,11 @@ export async function loadSave(playerID) {
             console.log("[Debug]: Raw labEventTriggered value and type:", saveData.labEventTriggered, typeof saveData.labEventTriggered);
             setLabEventTriggered(saveData.labEventTriggered === 1 || saveData.labEventTriggered === "1");
             console.log("[Debug]: Set labEventTriggered to:", saveData.labEventTriggered === 1 || saveData.labEventTriggered === "1");
+
+            // Explicitly check for 0 or 1 for labUnlocked
+            console.log("[Debug]: Raw labUnlocked value and type:", saveData.labUnlocked, typeof saveData.labUnlocked);
+            setLabUnlocked(saveData.labUnlocked === 1 || saveData.labUnlocked === "1");
+            console.log("[Debug]: Set labUnlocked to:", saveData.labUnlocked === 1 || saveData.labUnlocked === "1");
 
             // Call handleRoomEntry to update the UI
             console.log("[Debug]: Calling handleRoomEntry with room:", saveData.location_name || "Cryogenic Chamber");

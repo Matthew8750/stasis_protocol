@@ -37,7 +37,7 @@ import {
 } from './globals.js';
 
 import { saveToDatabase, loadSave, clearInventory, fetchAndDisplayInventory } from './saveManager.js';
-import { labEvent } from './events.js';
+import { labEvent, adminEvent } from './events.js';
 
 // ==========================
 // 2. Utility Functions
@@ -230,7 +230,7 @@ export function handleRoomEntry(roomName) {
         },
         "Hallway One": {
             image: "images/room_Hallway.jpg",
-            choices: ["Med Bay", "Lab"],
+            choices: ["Med Bay", "Lab", "Admin"],
             description: "[N0VA]: This hallway connects various sections of the ship. Faint emergency lights flicker, casting long shadows."
         },
         "Med Bay": {
@@ -262,8 +262,9 @@ export function handleRoomEntry(roomName) {
         },
         "Admin": {
             image: "images/room_Admin.jpg",
-            choices: ["Cafeteria"],
+            choices: ["Hallway One"],
             description: "[N0VA]: This is the Admin Control Room. Multiple terminals are active but unstable—data corruption detected.",
+            terminal: true,
             interactions: {
                 "Inspect Terminal": { 
                     description: "add text here",
@@ -273,7 +274,7 @@ export function handleRoomEntry(roomName) {
         },
         "Cafeteria": {
             image: "images/room_Cafeteria.jpg",
-            choices: ["Lab", "Admin"],
+            choices: ["Lab"],
             description: "[N0VA]: The Cafeteria is abandoned. Food trays and supplies are scattered—signs of a hasty departure."
         },
         "Hallway Two": {
@@ -341,7 +342,6 @@ export function handleRoomEntry(roomName) {
         console.log("[Debug]: Lab event triggered.");
         return;
     }
-
     playDoorOpenSound();
 
     function playDoorOpenSound() {
@@ -358,6 +358,11 @@ export function handleRoomEntry(roomName) {
     if (roomName === "Escape Pods" && !wrenchPickedUp) {
         typeText("[N0VA]: The escape pods are damaged. You need the wrench to repair them and escape.");
         console.log("[Debug]: Access to escape pods denied. Wrench not found in inventory.");
+        return;
+    }
+
+    if (roomName === "Lab" && !labUnlocked) {
+        typeText("[N0VA]: The Lab is locked down. You should head to admin if you want to unlock it.");
         return;
     }
 
@@ -423,10 +428,12 @@ function createButtons(roomInfo) {
         return button;
     }
 
+    // Add room navigation buttons
     roomInfo.choices.forEach(choice => {
         createButton(choice, () => handleRoomEntry(choice));
     });
 
+    // Add interactable item buttons
     const interactableItems = {
         keycard: "Keycard",
         wrench: "Wrench",
@@ -436,7 +443,7 @@ function createButtons(roomInfo) {
     Object.entries(interactableItems).forEach(([item, name]) => {
         if (roomInfo[item]) {
             let isPickedUp = false;
-    
+
             if (item === 'keycard' && !keycardPickedUp) {
                 isPickedUp = true;
             } else if (item === 'wrench' && !wrenchPickedUp) {
@@ -444,12 +451,12 @@ function createButtons(roomInfo) {
             } else if (item === 'gun' && !gunPickedUp) {
                 isPickedUp = true;
             }
-    
+
             if (isPickedUp) {
-                const button = createButton(`Pickup ${name}`, () => {
+                createButton(`Pickup ${name}`, () => {
                     console.log(`[Debug]: ${name} picked up!`);
                     document.querySelector(`.${item}-item-panel`).style.display = "none";
-    
+
                     if (item === 'keycard') {
                         setKeycardPickedUp(true);
                     } else if (item === 'wrench') {
@@ -457,19 +464,14 @@ function createButtons(roomInfo) {
                     } else if (item === 'gun') {
                         setGunPickedUp(true);
                     }
-    
-                    console.log(`${item}PickedUp: ${eval(`${item}PickedUp`)}`);
-    
+
                     manageInventory(`images/item_${name}.png`, name);
-    
-                    button.style.display = "none";
                 });
             }
         }
     });
-    
-    let isRoomChanging = false;
 
+    // Add interaction buttons
     if (roomInfo.interactions) {
         Object.entries(roomInfo.interactions).forEach(([key, interaction]) => {
             createButton(`${key.charAt(0).toUpperCase() + key.slice(1)}`, () => {
@@ -481,26 +483,25 @@ function createButtons(roomInfo) {
                     changeImage(interaction.newImage);
 
                     setTimeout(() => {
-                        if (!isRoomChanging && originalImage === roomInfo.image) {
-                            changeImage(originalImage);
-                        }
+                        changeImage(originalImage);
                     }, 5000);
                 }
             });
         });
     }
 
-    function handleRoomChange() {
-        isRoomChanging = true;
-    }
-
-    function resetRoomChangeFlag() {
-        isRoomChanging = false;
+    // Add "Unlock Lab" button for Admin room
+    if (roomInfo.terminal && !labUnlocked) {
+        createButton("Unlock Lab", () => {
+            setLabUnlocked(true);
+            typeText("[N0VA]: You have unlocked the Lab.");
+        });
     }
 
     consolePanel.appendChild(buttonContainer);
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
+
 // ==========================
 // 5. Inventory Management
 // ==========================

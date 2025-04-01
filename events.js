@@ -1,5 +1,8 @@
 import { setLabEventTriggered, setLabUnlocked } from './globals.js';
 import { typeText, changeImage, playerDeath, handleRoomEntry } from './game.js';
+let spacebarPresses = 0; // Initialize spacebar presses
+let hideTimer; // Timer for death event
+
 
 function createButton(label, onClick) {
     const button = document.createElement("button");
@@ -186,3 +189,53 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     });
     minigameContainer.appendChild(cancelButton);
 }
+
+export function cafeteriaEvent() {
+ 
+    typeText("[N0VA] What is that? Quick! Get out of the Cafeteria! Rapidly tap the spacebar now!", 15);
+    changeImage("images/room_Cafeteria.jpg");
+ 
+    // Remove any existing button container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+
+    // Reset Spacebar presses
+    spacebarPresses = 0;
+ 
+    // Add Event Listener for Spacebar
+    document.addEventListener("keydown", countSpacebarPresses);
+ 
+        // Start a Timer that kills the Player if they don't tap the spacebar 5 times in 10 seconds
+        hideTimer = setTimeout(() => {
+
+ 
+
+            changeImage("images/Cafeteria_Death.png");
+            playerDeath();
+            document.removeEventListener("keydown", countSpacebarPresses);
+    } , 10000); // 10 seconds
+}
+ 
+
+
+ 
+
+function countSpacebarPresses(event) {
+ 
+
+    if (event.code === "Space") 
+        {
+ 
+        spacebarPresses++;
+        console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times`);
+ 
+        if (spacebarPresses >= 30) {
+            clearTimeout(hideTimer); // Cancel the death timer
+            typeText("[N0VA] You escaped the Cafeteria! Now, where to next?");
+            handleRoomEntry("Lab"); // Change to Lab
+            document.removeEventListener("keydown", countSpacebarPresses);
+        }
+    }
+} 

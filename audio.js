@@ -1,4 +1,3 @@
-
 export function toggleBackgroundMusic() {
     const toggleButton = document.getElementById("toggle-music-button");
 

@@ -98,15 +98,21 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     wireContainer.style.display = "flex";
     wireContainer.style.justifyContent = "space-between";
     wireContainer.style.marginTop = "20px";
+    wireContainer.style.position = "relative"; // For positioning wires
+    wireContainer.style.width = "600px"; // Fixed width for alignment
+    wireContainer.style.height = "200px"; // Fixed height for alignment
 
     // Left wires
     const leftWires = document.createElement("div");
     leftWires.style.display = "flex";
     leftWires.style.flexDirection = "column";
     leftWires.style.gap = "10px";
+    leftWires.style.marginLeft = "20px"; // Distance from the left border
 
     const colors = ["red", "blue", "green", "yellow"];
-    colors.forEach(color => {
+    const wireLines = []; // Store wire lines for later manipulation
+
+    colors.forEach((color, index) => {
         const wire = document.createElement("div");
         wire.textContent = color.toUpperCase();
         wire.style.backgroundColor = color;
@@ -119,6 +125,7 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         // Add drag event
         wire.addEventListener("dragstart", (e) => {
             e.dataTransfer.setData("color", color);
+            e.dataTransfer.setData("index", index); // Track the wire's index
         });
 
         leftWires.appendChild(wire);
@@ -129,11 +136,12 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     rightWires.style.display = "flex";
     rightWires.style.flexDirection = "column";
     rightWires.style.gap = "10px";
+    rightWires.style.marginRight = "20px"; // Distance from the right border
 
     // Shuffle the colors array
     const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
 
-    shuffledColors.forEach(color => {
+    shuffledColors.forEach((color, index) => {
         const target = document.createElement("div");
         target.textContent = color.toUpperCase();
         target.style.backgroundColor = color;
@@ -150,10 +158,30 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         target.addEventListener("drop", (e) => {
             e.preventDefault();
             const draggedColor = e.dataTransfer.getData("color");
+            const draggedIndex = e.dataTransfer.getData("index");
+
             if (draggedColor === target.dataset.color) {
                 target.style.border = "2px solid lime";
                 target.textContent = "MATCHED!";
                 target.style.pointerEvents = "none"; // Prevent further interaction
+
+                // Draw a wire from the left to the right
+                const leftWire = leftWires.children[draggedIndex];
+                const wireLine = document.createElement("div");
+                wireLine.style.position = "absolute";
+                wireLine.style.backgroundColor = draggedColor;
+                wireLine.style.height = "2px";
+                wireLine.style.width = `${Math.abs(target.offsetLeft - leftWire.offsetLeft)}px`;
+                wireLine.style.top = `${leftWire.offsetTop + leftWire.offsetHeight / 2}px`;
+                wireLine.style.left = `${leftWire.offsetLeft + leftWire.offsetWidth}px`;
+                wireLine.style.transformOrigin = "left center";
+                wireLine.style.transform = `rotate(${Math.atan2(
+                    target.offsetTop - leftWire.offsetTop,
+                    target.offsetLeft - leftWire.offsetLeft
+                )}rad)`;
+
+                wireContainer.appendChild(wireLine);
+
                 checkCompletion();
             } else {
                 target.style.border = "2px solid red";

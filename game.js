@@ -376,12 +376,13 @@ export function handleRoomEntry(roomName) {
         return;
     }
 
-    if (roomName === "Hallway Final" && gunPickedUp) 
-        {
-            changeImage("images/Kill_Alien.png");
-            shootAlien();
-            return;
-        }
+    // Update the alien kill logic in handleRoomEntry
+    if (roomName === "Hallway Final" && gunPickedUp) {
+        changeImage("images/Kill_Alien.png");
+        shootAlien();
+        showEndingScreen("Congratulations! You defeated the alien and survived!");
+        return;
+    }
 
     const roomInfo = roomData[roomName];
 

@@ -73,6 +73,57 @@ export function labEvent() {
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
 
+function showEndingScreen(message) {
+    // Clear the console panel
+    const consolePanel = document.getElementById("console");
+    consolePanel.innerHTML = "";
+
+    // Create the ending screen container
+    const endingScreen = document.createElement("div");
+    endingScreen.id = "ending-screen";
+    endingScreen.style.position = "absolute";
+    endingScreen.style.top = "0";
+    endingScreen.style.left = "0";
+    endingScreen.style.width = "100%";
+    endingScreen.style.height = "100%";
+    endingScreen.style.backgroundColor = "black";
+    endingScreen.style.color = "white";
+    endingScreen.style.display = "flex";
+    endingScreen.style.flexDirection = "column";
+    endingScreen.style.justifyContent = "center";
+    endingScreen.style.alignItems = "center";
+    endingScreen.style.fontFamily = "monospace";
+    endingScreen.style.zIndex = "1000";
+
+    // Add the victory message
+    const victoryMessage = document.createElement("h1");
+    victoryMessage.textContent = message;
+    victoryMessage.style.marginBottom = "20px";
+    endingScreen.appendChild(victoryMessage);
+
+    // Add the "Return to Game Hub" button
+    const returnButton = document.createElement("button");
+    returnButton.textContent = "Return to Game Hub";
+    returnButton.addEventListener("click", () => {
+        window.location.href = "gamehub.html"; // Redirect to the game hub
+    });
+    styleButton(returnButton);
+    endingScreen.appendChild(returnButton);
+
+    // Add the "Restart Game" button
+    const restartButton = document.createElement("button");
+    restartButton.textContent = "Restart Game";
+    restartButton.addEventListener("click", () => {
+        initializeGame(true); // Restart the game
+        endingScreen.remove(); // Remove the ending screen
+    });
+    styleButton(restartButton);
+    endingScreen.appendChild(restartButton);
+
+    // Append the ending screen to the body
+    document.body.appendChild(endingScreen);
+}
+
 export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     // Create the mini-game container
     const minigameContainer = document.createElement("div");
@@ -214,6 +265,13 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
             onSuccess();
         }
     }
+
+    onSuccess = () => {
+        typeText("[N0VA]: The escape pods are repaired and ready for launch!");
+        changeImage("images/EscapePods_Repaired.jpg");
+        console.log("[System]: Escape pods repaired successfully!");
+        showEndingScreen("Congratulations! You escaped the ship!");
+    };
 
     // Add a cancel button
     const cancelButton = document.createElement("button");
@@ -402,7 +460,8 @@ export function shootAlien() {
         if (presses >= 3) {
             clearTimeout(deathTimer); // Cancel the death timer
             console.log("[N0VA]: You defeated the alien!");
-            typeText("[N0VA]: The alien is down. That was close!");
+            //typeText("[N0VA]: The alien is down. That was close!");
+            showEndingScreen("Congratulations! You defeated the alien and survived!");
             // Retrieve player ID from sessionStorage
             const playerID = sessionStorage.getItem("loggedInID");
             console.log("Player ID:", playerID);

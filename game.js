@@ -726,3 +726,58 @@ document.getElementById("settings-button").addEventListener("click", () => {
         settingsPanel.style.display = "none";
     }
 });
+
+export function showNotifiwhcation(achievementName, imageSrc) {
+    console.log("Notification triggered:", achievementName, imageSrc); // Debugging
+
+    // Create the notification container
+    const notification = document.createElement("div");
+    notification.className = "notification";
+    notification.style.position = "fixed";
+    notification.style.top = "20px";
+    notification.style.right = "-300px"; // Start off-screen
+    notification.style.width = "250px";
+    notification.style.padding = "10px";
+    notification.style.backgroundColor = "black";
+    notification.style.color = "white";
+    notification.style.border = "1px solid rgb(0, 255, 0)";
+    notification.style.borderRadius = "5px";
+    notification.style.fontFamily = "monospace";
+    notification.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+    notification.style.zIndex = "2000"; // Ensure it's above the ending screen
+    notification.style.display = "flex";
+    notification.style.alignItems = "center";
+    notification.style.gap = "10px";
+
+    // Add the achievement image
+    const image = document.createElement("img");
+    image.src = imageSrc;
+    image.alt = achievementName;
+    image.style.width = "40px";
+    image.style.height = "40px";
+    image.style.borderRadius = "50%";
+    notification.appendChild(image);
+
+    // Add the achievement name
+    const text = document.createElement("span");
+    text.textContent = achievementName;
+    notification.appendChild(text);
+
+    // Append the notification to the body
+    document.body.appendChild(notification);
+
+    // Slide the notification in
+    setTimeout(() => {
+        notification.style.transition = "right 0.5s ease-in-out";
+        notification.style.right = "20px"; // Slide into view
+    }, 100);
+
+    // Remove the notification after 5 seconds
+    setTimeout(() => {
+        notification.style.transition = "right 0.5s ease-in-out";
+        notification.style.right = "-300px"; // Slide out of view
+        setTimeout(() => {
+            notification.remove(); // Remove from DOM
+        }, 500);
+    }, 5000);
+}

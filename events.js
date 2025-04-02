@@ -1,4 +1,4 @@
-import { setLabEventTriggered, setLabUnlocked } from './globals.js';
+import { keycardPickedUp, setLabEventTriggered, setLabUnlocked } from './globals.js';
 import { typeText, changeImage, playerDeath, handleRoomEntry, styleButton } from './game.js';
 import { unlockAchievement } from './saveManager.js';
 let spacebarPresses = 0; // Initialize spacebar presses
@@ -73,6 +73,7 @@ export function labEvent() {
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
 
+// Update the showEndingScreen function to include notifications
 function showEndingScreen(message) {
     // Clear the console panel
     const consolePanel = document.getElementById("console");
@@ -105,7 +106,7 @@ function showEndingScreen(message) {
     const returnButton = document.createElement("button");
     returnButton.textContent = "Return to Game Hub";
     returnButton.addEventListener("click", () => {
-        window.location.href = "gamehub.html"; // Redirect to the game hub
+        window.location.href = "sp-gamehub.html"; // Redirect to the game hub
     });
     styleButton(returnButton);
     endingScreen.appendChild(returnButton);
@@ -122,6 +123,19 @@ function showEndingScreen(message) {
 
     // Append the ending screen to the body
     document.body.appendChild(endingScreen);
+
+    // Show achievement notification based on the achievement unlocked
+    const playerID = sessionStorage.getItem("loggedInID");
+    if (playerID) {
+        if (wrenchPickedUp && keycardPickedUp) {
+            showNotification("Hoarder", "images/achievement_Hoarder.png");
+        } else if (keycardPickedUp) {
+            showNotification("Vapourised!", "images/achievement_Vapourised!.png");
+        }
+        else if (escapePodsRepaired) {
+            showNotification("Farewell Eclipse 9", "images/achievement_FarewellEclipse9.png");
+        }
+    }
 }
 
 export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
@@ -274,6 +288,8 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         changeImage("images/EscapePods_Repaired.jpg");
         console.log("[System]: Escape pods repaired successfully!");
         showEndingScreen("Congratulations! You escaped the ship!");
+        showNotification("Farewell Eclipse 9", "images/achievement_FarewellEclipse9.png");
+        
     };
 
     // Add a cancel button
@@ -472,6 +488,7 @@ export function shootAlien() {
             const playerID = sessionStorage.getItem("loggedInID");
             console.log("Player ID:", playerID);
             unlockAchievement(playerID, 2); // Unlock the achievement
+            showNotification("Vapourised!", "images/achievement_Vapourised!.png");
 
             buttonContainer.remove(); // Remove the button container
         } else {

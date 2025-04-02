@@ -489,14 +489,20 @@ export function shootAlien() {
         presses++;
         console.log(`[Debug]: Alien shot ${presses} time(s)`);
 
+        // Play the gunshot sound
+        const gunshotSound = new Audio("sounds/GunShotAlienDeath.mp3"); // Ensure the path to the MP3 file is correct
+        gunshotSound.play().catch((error) => {
+            console.error("[Error]: Unable to play gunshot sound.", error);
+        });
+
         // Trigger the shake effect on the image-panel
         shakeImagePanel();
 
         if (presses >= 3) {
             clearTimeout(deathTimer); // Cancel the death timer
             console.log("[N0VA]: You defeated the alien!");
-            //typeText("[N0VA]: The alien is down. That was close!");
             showEndingScreen("Congratulations! You defeated the alien and survived!");
+            
             // Retrieve player ID from sessionStorage
             const playerID = sessionStorage.getItem("loggedInID");
             console.log("Player ID:", playerID);
@@ -504,7 +510,7 @@ export function shootAlien() {
 
                         checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
 
-                        checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
+            checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
 
             buttonContainer.remove(); // Remove the button container
         } else {

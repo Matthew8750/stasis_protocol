@@ -285,7 +285,7 @@ nav a:hover {
     padding: 10px;
     border: 2px solid rgb(0, 0, 0);
     border-radius: 6px;
-    overflow-y: auto;
+    overflow-y: hidden;
     white-space: pre-wrap;
     font-size: 14px; /* Default font size matches the smaller version */
     transition: font-size 0.3s ease; /* Smooth transition for font size changes */
@@ -658,7 +658,7 @@ thead {
 
 #settings-button {
     position: absolute;
-    top: 45vh; /* Align with the settings panel */
+    top: 50vh; /* Align with the settings panel */
     left: 6.5vw; /* Align with the settings panel */
     z-index: 9000; /* Ensure it appears above other elements */
     width: 50px; /* Set width for the button */
@@ -725,9 +725,9 @@ thead {
     border: 2px solid rgb(0, 255, 0); /* Matching green border */
     color: rgb(0, 255, 0); /* Green text */
     font-family: monospace;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; /* Use flexbox for alignment */
+    justify-content: center; /* Center text horizontally */
+    align-items: center; /* Center text vertically */
     margin: 10px 0; /* Add vertical spacing between buttons */
     width: 220px; /* Ensure consistent button width */
     height: 50px; /* Ensure consistent button height */
@@ -932,4 +932,17 @@ button:active {
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     z-index: 999;
+}
+/* Shake animation */
+@keyframes shake {
+    0% { transform: translateX(-50%) translateY(0); }
+    25% { transform: translateX(calc(-50% - 2px)) translateY(2px); } /* Combine translateX(-50%) with shake */
+    50% { transform: translateX(calc(-50% + 2px)) translateY(-2px); } /* Combine translateX(-50%) with shake */
+    75% { transform: translateX(calc(-50% - 2px)) translateY(-2px); } /* Combine translateX(-50%) with shake */
+    100% { transform: translateX(-50%) translateY(0); }
+}
+
+/* Apply the shake animation */
+.shake {
+    animation: shake 0.3s ease; /* Reduced duration to 0.3 seconds */
 }

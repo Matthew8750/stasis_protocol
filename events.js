@@ -96,17 +96,23 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     // Create the wire matching area
     const wireContainer = document.createElement("div");
     wireContainer.style.display = "flex";
-    wireContainer.style.justifyContent = "space-between";
+    wireContainer.style.justifyContent = "space-between"; // Align left and right wires to opposite sides
     wireContainer.style.marginTop = "20px";
+    wireContainer.style.position = "relative"; // For positioning wires
+    wireContainer.style.width = "700px"; // Fixed width for alignment
+    wireContainer.style.height = "200px"; // Fixed height for alignment
 
     // Left wires
     const leftWires = document.createElement("div");
     leftWires.style.display = "flex";
     leftWires.style.flexDirection = "column";
     leftWires.style.gap = "10px";
+    leftWires.style.marginLeft = "70px"; // Increased margin to double the distance from the left border
 
     const colors = ["red", "blue", "green", "yellow"];
-    colors.forEach(color => {
+    const wireLines = []; // Store wire lines for later manipulation
+
+    colors.forEach((color, index) => {
         const wire = document.createElement("div");
         wire.textContent = color.toUpperCase();
         wire.style.backgroundColor = color;
@@ -119,6 +125,7 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         // Add drag event
         wire.addEventListener("dragstart", (e) => {
             e.dataTransfer.setData("color", color);
+            e.dataTransfer.setData("index", index); // Track the wire's index
         });
 
         leftWires.appendChild(wire);
@@ -129,11 +136,12 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     rightWires.style.display = "flex";
     rightWires.style.flexDirection = "column";
     rightWires.style.gap = "10px";
+    rightWires.style.marginLeft = "30px"; // Increased margin to push the right wires further to the right
 
     // Shuffle the colors array
     const shuffledColors = [...colors].sort(() => Math.random() - 0.5);
 
-    shuffledColors.forEach(color => {
+    shuffledColors.forEach((color, index) => {
         const target = document.createElement("div");
         target.textContent = color.toUpperCase();
         target.style.backgroundColor = color;
@@ -150,10 +158,34 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         target.addEventListener("drop", (e) => {
             e.preventDefault();
             const draggedColor = e.dataTransfer.getData("color");
+            const draggedIndex = e.dataTransfer.getData("index");
+
             if (draggedColor === target.dataset.color) {
                 target.style.border = "2px solid lime";
                 target.textContent = "MATCHED!";
                 target.style.pointerEvents = "none"; // Prevent further interaction
+
+                // Draw a wire from the left to the right
+                const leftWire = leftWires.children[draggedIndex];
+                const wireLine = document.createElement("div");
+                wireLine.style.position = "absolute";
+                wireLine.style.backgroundColor = draggedColor;
+                wireLine.style.height = "4px"; // Increased thickness of the line
+                wireLine.style.width = `${Math.abs(target.offsetLeft - leftWire.offsetLeft - 10)}px`; // Adjusted to avoid overlap
+                wireLine.style.top = `${leftWire.offsetTop + leftWire.offsetHeight / 2}px`;
+                wireLine.style.left = `${leftWire.offsetLeft + leftWire.offsetWidth}px`;
+                wireLine.style.transformOrigin = "left center";
+                wireLine.style.transform = `rotate(${Math.atan2(
+                    target.offsetTop - leftWire.offsetTop,
+                    target.offsetLeft - leftWire.offsetLeft
+                )}rad)`;
+                wireLine.style.zIndex = "1"; // Set a lower z-index for the wire lines
+
+                // Ensure the right wires have a higher z-index
+                target.style.zIndex = "2";
+
+                wireContainer.appendChild(wireLine);
+
                 checkCompletion();
             } else {
                 target.style.border = "2px solid red";
@@ -195,50 +227,91 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
 }
 
 export function cafeteriaEvent() {
- 
     typeText("[N0VA] What is that? Quick! Get out of the Cafeteria! Rapidly tap the spacebar now!", 15);
-    changeImage("images/room_Cafeteria.jpg");
- 
-    // Remove any existing button container
-    let existingButtonContainer = document.getElementById("button-container");
-    if (existingButtonContainer) {
-        existingButtonContainer.remove();
+
+    // Get the image-panel element
+    const imagePanel = document.querySelector(".image-panel");
+    if (!imagePanel) {
+        console.error("Image panel not found. Ensure the selector is correct.");
+        return;
     }
+
+    // Clear any existing content in the image-panel
+    imagePanel.innerHTML = "";
+
+    // Set the hallway background
+    imagePanel.style.backgroundImage = "url('images/room_Hallway.jpg')";
+    imagePanel.style.backgroundSize = "cover";
+    imagePanel.style.backgroundPosition = "center";
+    imagePanel.style.position = "absolute";
+    imagePanel.style.overflow = "hidden";
+
+    // Create door images
+    const doorLeft = document.createElement("img");
+    const doorRight = document.createElement("img");
+
+    doorLeft.src = "images/door_left.png";
+    doorRight.src = "images/door_right.png";
+
+    // Style the doors
+    doorLeft.style.position = "absolute";
+    doorRight.style.position = "absolute";
+
+    doorLeft.style.width = "50%";
+    doorRight.style.width = "50%";
+
+    doorLeft.style.height = "100%";
+    doorRight.style.height = "100%";
+
+    doorLeft.style.left = "50%"; // Start touching in the center
+    doorLeft.style.transform = "translateX(-100%)"; // Align to the left of the center
+    doorRight.style.left = "50%"; // Start touching in the center
+
+    // Append doors to the image-panel
+    imagePanel.appendChild(doorLeft);
+    imagePanel.appendChild(doorRight);
 
     // Reset Spacebar presses
-    spacebarPresses = 0;
- 
+    let spacebarPresses = 0;
+
     // Add Event Listener for Spacebar
     document.addEventListener("keydown", countSpacebarPresses);
- 
-        // Start a Timer that kills the Player if they don't tap the spacebar 5 times in 10 seconds
-        hideTimer = setTimeout(() => {
 
- 
+    // Start a Timer that kills the Player if they don't tap the spacebar 30 times in 10 seconds
+    const hideTimer = setTimeout(() => {
+        changeImage("images/Cafeteria_Death.png");
+        playerDeath();
+        document.removeEventListener("keydown", countSpacebarPresses);
+        doorLeft.remove();
+        doorRight.remove();
+    }, 10000); // 10 seconds
 
-            changeImage("images/Cafeteria_Death.png");
-            playerDeath();
-            document.removeEventListener("keydown", countSpacebarPresses);
-    } , 10000); // 10 seconds
-}
- 
-function countSpacebarPresses(event) {
- 
+    function countSpacebarPresses(event) {
+        if (event.code === "Space") {
+            spacebarPresses++;
+            console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times`);
 
-    if (event.code === "Space") 
-        {
- 
-        spacebarPresses++;
-        console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times`);
- 
-        if (spacebarPresses >= 30) {
-            clearTimeout(hideTimer); // Cancel the death timer
-            typeText("[N0VA] You escaped the Cafeteria! Now, where to next?");
-            handleRoomEntry("Lab"); // Change to Lab
-            document.removeEventListener("keydown", countSpacebarPresses);
+            // Move the doors apart with each spacebar press
+            const moveDistance = spacebarPresses * 5; // Each press moves the doors 5px further apart
+            doorLeft.style.transform = `translateX(calc(-100% - ${moveDistance}px))`;
+            doorRight.style.transform = `translateX(${moveDistance}px)`;
+
+            // Check if the player has pressed enough times to escape
+            if (spacebarPresses >= 30) {
+                clearTimeout(hideTimer); // Cancel the death timer
+                typeText("[N0VA] You escaped the Cafeteria! Now, where to next?");
+                document.removeEventListener("keydown", countSpacebarPresses);
+
+                // Reset the image-panel and send the player to the lab
+                setTimeout(() => {
+                    imagePanel.innerHTML = ""; // Clear the doors
+                    imagePanel.style.backgroundImage = "url('images/room_Lab.jpg')"; // Set the lab background
+                    handleRoomEntry("Lab"); // Send the player to the lab
+                }, 1000); // Add a slight delay for a smoother transition
+            }
         }
     }
-} 
+}
 
 export function shootAlien() {
     const consolePanel = document.getElementById("console");

@@ -657,6 +657,7 @@ export function playerDeath() {
 
             if (playerID && noOfDeaths > 0) {
                 unlockAchievement(playerID, 3);
+                checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
             } else {
                 console.error("Player ID is missing, or no deaths recorded.");
             }

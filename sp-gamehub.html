@@ -71,21 +71,29 @@
             async function confirmDelete() {
                 const playerID = sessionStorage.getItem('loggedInID');
                 if (!playerID) return;
+                
                 let deleteData = new FormData();
                 deleteData.append('hostname', 'localhost');
                 deleteData.append('username', 'jrice27');
                 deleteData.append('password', 'rZk8FVrXNllcPl8Y');
                 deleteData.append('database', 'CSC1034_CW_13');
                 deleteData.append('query', `DELETE FROM player WHERE player_ID = ${playerID}`);
+
                 try {
                     await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: deleteData });
                     document.getElementById('popupMessage').innerText = "Your account has been deleted.";
                     document.getElementById('confirmDeleteBtn').style.display = 'none';
+
+                    // Hide overlay after deletion
+                    setTimeout(() => {
+                        hideDeletePopup();
+                        logout();
+                    }, 2000);
                 } catch (error) {
                     console.error('Error deleting account:', error);
                 }
-                setTimeout(logout, 2000);
             }
+
 
             retrievePlayerID(); 
         </script>

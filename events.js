@@ -287,6 +287,19 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
 
 export function cafeteriaEvent() {
     typeText("[N0VA] What is that? Quick! Get out of the Cafeteria! Rapidly tap the spacebar now!", 15);
+    changeImage("images/room_Lab.jpg");
+
+    // Remove any existing button container
+    let existingButtonContainer = document.getElementById("button-container");
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+
+    // Reset spacebar presses
+    spacebarPresses = 0;
+
+    // Add Event Listener for Spacebar
+    document.addEventListener("keydown", countSpacebarPresses);
 
     // Get the image-panel element
     const imagePanel = document.querySelector(".image-panel");
@@ -295,15 +308,17 @@ export function cafeteriaEvent() {
         return;
     }
 
-    // Clear any existing content in the image-panel
-    imagePanel.innerHTML = "";
-
-    // Set the hallway background
-    imagePanel.style.backgroundImage = "url('images/room_Hallway.jpg')";
-    imagePanel.style.backgroundSize = "cover";
-    imagePanel.style.backgroundPosition = "center";
-    imagePanel.style.position = "absolute";
-    imagePanel.style.overflow = "hidden";
+    // Create a transparent overlay panel for the doors
+    const doorPanel = document.createElement("div");
+    doorPanel.id = "door-panel";
+    doorPanel.style.position = "absolute";
+    doorPanel.style.top = "0";
+    doorPanel.style.left = "0";
+    doorPanel.style.width = "100%";
+    doorPanel.style.height = "100%";
+    doorPanel.style.backgroundColor = "rgba(0, 0, 0, 0)"; // Transparent background
+    doorPanel.style.pointerEvents = "none"; // Allow clicks to pass through
+    doorPanel.style.zIndex = "10"; // Ensure it is above the image-panel
 
     // Create door images
     const doorLeft = document.createElement("img");
@@ -326,47 +341,35 @@ export function cafeteriaEvent() {
     doorLeft.style.transform = "translateX(-100%)"; // Align to the left of the center
     doorRight.style.left = "50%"; // Start touching in the center
 
-    // Append doors to the image-panel
-    imagePanel.appendChild(doorLeft);
-    imagePanel.appendChild(doorRight);
+    // Append doors to the door-panel
+    doorPanel.appendChild(doorLeft);
+    doorPanel.appendChild(doorRight);
 
-    // Reset Spacebar presses
-    let spacebarPresses = 0;
+    // Append the door-panel to the image-panel
+    imagePanel.appendChild(doorPanel);
 
-    // Add Event Listener for Spacebar
-    document.addEventListener("keydown", countSpacebarPresses);
-
-    // Start a Timer that kills the Player if they don't tap the spacebar 30 times in 10 seconds
-    const hideTimer = setTimeout(() => {
-        changeImage("images/Cafeteria_Death.png");
+    // Start a timer that kills the player if they don't tap the spacebar 30 times in 10 seconds
+    hideTimer = setTimeout(() => {
+        changeImage("images/LabRoomImage_Death.png");
         playerDeath();
         document.removeEventListener("keydown", countSpacebarPresses);
-        doorLeft.remove();
-        doorRight.remove();
     }, 10000); // 10 seconds
 
     function countSpacebarPresses(event) {
-        if (event.code === "Space") {
+        if (event.code === 'Space') {
             spacebarPresses++;
-            console.log(`[Debug]: Spacebar pressed ${spacebarPresses} times`);
+            console.log(`Spacebar Presses: ${spacebarPresses}`);
 
             // Move the doors apart with each spacebar press
             const moveDistance = spacebarPresses * 5; // Each press moves the doors 5px further apart
             doorLeft.style.transform = `translateX(calc(-100% - ${moveDistance}px))`;
             doorRight.style.transform = `translateX(${moveDistance}px)`;
 
-            // Check if the player has pressed enough times to escape
             if (spacebarPresses >= 30) {
                 clearTimeout(hideTimer); // Cancel the death timer
-                typeText("[N0VA] You escaped the Cafeteria! Now, where to next?");
+                doorPanel.remove(); // Remove the door panel
+                handleRoomEntry("Lab"); // Change to the next room
                 document.removeEventListener("keydown", countSpacebarPresses);
-
-                // Reset the image-panel and send the player to the lab
-                setTimeout(() => {
-                    imagePanel.innerHTML = ""; // Clear the doors
-                    imagePanel.style.backgroundImage = "url('images/room_Lab.jpg')"; // Set the lab background
-                    handleRoomEntry("Lab"); // Send the player to the lab
-                }, 1000); // Add a slight delay for a smoother transition
             }
         }
     }

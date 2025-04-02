@@ -1,4 +1,4 @@
-import { setLabEventTriggered, setLabUnlocked, gameStartTime } from './globals.js'; // Import the game start time
+import { keycardPickedUp, setLabEventTriggered, setLabUnlocked, gameStartTime } from './globals.js'; // Import the game start time
 import { typeText, changeImage, playerDeath, handleRoomEntry, styleButton } from './game.js';
 import { unlockAchievement,checkAndUnlockStasisEngaged } from './saveManager.js';
 let spacebarPresses = 0; // Initialize spacebar presses
@@ -73,6 +73,7 @@ export function labEvent() {
     consolePanel.scrollTop = consolePanel.scrollHeight;
 }
 
+// Update the showEndingScreen function to include notifications
 function showEndingScreen(message) {
     // Calculate elapsed time
     const elapsedTime = Math.floor((Date.now() / 1000) - gameStartTime); // Time in seconds
@@ -117,7 +118,7 @@ function showEndingScreen(message) {
     const returnButton = document.createElement("button");
     returnButton.textContent = "Return to Game Hub";
     returnButton.addEventListener("click", () => {
-        window.location.href = "gamehub.html"; // Redirect to the game hub
+        window.location.href = "sp-gamehub.html"; // Redirect to the game hub
     });
     styleButton(returnButton);
     endingScreen.appendChild(returnButton);
@@ -143,6 +144,19 @@ function showEndingScreen(message) {
 
     // Append the ending screen to the body
     document.body.appendChild(endingScreen);
+
+    // Show achievement notification based on the achievement unlocked
+    const playerID = sessionStorage.getItem("loggedInID");
+    if (playerID) {
+        if (wrenchPickedUp && keycardPickedUp) {
+            showNotification("Hoarder", "images/achievement_Hoarder.png");
+        } else if (keycardPickedUp) {
+            showNotification("Vapourised!", "images/achievement_Vapourised!.png");
+        }
+        else if (escapePodsRepaired) {
+            showNotification("Farewell Eclipse 9", "images/achievement_FarewellEclipse9.png");
+        }
+    }
 }
 
 
@@ -297,6 +311,8 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         changeImage("images/EscapePods_Repaired.jpg");
         console.log("[System]: Escape pods repaired successfully!");
         showEndingScreen("Congratulations! You escaped the ship!");
+        showNotification("Farewell Eclipse 9", "images/achievement_FarewellEclipse9.png");
+        
     };
 
     // Add a cancel button
@@ -463,7 +479,6 @@ export function shootAlien() {
     // Timer for death if the player doesn't shoot in time
     const deathTimer = setTimeout(() => {
         console.log("[N0VA]: You failed to shoot the alien in time!");
-        changeImage("images/Alien_Death.png");
         playerDeath();
         buttonContainer.remove(); // Clean up the button
     }, 5000);
@@ -483,21 +498,28 @@ export function shootAlien() {
         presses++;
         console.log(`[Debug]: Alien shot ${presses} time(s)`);
 
+        // Play the gunshot sound
+        const gunshotSound = new Audio("sounds/GunShotAlienDeath.mp3"); // Ensure the path to the MP3 file is correct
+        gunshotSound.play().catch((error) => {
+            console.error("[Error]: Unable to play gunshot sound.", error);
+        });
+
         // Trigger the shake effect on the image-panel
         shakeImagePanel();
 
         if (presses >= 3) {
             clearTimeout(deathTimer); // Cancel the death timer
             console.log("[N0VA]: You defeated the alien!");
-            //typeText("[N0VA]: The alien is down. That was close!");
             showEndingScreen("Congratulations! You defeated the alien and survived!");
-
-                        // Retrieve player ID from sessionStorage
-                        const playerID = sessionStorage.getItem("loggedInID");
-                        console.log("Player ID:", playerID);
-                        unlockAchievement(playerID, 2); // Unlock the achievement
+            
+            // Retrieve player ID from sessionStorage
+            const playerID = sessionStorage.getItem("loggedInID");
+            console.log("Player ID:", playerID);
+            unlockAchievement(playerID, 2); // Unlock the achievement
 
                         checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
+
+            checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
 
             buttonContainer.remove(); // Remove the button container
         } else {

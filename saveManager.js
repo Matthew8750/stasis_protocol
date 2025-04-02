@@ -422,3 +422,60 @@ export async function unlockAchievement(playerID, achievementID) {
         console.error('Error unlocking achievement:', error);
     }
 }
+
+export async function checkAndUnlockStasisEngaged(playerID) {
+    if (!playerID) {
+        console.error("[Error]: Player ID is missing.");
+        return;
+    }
+
+    try {
+        const achievements = await fetchPlayerAchievements(playerID); // Assume this function fetches player's achievements
+        const hasAllRequiredAchievements = [1, 2, 3].every(id => achievements.includes(id));
+
+        if (hasAllRequiredAchievements) {
+            unlockAchievement(playerID, 6); // Unlock achievement ID 6
+            console.log("[System]: Achievement ID 6 unlocked!");
+        } else {
+            console.log("[System]: Required achievements (1, 2, 3) not unlocked yet.");
+        }
+    } catch (error) {
+        console.error("[Error]: Failed to check achievements.", error);
+    }
+}
+
+export async function fetchPlayerAchievements(playerID) {
+    if (!playerID) {
+        console.error("[Error]: Player ID is missing.");
+        return [];
+    }
+
+    const query = `SELECT achievement_id FROM player_achievements WHERE player_id = '${playerID}' AND is_locked = 0`;
+
+    let formData = new FormData();
+    formData.append('hostname', 'localhost');
+    formData.append('username', 'jrice27');
+    formData.append('password', 'rZk8FVrXNllcPl8Y');
+    formData.append('database', 'CSC1034_CW_13');
+    formData.append('query', query);
+
+    try {
+        let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: formData });
+        let result = await response.json();
+
+        if (result.error) {
+            console.error("[Error]: Failed to fetch achievements:", result.error);
+            return [];
+        }
+
+        if (!result.data || !Array.isArray(result.data)) {
+            console.error("[Error]: Invalid data format received for achievements.");
+            return [];
+        }
+
+        return result.data.map(row => parseInt(row.achievement_id, 10)).filter(id => !isNaN(id));
+    } catch (error) {
+        console.error("[Error]: Unable to fetch achievements.", error);
+        return [];
+    }
+}

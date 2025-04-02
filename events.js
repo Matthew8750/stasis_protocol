@@ -1,6 +1,6 @@
-import { keycardPickedUp, setLabEventTriggered, setLabUnlocked } from './globals.js';
+import { keycardPickedUp, setLabEventTriggered, setLabUnlocked, gameStartTime } from './globals.js'; // Import the game start time
 import { typeText, changeImage, playerDeath, handleRoomEntry, styleButton } from './game.js';
-import { unlockAchievement } from './saveManager.js';
+import { unlockAchievement,checkAndUnlockStasisEngaged } from './saveManager.js';
 let spacebarPresses = 0; // Initialize spacebar presses
 let hideTimer; // Timer for death event
 
@@ -75,6 +75,18 @@ export function labEvent() {
 
 // Update the showEndingScreen function to include notifications
 function showEndingScreen(message) {
+    // Calculate elapsed time
+    const elapsedTime = Math.floor((Date.now() / 1000) - gameStartTime); // Time in seconds
+
+    // Check if the game was completed in less than 2 minutes
+    if (elapsedTime <= 120) {
+        console.log("[Achievement]: Game completed in less than 2 minutes!");
+        const playerID = sessionStorage.getItem("loggedInID");
+        if (playerID) {
+            unlockAchievement(playerID, 7); // Unlock achievement ID 5 for fast completion
+        }
+   }
+
     // Clear the console panel
     const consolePanel = document.getElementById("console");
     consolePanel.innerHTML = "";
@@ -284,6 +296,7 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
         const playerID = sessionStorage.getItem("loggedInID");
         console.log("Player ID:", playerID);
         unlockAchievement(playerID, 1); // Unlock the achievement
+        checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
         typeText("[N0VA]: The escape pods are repaired and ready for launch!");
         changeImage("images/EscapePods_Repaired.jpg");
         console.log("[System]: Escape pods repaired successfully!");
@@ -488,7 +501,10 @@ export function shootAlien() {
             const playerID = sessionStorage.getItem("loggedInID");
             console.log("Player ID:", playerID);
             unlockAchievement(playerID, 2); // Unlock the achievement
-            showNotification("Vapourised!", "images/achievement_Vapourised!.png");
+
+                        checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
+
+                        checkAndUnlockStasisEngaged(playerID); // Check and unlock the achievement
 
             buttonContainer.remove(); // Remove the button container
         } else {

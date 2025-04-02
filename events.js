@@ -1,5 +1,6 @@
 import { setLabEventTriggered, setLabUnlocked } from './globals.js';
 import { typeText, changeImage, playerDeath, handleRoomEntry, styleButton } from './game.js';
+import { unlockAchievement } from './saveManager.js';
 let spacebarPresses = 0; // Initialize spacebar presses
 let hideTimer; // Timer for death event
 
@@ -388,6 +389,11 @@ export function shootAlien() {
             clearTimeout(deathTimer); // Cancel the death timer
             console.log("[N0VA]: You defeated the alien!");
             typeText("[N0VA]: The alien is down. That was close!");
+            // Retrieve player ID from sessionStorage
+            const playerID = sessionStorage.getItem("loggedInID");
+            console.log("Player ID:", playerID);
+            unlockAchievement(playerID, 2); // Unlock the achievement
+
             buttonContainer.remove(); // Remove the button container
         } else {
             // Reposition the button for the next press

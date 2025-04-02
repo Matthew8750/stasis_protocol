@@ -84,7 +84,7 @@ function showEndingScreen(message) {
         if (playerID) {
             unlockAchievement(playerID, 7); // Unlock achievement ID 5 for fast completion
         }
-   }
+    }
 
     // Clear the console panel
     const consolePanel = document.getElementById("console");
@@ -132,9 +132,19 @@ function showEndingScreen(message) {
     styleButton(restartButton);
     endingScreen.appendChild(restartButton);
 
+    // Add the "View Credits" button
+    const creditsButton = document.createElement("button");
+    creditsButton.textContent = "View Credits";
+    creditsButton.addEventListener("click", () => {
+        window.location.href = "sp-credits.html"; // Redirect to the credits page
+    });
+    styleButton(creditsButton);
+    endingScreen.appendChild(creditsButton);
+
     // Append the ending screen to the body
     document.body.appendChild(endingScreen);
 }
+
 
 export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     // Create the mini-game container

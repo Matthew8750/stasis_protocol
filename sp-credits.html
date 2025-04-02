@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="sp-styles.css" type="text/css" rel="stylesheet">
+    <title>Credits - Stasis Protocol</title>
+</head>
+<body>
+    <h1>Stasis Protocol</h1>
+    <div class="credits">
+        <p><strong>Credits:</strong></p>
+        <p>Josh, Ruadhri, Matthew, Caolan and Callum</p>
+    </div>
+    <div class="media">
+        <img src="images/astrodance.gif" alt="AstroDance Animation" style="max-width: 100%; height: auto;">
+        <audio id="background-music">
+            <source src="audio/Stasis Protocol.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <button id="play-music-button" class="theme-button">Play Music</button>
+    </div>
+    <nav>
+        <a href="sp-gamehub.html">Back to Main Menu</a>
+    </nav>
+    <div class="bezel-overlay"></div>
+    <script>
+        document.getElementById('play-music-button').addEventListener('click', () => {
+            const music = document.getElementById('background-music');
+            music.play();
+        });
+    </script>
+</body>
+</html>

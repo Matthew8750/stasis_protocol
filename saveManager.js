@@ -377,7 +377,6 @@ export async function unlockAchievement(playerID, achievementID) {
             return;
         }
 
-        // If no existing record, insert the achievement into player_achievements table
         if (resultCheck.data.length === 0) {
             const queryInsert = `INSERT INTO player_achievements (player_id, achievement_id, is_locked) VALUES (${playerID}, ${achievementID}, 1)`;
             
@@ -399,7 +398,6 @@ export async function unlockAchievement(playerID, achievementID) {
             console.log(`Achievement ${achievementID} inserted successfully.`);
         }
 
-        // Now, update the achievement to unlocked
         const queryUpdate = `UPDATE player_achievements SET is_locked = 0 WHERE player_id = ${playerID} AND achievement_id = ${achievementID}`;
 
         let formDataUpdate = new FormData();

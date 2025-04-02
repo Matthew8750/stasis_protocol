@@ -950,3 +950,24 @@ button:active {
 .shake {
     animation: shake 0.3s ease; /* Reduced duration to 0.3 seconds */
 }
+
+/* Theme Button Styles */
+.theme-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: "monospace";
+    color: rgb(0, 255, 0);
+    background-color: black;
+    border: 2px solid rgb(0, 255, 0);
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.theme-button:hover {
+    background-color: rgb(0, 255, 0);
+    color: black;
+}

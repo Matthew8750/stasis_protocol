@@ -11,42 +11,67 @@
 
         <nav>
             <a href="sp-game.html" onclick="unlockStartGameAchievement()">Play Game</a>
-            <a href="sp-playerstats.html">My Game Stats</a>
-            <a href="sp-achievements.html">Achievements</a>
-            <a href="#" onclick="logout()">Log Out</a>
-            <a href="#" onclick="showDeletePopup()">Delete Account</a>
+            <a href="sp-playerstats.html">My Game Stats</a> <!-- Link to individual player statistics -->
+            <a href="sp-achievements.html">Achievements</a> <!-- Link to individual player statistics -->
+            <a href="#" onclick="logout()">Log Out</a> <!-- Log out link -->
         </nav>
-
-        <div class="overlay" id="overlay"></div>
-        <div class="popup" id="deletePopup">
-            <p id="popupMessage">Are you sure you want to delete your account? This action cannot be undone.</p>
-            <button id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
-            <button onclick="hideDeletePopup()">Cancel</button>
-        </div>
 
         <div class="bezel-overlay"></div>
 
         <script>
             async function retrievePlayerID() {
                 const username = sessionStorage.getItem('loggedInUser');
+
                 if (!username) {
                     window.location.href = 'sp-mainmenu.html';
                     return;
                 }
+
                 document.getElementById('welcomeMessage').innerText = `Welcome, ${username}!`;
+
                 let getID = new FormData();
                 getID.append('hostname', 'localhost');
                 getID.append('username', 'jrice27');
                 getID.append('password', 'rZk8FVrXNllcPl8Y');
                 getID.append('database', 'CSC1034_CW_13');
                 getID.append('query', `SELECT player_ID FROM player WHERE player_name = '${username}'`);
+
                 try {
                     let checkResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: getID });
                     let checkResult = await checkResponse.json();
                     const playerID = checkResult.data[0].player_ID;
+
+                    // Store the player ID in sessionStorage
                     sessionStorage.setItem('loggedInID', playerID);
                 } catch (error) {
                     console.error('Error retrieving player ID:', error);
+                }
+            }
+
+            async function unlockStartGameAchievement() {
+                const playerID = sessionStorage.getItem('loggedInID');
+                if (!playerID) return;
+
+                // Unlock achievement with ID (replace X with the actual ID)
+                const achievementID = 5;  
+                unlockAchievement(playerID, achievementID);
+            }
+
+            async function unlockAchievement(playerID, achievementID) {
+                let unlockData = new FormData();
+                unlockData.append('hostname', 'localhost');
+                unlockData.append('username', 'jrice27');
+                unlockData.append('password', 'rZk8FVrXNllcPl8Y');
+                unlockData.append('database', 'CSC1034_CW_13');
+                unlockData.append('query', `INSERT INTO player_achievements (player_id, achievement_id, is_locked) 
+                                            VALUES (${playerID}, ${achievementID}, FALSE) 
+                                            ON DUPLICATE KEY UPDATE is_locked = FALSE`);
+
+                try {
+                    await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: unlockData });
+                    console.log(`Achievement ${achievementID} unlocked for Player ${playerID}`);
+                } catch (error) {
+                    console.error('Error unlocking achievement:', error);
                 }
             }
 
@@ -55,45 +80,6 @@
                 sessionStorage.removeItem('loggedInID'); 
                 window.location.href = 'sp-mainmenu.html'; 
             }
-
-            function showDeletePopup() {
-                document.getElementById('deletePopup').style.display = 'block';
-                document.getElementById('overlay').style.display = 'block';
-                document.getElementById('popupMessage').innerText = "Are you sure you want to delete your account? This action cannot be undone.";
-                document.getElementById('confirmDeleteBtn').style.display = 'inline-block';
-            }
-
-            function hideDeletePopup() {
-                document.getElementById('deletePopup').style.display = 'none';
-                document.getElementById('overlay').style.display = 'none';
-            }
-
-            async function confirmDelete() {
-                const playerID = sessionStorage.getItem('loggedInID');
-                if (!playerID) return;
-                
-                let deleteData = new FormData();
-                deleteData.append('hostname', 'localhost');
-                deleteData.append('username', 'jrice27');
-                deleteData.append('password', 'rZk8FVrXNllcPl8Y');
-                deleteData.append('database', 'CSC1034_CW_13');
-                deleteData.append('query', `DELETE FROM player WHERE player_ID = ${playerID}`);
-
-                try {
-                    await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', { method: 'POST', body: deleteData });
-                    document.getElementById('popupMessage').innerText = "Your account has been deleted.";
-                    document.getElementById('confirmDeleteBtn').style.display = 'none';
-
-                    // Hide overlay after deletion
-                    setTimeout(() => {
-                        hideDeletePopup();
-                        logout();
-                    }, 2000);
-                } catch (error) {
-                    console.error('Error deleting account:', error);
-                }
-            }
-
 
             retrievePlayerID(); 
         </script>

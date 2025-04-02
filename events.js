@@ -469,7 +469,6 @@ export function shootAlien() {
     // Timer for death if the player doesn't shoot in time
     const deathTimer = setTimeout(() => {
         console.log("[N0VA]: You failed to shoot the alien in time!");
-        changeImage("images/Alien_Death.png");
         playerDeath();
         buttonContainer.remove(); // Clean up the button
     }, 5000);

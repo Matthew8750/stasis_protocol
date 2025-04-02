@@ -279,6 +279,9 @@ export function startRepairEscapePodsMinigame(onSuccess, onFailure) {
     }
 
     onSuccess = () => {
+        const playerID = sessionStorage.getItem("loggedInID");
+        console.log("Player ID:", playerID);
+        unlockAchievement(playerID, 1); // Unlock the achievement
         typeText("[N0VA]: The escape pods are repaired and ready for launch!");
         changeImage("images/EscapePods_Repaired.jpg");
         console.log("[System]: Escape pods repaired successfully!");

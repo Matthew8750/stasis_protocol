@@ -319,6 +319,7 @@ export function cafeteriaEvent() {
 
 export function shootAlien() {
     const consolePanel = document.getElementById("console");
+    const imagePanel = document.querySelector(".image-panel"); // Target the image-panel
 
     // Remove any existing button container
     let existingButtonContainer = document.getElementById("button-container");
@@ -381,12 +382,25 @@ export function shootAlien() {
         changeImage("images/Alien_Death.png");
         playerDeath();
         buttonContainer.remove(); // Clean up the button
-    }, 3000); // Reduced time to 3 seconds
+    }, 5000);
+
+    // Add shake effect to the image-panel
+    function shakeImagePanel() {
+        if (imagePanel) {
+            imagePanel.classList.add("shake");
+            setTimeout(() => {
+                imagePanel.classList.remove("shake");
+            }, 300); // Duration of the shake animation
+        }
+    }
 
     // Event listener for the "Shoot" button
     shootButton.addEventListener("click", () => {
         presses++;
         console.log(`[Debug]: Alien shot ${presses} time(s)`);
+
+        // Trigger the shake effect on the image-panel
+        shakeImagePanel();
 
         if (presses >= 3) {
             clearTimeout(deathTimer); // Cancel the death timer

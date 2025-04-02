@@ -270,7 +270,7 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Inspect Terminal": { 
                     description: "Attempting data retrieval… failed. System corruption is extensive. No useful information can be extracted. This terminal is beyond recovery.",
-                    newImage: "images/placeholder.jpg"
+                    newImage: "images/Inspect_Terminal.png"
                 }
             }
         },
@@ -292,7 +292,7 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Inspect the Engine": { 
                     description: "[N0VA]: The engine room is heavily damaged. A wrench is present—this tool is essential for repairing the escape pods.",
-                    newImage: "images/placeholder.jpg"
+                    newImage: "images/Inspect_Engine.jpg"
                 }
             }
         },
@@ -303,7 +303,7 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Inspect the Engine": { 
                     description: "Engine diagnostics running… Malfunctions detected. Core systems are failing, and structural integrity is compromised. If we don’t restore stability soon, this ship could break apart.",
-                    newImage: "images/placeholder.jpg"
+                    newImage: "images/Inspect_Engine.jpg"
                 }
             }
         },

@@ -122,7 +122,7 @@ export async function fetchAndDisplayInventory() {
 // ==========================
 // 6. Database Operations
 // ==========================
-export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name, labEventTriggered, labUnlocked) {
+export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, location_name, labEventTriggered, labUnlocked, cafeteriaEventTriggered) {
     console.log('Connecting to the database...');
 
     const loggedInID = sessionStorage.getItem('loggedInID');
@@ -142,7 +142,8 @@ export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, lo
     let formattedTime = `${hours}:${minutes}:${seconds}`;
 
     let labTriggeredValue = labEventTriggered ? 1 : 0;
-    let labUnlockedValue = labUnlocked ? 1 : 0; // Convert labUnlocked to a numeric value
+    let labUnlockedValue = labUnlocked ? 1 : 0;
+    let cafeteriaTriggeredValue = cafeteriaEventTriggered ? 1 : 0; // Convert cafeteriaEventTriggered to a numeric value
 
     try {
         let checkQuery = `SELECT COUNT(*) AS saveExists FROM game_stats WHERE player_id = '${sanitizedInput}'`;
@@ -159,9 +160,9 @@ export async function saveToDatabase(noOfDeaths, time_played, rooms_explored, lo
 
         let query = saveExists
             ? `UPDATE game_stats SET deaths = ${noOfDeaths}, time_played = '${formattedTime}', rooms_explored = ${rooms_explored}, 
-                location_name = '${sanitizedLocation}', labEventTriggered = ${labTriggeredValue}, labUnlocked = ${labUnlockedValue} WHERE player_id = '${sanitizedInput}'`
-            : `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered, labUnlocked) 
-                VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue}, ${labUnlockedValue})`;
+                location_name = '${sanitizedLocation}', labEventTriggered = ${labTriggeredValue}, labUnlocked = ${labUnlockedValue}, cafeteriaEventTriggered = ${cafeteriaTriggeredValue} WHERE player_id = '${sanitizedInput}'`
+            : `INSERT INTO game_stats (player_id, deaths, time_played, rooms_explored, location_name, labEventTriggered, labUnlocked, cafeteriaEventTriggered) 
+                VALUES ('${sanitizedInput}', ${noOfDeaths}, '${formattedTime}', ${rooms_explored}, '${sanitizedLocation}', ${labTriggeredValue}, ${labUnlockedValue}, ${cafeteriaTriggeredValue})`;
 
         let formData = new FormData();
         formData.append('hostname', 'localhost');

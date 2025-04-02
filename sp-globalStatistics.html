@@ -14,68 +14,100 @@
         <a href="sp-mainmenu.html" class="back-to-menu">Back to Main Menu</a>  
     </nav>
 
-
     <div class="bezel-overlay"></div>
 
     <script>
-       async function fetchGlobalStats() {
-            let query = `SELECT deaths, rooms_explored, TIME_TO_SEC(time_played) AS time_played FROM game_stats`;
-
+        async function fetchGlobalStats() {
+            let statsQuery = `SELECT deaths, rooms_explored, TIME_TO_SEC(time_played) AS time_played FROM game_stats`;
+            let itemQuery = `SELECT item_ID, COUNT(item_ID) as count FROM player_inventory GROUP BY item_ID ORDER BY count DESC LIMIT 1`;
+    
             let formData = new FormData();
             formData.append('hostname', 'localhost');
             formData.append('username', 'jrice27');
             formData.append('password', 'rZk8FVrXNllcPl8Y');
             formData.append('database', 'CSC1034_CW_13');
-            formData.append('query', query);
-
+            formData.append('query', statsQuery);
+    
             try {
                 let response = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
                     method: 'POST',
                     body: formData
                 });
-
+    
                 let data = await response.json();
-
-                console.log("Fetched Data: ", data);
-
+                console.log("Fetched Stats Data:", data);
+    
                 if (data.error || !data.data || data.data.length === 0) {
-                    document.getElementById("stats").innerHTML = `<p style="color: red;">Error fetching data or no data returned.</p>`;
+                    document.getElementById("stats").innerHTML = `<p style="color: red;">Error fetching statistics data.</p>`;
                     return;
                 }
-
+    
                 let totalDeaths = 0;
                 let totalRoomsExplored = 0;
                 let totalTimePlayed = 0;
                 let playerCount = data.data.length;
-
-                // Calculate totals
+    
                 data.data.forEach(player => {
                     totalDeaths += parseInt(player.deaths, 10);
                     totalRoomsExplored += parseInt(player.rooms_explored, 10);
                     totalTimePlayed += parseInt(player.time_played, 10);
                 });
-
-                // Calculate averages
+    
                 const avgDeaths = totalDeaths / playerCount;
                 const avgRoomsExplored = totalRoomsExplored / playerCount;
                 const avgTimePlayed = totalTimePlayed / playerCount / 3600; // Convert seconds to hours
-
-                // Display averages in stats div
+    
                 let statsDiv = document.getElementById("stats");
-
+    
                 statsDiv.innerHTML = `
                     <p><strong>Average Time Played:</strong> ${avgTimePlayed.toFixed(2)} hours</p>
                     <p><strong>Average Rooms Explored:</strong> ${avgRoomsExplored.toFixed(2)}</p>
                     <p><strong>Average Deaths:</strong> ${avgDeaths.toFixed(2)}</p>
+                    <p id="commonItem"><strong>Most Collected Item:</strong> Loading...</p>
                 `;
+    
+                // Fetch most common item
+                formData.set('query', itemQuery);
+                let itemResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                    method: 'POST',
+                    body: formData
+                });
+    
+                let itemData = await itemResponse.json();
+                console.log("Fetched Item Data:", itemData);
+    
+                if (!itemData.error && itemData.data.length > 0) {
+                    let mostCommonItemID = itemData.data[0].item_ID;
+                    let itemCount = itemData.data[0].count;
+    
+                    // Get the item name from items table
+                    let itemNameQuery = `SELECT item_name FROM items WHERE item_ID = ${mostCommonItemID}`;
+                    formData.set('query', itemNameQuery);
+                    let nameResponse = await fetch('https://jrice27.webhosting1.eeecs.qub.ac.uk/dbConnector.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+    
+                    let nameData = await nameResponse.json();
+                    console.log("Fetched Item Name:", nameData);
+    
+                    if (!nameData.error && nameData.data.length > 0) {
+                        document.getElementById("commonItem").innerHTML = `<strong>Most Collected Item:</strong> ${nameData.data[0].item_name} (${itemCount} times)`;
+                    } else {
+                        document.getElementById("commonItem").innerHTML = `<strong>Most Collected Item:</strong> Unknown`;
+                    }
+                } else {
+                    document.getElementById("commonItem").innerHTML = `<strong>Most Collected Item:</strong> None`;
+                }
+    
             } catch (error) {
                 document.getElementById("stats").innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
             }
         }
-
-        // Fetch stats on page load
+    
         fetchGlobalStats();
     </script>
+    
 </body>
 </html>
 

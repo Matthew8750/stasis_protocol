@@ -226,7 +226,7 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Inspect Stasis Pods": { 
                     description: "Warning: Pod integrity compromised. Vital signs… nonexistent. The occupant didn’t make it. Frost clings to the glass, obscuring their face—still, unmoving. Whatever happened, it happened long ago.",
-                    newImage: "images/Inspect_Cryo.png"
+                    newImage: "images/Inspect_Cryochamber.jpg"
                 }
             }
         },
@@ -258,7 +258,7 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Inspect Containment Chamber": { 
                     description: "Containment breach confirmed. The chamber was forcibly opened—internal locks overridden or destroyed. Whatever was inside… it’s no longer contained. We are not alone. Proceed with extreme caution.",
-                    newImage: "images/placeholder.jpg"
+                    newImage: "images/Inspect_Containment.png"
                 }
             }
         },

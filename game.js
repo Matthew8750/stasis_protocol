@@ -270,7 +270,7 @@ export function handleRoomEntry(roomName) {
             interactions: {
                 "Inspect Terminal": { 
                     description: "Attempting data retrieval… failed. System corruption is extensive. No useful information can be extracted. This terminal is beyond recovery.",
-                    newImage: "images/Inspect_Terminal.jpg"
+                    newImage: "images/Inspect_Terminal.png"
                 }
             }
         },
